@@ -1,0 +1,30 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: pcdsdevices
+  version : {{ data.get('version') }}
+
+source:
+  path: ..
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - python {{PY_VER}}*,>=3
+    - setuptools
+
+  run:
+    - python {{PY_VER}}*,>=3
+    - ophyd >=1.1.0
+    - bluesky >=1.2.0
+
+test:
+  imports:
+    - pcdsdaq
+
+about:
+  home: https://github.com/pcdshub/pcdsdevices
+  license: SLAC Open License
+  summary: DAQ Control Interface
