@@ -18,6 +18,7 @@ Requirements
 
 - ``python`` >= 3.6
 - ``bluesky`` >= 1.2.0
+- ``ophyd`` >= 1.1.0
 - ``pydaq``
 - ``pycdb``
 - ``pyami``
