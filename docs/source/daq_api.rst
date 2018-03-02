@@ -8,7 +8,7 @@ Daq API
 .. autosummary::
    :nosignatures:
    :toctree: generated
-   
+
    get_daq
    register_daq
    check_connect

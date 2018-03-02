@@ -23,8 +23,10 @@ except ImportError:
 BEGIN_TIMEOUT = 2
 
 
-# Wrapper to make sure we're connected
 def check_connect(f):
+    """
+    Decorator to ensure that the `Daq` is connected before running a method.
+    """
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         logger.debug('Checking for daq connection')
@@ -50,12 +52,20 @@ class Daq(FlyerInterface):
     run and end at the end of the run. It has additional knobs for pausing
     and resuming acquisition. This can be done using three modes:
 
-    on:      Always take events during the run
-    manual:  Take events when `yield from calibcycle()` is used
-    auto:    Take events between `create` and `save` messages
+    - ``on``:      Always take events during the run
+    - ``manual``:  Take events when `calib_cycle` is used
+    - ``auto``:    Take events between ``create`` and ``save`` messages
 
     Unlike a normal bluesky flyer, this has no data to report to the RunEngine
     on the collect call. No data will pass into the python layer from the daq.
+
+    Parameters
+    ----------
+    platform: ``int``, optional
+        Set platform to match the definition in the daq cnf file
+
+    RE: ``RunEngine``, optional
+        Set RE to the session's main RE for RunEngine support
     """
     _state_enum = enum.Enum('PydaqState',
                             'Disconnected Connected Configured Open Running',
@@ -70,15 +80,6 @@ class Daq(FlyerInterface):
     name = 'daq'
 
     def __init__(self, platform=0, RE=None):
-        """
-        Parameters
-        ----------
-        platform: int, optional
-            Set platform to match the definition in the daq cnf file
-
-        RE: RunEngine, optional
-            Set RE to the session's main RE for RunEngine support
-        """
         super().__init__()
         self._control = None
         self._config = None
@@ -94,14 +95,23 @@ class Daq(FlyerInterface):
     # Convenience properties
     @property
     def connected(self):
+        """
+        ``True`` if the daq is connected, ``False`` otherwise.
+        """
         return self._control is not None
 
     @property
     def configured(self):
+        """
+        ``True`` if the daq is configured, ``False`` otherwise.
+        """
         return self._config is not None
 
     @property
     def config(self):
+        """
+        The current configuration, e.g. the last call to `configure`
+        """
         if self.configured:
             return self._config
         else:
@@ -111,11 +121,11 @@ class Daq(FlyerInterface):
     def state(self):
         """
         State as reported by the daq. Can be any of the following:
-            Disconnected: No active session in python
-            Connected:    Active session in python
-            Configured:   Connected, and the daq has been configured
-            Open:         We are in the middle of a run
-            Running:      We are collecting data in a run
+        - ``Disconnected``: No active session in python
+        - ``Connected``:    Active session in python
+        - ``Configured``:   Connected, and the daq has been configured
+        - ``Open``:         We are in the middle of a run
+        - ``Running``:      We are collecting data in a run
         """
         if self.connected:
             logger.debug('calling Daq.control.state()')
@@ -127,7 +137,9 @@ class Daq(FlyerInterface):
     # Interactive methods
     def connect(self):
         """
-        Connect to the DAQ instance, giving full control to the Python process.
+        Connect to the live DAQ, giving full control to the Python process.
+
+        To undo this, you may call `disconnect`.
         """
         logger.debug('Daq.connect()')
         if self._control is None:
@@ -150,7 +162,9 @@ class Daq(FlyerInterface):
 
     def disconnect(self):
         """
-        Disconnect from the DAQ instance, giving control back to the GUI
+        Disconnect from the live DAQ, giving control back to the GUI.
+
+        This is the opposite of `connect`.
         """
         logger.debug('Daq.disconnect()')
         if self._control is not None:
@@ -167,7 +181,7 @@ class Daq(FlyerInterface):
 
         Parameters
         ----------
-        timeout: float
+        timeout: ``float``
             Maximum time to wait in seconds.
         """
         logger.debug('Daq.wait()')
@@ -178,35 +192,36 @@ class Daq(FlyerInterface):
     def begin(self, events=None, duration=None, use_l3t=None, controls=None,
               wait=False):
         """
-        Start the daq with the current configuration. Block until
-        the daq has begun acquiring data. Optionally block until the daq has
-        finished aquiring data.
+        Start the daq and block until the daq has begun acquiring data.
+        Optionally block until the daq has finished aquiring data.
 
-        If omitted, any argument that is shared with configure will fall back
-        to the configured value.
+        If omitted, any argument that is shared with `configure`
+        will fall back to the configured value.
+
+        Internally, this calls `kickoff` and manages its ``Status`` object.
 
         Parameters
         ----------
-        events: int, optional
+        events: ``int``, optional
             Number events to take in the daq.
 
-        duration: int, optional
-            Time to run the daq in seconds, if events was not provided.
+        duration: ``int``, optional
+            Time to run the daq in seconds, if ``events`` was not provided.
 
-        use_l3t: bool, optional
-            If True, we'll run with the level 3 trigger. This means that, if we
-            specified a number of events, we will wait for that many "good"
-            events as determined by the daq.
+        use_l3t: ``bool``, optional
+            If ``True``, we'll run with the level 3 trigger. This means that
+            if we specified a number of events, we will wait for that many
+            "good" events as determined by the daq.
 
-        controls: dict{name: device} or list[device...], optional
+        controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
-            stream as variables. We will check device.position and device.value
-            for quantities to use and we will update these values each time
-            begin is called. To provide a list, all devices must have a `name`
-            attribute.
+            stream as variables. We will check ``device.position`` and
+            ``device.value`` for quantities to use and we will update these
+            values each time begin is called. To provide a list, all devices
+            must have a ``name`` attribute.
 
         wait: bool, optional
-            If switched to True, wait for the daq to finish aquiring data.
+            If ``True``, wait for the daq to finish aquiring data.
         """
         logger.debug('Daq.begin(events=%s, duration=%s, wait=%s)',
                      events, duration, wait)
@@ -228,7 +243,7 @@ class Daq(FlyerInterface):
     @check_connect
     def end_run(self):
         """
-        Stop the daq if it's running, then mark the run as finished.
+        Call `stop`, then mark the run as finished.
         """
         logger.debug('Daq.end_run()')
         self.stop()
@@ -239,12 +254,14 @@ class Daq(FlyerInterface):
     def kickoff(self, events=None, duration=None, use_l3t=None, controls=None):
         """
         Begin acquisition. This method is non-blocking.
+        See `begin` for a description of the parameters.
+
+        This is part of the ``bluesky`` ``Flyer`` interface.
 
         Returns
         -------
-        ready_status: Status
-            Status that will be marked as 'done' when the daq has begun to
-            record data.
+        ready_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
         """
         logger.debug('Daq.kickoff()')
 
@@ -288,15 +305,14 @@ class Daq(FlyerInterface):
 
     def complete(self):
         """
-        If the daq is freely running, this will stop the daq.
-        Otherwise, we'll let the daq finish up the fixed-length acquisition.
-
-        Return a status object that will be marked as 'done' when the DAQ has
-        finished acquiring.
+        If the daq is freely running, this will `stop` the daq.
+        Otherwise, we'll simply collect the end_status object.
 
         Returns
         -------
-        end_status: Status
+        end_status: ``Status``
+            ``Status`` that will be marked as done when the DAQ has finished
+            acquiring
         """
         logger.debug('Daq.complete()')
         end_status = self._get_end_status()
@@ -307,12 +323,12 @@ class Daq(FlyerInterface):
 
     def _get_end_status(self):
         """
-        Return a status object that will be marked as 'done' when the DAQ has
+        Return a `Status` object that will be marked done when the DAQ has
         finished acquiring.
 
         Returns
         -------
-        end_status: Status
+        end_status: `Status`
         """
         logger.debug('Daq._get_end_status()')
 
@@ -333,11 +349,13 @@ class Daq(FlyerInterface):
 
     def collect(self):
         """
-        End the run.
+        End the run as part of the ``bluesky`` ``Flyer`` interface, when the
+        flying is done.
 
-        As per the bluesky interface, this is a generator that is expected to
-        output partial event documents. However, since we don't have any events
-        to report to python, this will be a generator that immediately ends.
+        As per the ``bluesky`` interface, this is a generator that is expected
+        to output partial event documents. However, since we don't have any
+        events to report to python, this will be a generator that immediately
+        ends.
         """
         logger.debug('Daq.collect()')
         self.end_run()
@@ -346,8 +364,9 @@ class Daq(FlyerInterface):
 
     def describe_collect(self):
         """
-        As per the bluesky interface, this is how you interpret the null data
-        from collect. There isn't anything here, as nothing will be collected.
+        As per the ``bluesky`` interface, this is how you interpret the null
+        data from `collect`. There isn't anything here, as nothing will be
+        collected.
         """
         logger.debug('Daq.describe_collect()')
         return {}
@@ -360,47 +379,47 @@ class Daq(FlyerInterface):
 
         Parameters
         ----------
-        events: int, optional
+        events: ``int``, optional
             If provided, the daq will run for this many events before
-            stopping, unless we override in begin.
-            If not provided, we'll use the duration argument instead.
+            stopping, unless we override in `begin`.
+            If not provided, we'll use the ``duration`` argument instead.
 
-        duration: int, optional
+        duration: ``int``, optional
             If provided, the daq will run for this many seconds before
-            stopping, unless we override in begin.
-            If not provided, and events was also not provided, an empty call to
-            begin() will run indefinitely.
+            stopping, unless we override in `begin`.
+            If not provided, and ``events`` was also not provided, an empty
+            call like ``begin()`` will run indefinitely.
 
-        use_l3t: bool, optional
-            If True, an events argument to begin will be reinterpreted to only
-            count events that pass the level 3 trigger. Defaults to False.
+        use_l3t: ``bool``, optional
+            If ``True``, an ``events`` argument to begin will be reinterpreted
+            to only count events that pass the level 3 trigger. Defaults to
+            ``False``.
 
-        record: bool, optional
-            If True, we'll record the data. Otherwise, we'll run without
-            recording. Defaults to False.
+        record: ``bool``, optional
+            If ``True``, we'll record the data. Otherwise, we'll run without
+            recording. Defaults to ``False``.
 
-        controls: dict{name: device} or list[device...], optional
+        controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
-            stream as variables. We will check device.position and device.value
-            for quantities to use and we will update these values each time
-            begin is called. To provide a list, all devices must have a `name`
-            attribute.
+            stream as variables. We will check ``device.position`` and
+            ``device.value`` for quantities to use and we will update these
+            values each time begin is called. To provide a list, all devices
+            must have a ``name`` attribute.
 
-        mode: str or int, optional
-            This determines our run control during a Bluesky scan with a
-            RunEngine attached to a Daq object. There are three modes, with the
-            `on` mode as the default:
+        mode: ``str`` or ``int``, optional
+            This determines our run control during a ``bluesky`` scan with a
+            ``RunEngine`` attached to a Daq object. There are three modes, with
+            the ``on`` mode as the default:
 
-            `on`     (0): Start taking events at open_run, stop at close_run
-            `manual` (1): Only take events after a call to trigger
-            `auto`   (2): Start taking events at create, stop at save
+            - ``on``     (0): Take events always during runs
+            - ``manual`` (1): Take events only during the `calib_cycle` plan
+            - ``auto``   (2): Take events between ``create`` and ``save``
 
-            If mode is omitted, we'll use the previous value for mode. The
-            default value is `on`.
+            If ``mode`` is omitted, we'll use the previous value for ``mode``.
 
         Returns
         -------
-        old, new: tuple of dict
+        old, new: ``tuple`` of ``dict``
         """
         logger.debug(('Daq.configure(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, mode=%s)'),
@@ -448,8 +467,8 @@ class Daq(FlyerInterface):
 
     def _update_config_ts(self):
         """
-        Create timestamps and update the bluesky readback for
-        read_configuration
+        Create timestamps and update the ``bluesky`` readback for
+        `read_configuration`
         """
         for k, v in self.config.items():
             old_value = self._config_ts.get(k, {}).get('value')
@@ -459,8 +478,8 @@ class Daq(FlyerInterface):
 
     def _config_args(self, record, use_l3t, controls):
         """
-        For a given set of arguments to configure, return the arguments that
-        should be sent to control.configure.
+        For a given set of arguments to `configure`, return the arguments that
+        should be sent to ``pydaq.Control.configure``.
 
         Returns
         -------
@@ -480,12 +499,12 @@ class Daq(FlyerInterface):
 
     def _ctrl_arg(self, controls):
         """
-        Assemble the list of (str, val) pairs from a {str: device} dictionary
-        or a device list
+        Assemble the list of ``(str, val)`` pairs from a ``{str: device}``
+        dictionary or a device ``list``
 
         Returns
         -------
-        ctrl_arg: list[(str, val), ...]
+        ctrl_arg: ``list[(str, val), ...]``
         """
         ctrl_arg = []
         if isinstance(controls, list):
@@ -504,12 +523,12 @@ class Daq(FlyerInterface):
 
     def _begin_args(self, events, duration, use_l3t, controls):
         """
-        For a given set of arguments to begin, return the arguments that should
-        be sent to control.begin
+        For a given set of arguments to `begin`, return the arguments that
+        should be sent to ``pydaq.Control.begin``
 
         Returns
         -------
-        begin_args: dict
+        begin_args: ``dict``
         """
         logger.debug('Daq._begin_args(%s, %s, %s, %s)',
                      events, duration, use_l3t, controls)
@@ -554,19 +573,25 @@ class Daq(FlyerInterface):
 
     def read_configuration(self):
         """
+        ``bluesky`` interface for checking the current configuration
+
         Returns
         -------
-        config: dict
-            Mapping of config key to current configured value.
+        config: ``dict``
+            Mapping of config key to current configured value and timestamp
+            when it was last set.
         """
         logger.debug('Daq.read_configuration()')
         return copy.copy(self._config_ts)
 
     def describe_configuration(self):
         """
+        ``bluesky`` interface for describing how to interpret the configured
+        values
+
         Returns
         -------
-        config_desc: dict
+        config_desc: ``dict``
             Mapping of config key to field metadata.
         """
         logger.debug('Daq.describe_configuration()')
@@ -595,12 +620,13 @@ class Daq(FlyerInterface):
 
     def stage(self):
         """
-        Nothing to be done here, but we overwrite the default stage because it
-        is expecting sub devices.
+        ``bluesky`` interface for preparing a device for action.
+        There is nothing to be done here, but we overwrite the default stage
+        because we have no sub devices.
 
         Returns
         -------
-        staged: list
+        staged: ``list``
             list of devices staged
         """
         logger.debug('Daq.stage()')
@@ -608,12 +634,13 @@ class Daq(FlyerInterface):
 
     def unstage(self):
         """
-        Nothing to be done here, but we overwrite the default unstage because
-        it is expecting sub devices.
+        ``bluesky`` interface for undoing the `stage` routine.
+        There is nothing to be done here, but we overwrite the default unstage
+        because we have no sub devices.
 
         Returns
         -------
-        unstaged: list
+        unstaged: ``list``
             list of devices unstaged
         """
         logger.debug('Daq.unstage()')
@@ -621,7 +648,8 @@ class Daq(FlyerInterface):
 
     def pause(self):
         """
-        Stop acquiring data, but don't end the run.
+        ``bluesky`` interface for determining what to do when a plan is
+        interrupted. This will call `stop`, but it will not call `end_run`.
         """
         logger.debug('Daq.pause()')
         if self.state == 'Running':
@@ -629,7 +657,8 @@ class Daq(FlyerInterface):
 
     def resume(self):
         """
-        Continue acquiring data in a previously paused run.
+        ``bluesky`` interface for determining what to do when an interrupted
+        plan is resumed. This will call `begin`.
         """
         logger.debug('Daq.resume()')
         if self.state == 'Open':
@@ -637,10 +666,10 @@ class Daq(FlyerInterface):
 
     def _interpret_message(self, msg):
         """
-        msg_hook for the daq to decide when to run and when not to run,
-        provided we've been configured for always_on=False.
-        Also looks for 'open_run' and 'close_run' docs to keep track of when
-        we're in a Bluesky plan and when we're not.
+        ``msg_hook`` for the daq to snoop on the ``RunEngine``. This will
+        always start a run at ``open_run`` and end a run at ``close_run``,
+        and in ``auto`` mode this will also `pause` at ``save`` messages and
+        `resume` at ``create`` messages.
         """
         logger.debug('Daq._interpret_message(%s)', msg)
         cmds = ('open_run', 'close_run', 'create', 'save')
@@ -664,20 +693,22 @@ class Daq(FlyerInterface):
     @property
     def _events(self):
         """
-        For the current begin cycle, how many events we told the daq to run for
+        For the current `begin` cycle, how many ``events`` we told the daq to
+        run for.
         """
         return self._begin['events'] or self.config['events']
 
     @property
     def _duration(self):
         """
-        For the current begin cycle, how long we told the daq to run for
+        For the current `begin` cycle, how long we told the daq to run for in
+        seconds.
         """
         return self._begin['duration'] or self.config['duration']
 
     def _reset_begin(self):
         """
-        Reset _begin to starting values for when we aren't running
+        Reset ``_begin`` to starting values for when we aren't running.
         """
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
@@ -696,8 +727,12 @@ _daq_instance = None
 
 def register_daq(daq):
     """
-    Called by Daq at the end of __init__ to save our one daq instance as the
-    True Daq. There will always only be one Daq.
+    Called by `Daq` at the end of ``__init__`` to save our one daq instance as
+    the real `Daq`. There will always only be one `Daq`.
+
+    Parameters
+    ----------
+    daq: `Daq`
     """
     global _daq_instance
     _daq_instance = daq
@@ -705,10 +740,10 @@ def register_daq(daq):
 
 def get_daq():
     """
-    Called by other modules to get the registered daq instance.
+    Called by other modules to get the registered `Daq` instance.
 
     Returns
     -------
-    daq: Daq
+    daq: `Daq`
     """
     return _daq_instance

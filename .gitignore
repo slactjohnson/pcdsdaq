@@ -1,5 +1,6 @@
 # Module specific
 logs
+docs/source/generated
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
