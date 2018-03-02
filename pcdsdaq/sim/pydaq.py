@@ -2,7 +2,7 @@ import time
 import threading
 import logging
 
-from pcdsdevices.daq import Daq
+from pcdsdaq.daq import Daq
 
 logger = logging.getLogger(__name__)
 
