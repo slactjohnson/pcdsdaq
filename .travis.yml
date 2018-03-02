@@ -34,8 +34,7 @@ install:
 script:
   - coverage run run_tests.py
   - coverage report -m
-  - flake8 hutch_python
-  - flake8 bin
+  - flake8 pcdsdaq
   # Build docs
   - set -e
   - |
