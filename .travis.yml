@@ -39,6 +39,7 @@ script:
   - set -e
   - |
     if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_PCDSDAQ" && $BUILD_DOCS ]]; then
+      conda install --file docs-requirements.txt
       pushd docs
       make html
       popd
