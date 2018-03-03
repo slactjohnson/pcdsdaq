@@ -4,7 +4,7 @@ sudo: false
 env:
   global:
     - OFFICIAL_REPO="pcdshub/pcdsdaq"
-  # - secure: 
+    - secure: "BrDoqAjZeFnW5vGe3AtVSHgXWb16DthqQwiefN+lNhcllQw6WXFx4PvpwNGM1PI3voLg6YJM/9mOrVOk5nSYjh65DQmlJ6jNX1ezJoI30hURhykoXJNrKr25JTF54GhgMgk/KiR3fhGQYJgpXUxPxYPBt3PvXd7uY0cMIYCFAW8gwrupVfHbPo1zGbxHzxysBlxpQQAclBj4pVMIX5chkVM/Yviv72mEkyoKPJpQgCCn7CstQSLhHtM+EK+bHpqjIk37cnGi/lTZYxlmrMjEeU/UXxL2/y2uA43W8sdsD2vCEiMcexjD2cqhjOr1Qn1zZgzHchSapkHsju1KHdCOeiWE/yV9Ni/fteb4doKnSQOIY/hqofqkyETFfNarOa9Zsm5i03QUyFNub2hr6k6lWRal5MaOErGiUAVlKCYj5KBe/AYHC758rmm1YIukYXKn2cBfApt+sCSc50WGEqjiT1iiUBD6dCP1p4Skd6RpLbwIL6f9THvzAqpQRJpZAtOmffIKpQ0+RUjEQF9UlwPKOgpdAOw2XrK0asrgfh9goiiB7QrzJ0GPa0Wy7BTfi3ksNXskdnatGAFAJiRPBkmcshRFrLx4UIlLx5pTW88G2T0yYXNGi+mEQHXY9rcozZJlVIESYSL1NgRV5aW/gfYC4hqmFfB+93MFG5g05HJ/dlA="
 
 matrix:
   include:
