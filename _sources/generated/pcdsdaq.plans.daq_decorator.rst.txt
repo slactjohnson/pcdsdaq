@@ -1,0 +1,6 @@
+pcdsdaq.plans.daq\_decorator
+============================
+
+.. currentmodule:: pcdsdaq.plans
+
+.. autofunction:: daq_decorator

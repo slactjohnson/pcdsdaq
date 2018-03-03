@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Basic Usage &mdash; pcdsdaq 0+untagged.20.g117096c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="pcdsdaq 0+untagged.20.g117096c documentation" href="index.html"/>
+        <link rel="next" title="Configuration" href="daq_config.html"/>
+        <link rel="prev" title="pcdsdaq" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pcdsdaq
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.20.g117096c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Running the DAQ</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object">Creating a <code class="docutils literal notranslate"><span class="pre">Daq</span></code> object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-until-stop">Running Until Stop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-for-a-fixed-number-of-events">Running for a Fixed Number of Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#runing-for-a-fixed-time-duration">Runing for a Fixed Time Duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recording-data">Recording Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-options">Advanced Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plans_api.html">Plans API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Basic Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/daq_basic.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="basic-usage">
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class allows a user to connect to the LCLS1 daq and control it.
+For this to work, the daq must be up and allocated.</p>
+<p>The most important method is <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>. This will connect, configure,
+and start running the daq all in one call. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.stop</span></code></a> can be used to stop
+acquiring data without ending a run. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> can be called again to
+resume a stopped run. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.end_run</span></code></a> will end the run.</p>
+<p>I will step through the basic options for <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> below. You can consult
+the full <a class="reference internal" href="daq_api.html"><span class="doc">api docs</span></a> for more information.</p>
+<div class="section" id="creating-a-daq-object">
+<h2>Creating a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> object<a class="headerlink" href="#creating-a-daq-object" title="Permalink to this headline">¶</a></h2>
+<p>First, I will set up the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class in simulated mode. In practice, the
+<a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class will be set up for you in the <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> configuration.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
+
+<span class="gp">In [3]: </span><span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
+
+<span class="gp">In [4]: </span><span class="n">set_sim_mode</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="gp">In [5]: </span><span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">(</span><span class="n">platform</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># Defined per hutch</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-until-stop">
+<h2>Running Until Stop<a class="headerlink" href="#running-until-stop" title="Permalink to this headline">¶</a></h2>
+<p>Calling <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> with no arguments in the default configuration will
+run the daq indefinitely, until we manually stop it.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="gp">In [7]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
+
+<span class="gp">In [8]: </span><span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">In [9]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="gp">In [10]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+<span class="go">1.0564188957214355</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-for-a-fixed-number-of-events">
+<h2>Running for a Fixed Number of Events<a class="headerlink" href="#running-for-a-fixed-number-of-events" title="Permalink to this headline">¶</a></h2>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to specify duration in number of events.
+The duration of this run will depend on the current beam rate.
+Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.wait" title="pcdsdaq.daq.Daq.wait"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.wait</span></code></a> to pause until acquisition is complete.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="gp">In [12]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">240</span><span class="p">)</span>  <span class="c1"># 120Hz</span>
+
+<span class="gp">In [13]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+<span class="gp">In [14]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+<span class="go">2.008368730545044</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="runing-for-a-fixed-time-duration">
+<h2>Runing for a Fixed Time Duration<a class="headerlink" href="#runing-for-a-fixed-time-duration" title="Permalink to this headline">¶</a></h2>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument to specify duration in seconds.
+We can pass the <code class="docutils literal notranslate"><span class="pre">wait</span></code> argument to skip the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.wait" title="pcdsdaq.daq.Daq.wait"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.wait</span></code></a> call.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [15]: </span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="gp">In [16]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="gp">In [17]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+<span class="go">1.5066885948181152</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="recording-data">
+<h2>Recording Data<a class="headerlink" href="#recording-data" title="Permalink to this headline">¶</a></h2>
+<p>You must call <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.configure</span></code></a> to record data. This is fairly simple:</p>
+<p>After this call, future calls to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> will record data to disk.
+You can undo this the same way:</p>
+</div>
+<div class="section" id="advanced-options">
+<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">use_l3t=True</span></code>: This will reinterpret the <code class="docutils literal notranslate"><span class="pre">events</span></code> argument as</dt>
+<dd>“the number of events that pass the level 3 trigger.”</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">controls=[motor1,</span> <span class="pre">motor2...]</span></code>: This will post the name of each motor and</dt>
+<dd>the current position to the daq data stream. This is
+handled automatically with some of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> tools.</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="daq_config.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="pcdsdaq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0+untagged.20.g117096c',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

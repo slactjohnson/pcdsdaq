@@ -1,0 +1,6 @@
+pcdsdaq.plans.daq\_wrapper
+==========================
+
+.. currentmodule:: pcdsdaq.plans
+
+.. autofunction:: daq_wrapper

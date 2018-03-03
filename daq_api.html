@@ -1,0 +1,587 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Daq API &mdash; pcdsdaq 0+untagged.20.g117096c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="pcdsdaq 0+untagged.20.g117096c documentation" href="index.html"/>
+        <link rel="next" title="pcdsdaq.daq.get_daq" href="generated/pcdsdaq.daq.get_daq.html"/>
+        <link rel="prev" title="Configuration" href="daq_config.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pcdsdaq
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.20.g117096c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Running the DAQ</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Daq API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.daq.get_daq.html">pcdsdaq.daq.get_daq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.daq.register_daq.html">pcdsdaq.daq.register_daq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.daq.check_connect.html">pcdsdaq.daq.check_connect</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plans_api.html">Plans API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Daq API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/daq_api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="daq-api">
+<h1>Daq API<a class="headerlink" href="#daq-api" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pcdsdaq.daq.Daq">
+<em class="property">class </em><code class="descclassname">pcdsdaq.daq.</code><code class="descname">Daq</code><span class="sig-paren">(</span><em>platform=0</em>, <em>RE=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
+<dd><p>The LCLS1 DAQ as a flyer object. This uses the pydaq module to connect with
+a running daq instance, controlling it via socket commands. It can be used
+as a flyer in a bluesky plan to have the daq start at the beginning of the
+run and end at the end of the run. It has additional knobs for pausing
+and resuming acquisition. This can be done using three modes:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">on</span></code>:      Always take events during the run</li>
+<li><code class="docutils literal notranslate"><span class="pre">manual</span></code>:  Take events when <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> is used</li>
+<li><code class="docutils literal notranslate"><span class="pre">auto</span></code>:    Take events between <code class="docutils literal notranslate"><span class="pre">create</span></code> and <code class="docutils literal notranslate"><span class="pre">save</span></code> messages</li>
+</ul>
+<p>Unlike a normal bluesky flyer, this has no data to report to the RunEngine
+on the collect call. No data will pass into the python layer from the daq.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>platform</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Set platform to match the definition in the daq cnf file</li>
+<li><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set RE to the session’s main RE for RunEngine support</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.begin">
+<code class="descname">begin</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the daq and block until the daq has begun acquiring data.
+Optionally block until the daq has finished aquiring data.</p>
+<p>If omitted, any argument that is shared with <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>
+will fall back to the configured value.</p>
+<p>Internally, this calls <a class="reference internal" href="#pcdsdaq.daq.Daq.kickoff" title="pcdsdaq.daq.Daq.kickoff"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">kickoff</span></code></a> and manages its <code class="docutils literal notranslate"><span class="pre">Status</span></code> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Number events to take in the daq.</li>
+<li><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Time to run the daq in seconds, if <code class="docutils literal notranslate"><span class="pre">events</span></code> was not provided.</li>
+<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll run with the level 3 trigger. This means that
+if we specified a number of events, we will wait for that many
+“good” events as determined by the daq.</li>
+<li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
+stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
+<code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
+values each time begin is called. To provide a list, all devices
+must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
+<li><strong>wait</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, wait for the daq to finish aquiring data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.collect">
+<code class="descname">collect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>End the run as part of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code> interface, when the
+flying is done.</p>
+<p>As per the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface, this is a generator that is expected
+to output partial event documents. However, since we don’t have any
+events to report to python, this will be a generator that immediately
+ends.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the daq is freely running, this will <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a> the daq.
+Otherwise, we’ll simply collect the end_status object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>end_status</strong> – <code class="docutils literal notranslate"><span class="pre">Status</span></code> that will be marked as done when the DAQ has finished
+acquiring</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">Status</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.daq.Daq.config">
+<code class="descname">config</code><a class="headerlink" href="#pcdsdaq.daq.Daq.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current configuration, e.g. the last call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=False</em>, <em>use_l3t=False</em>, <em>controls=None</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the daq’s configuration for the next run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many events before
+stopping, unless we override in <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
+If not provided, we’ll use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument instead.</li>
+<li><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many seconds before
+stopping, unless we override in <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
+If not provided, and <code class="docutils literal notranslate"><span class="pre">events</span></code> was also not provided, an empty
+call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely.</li>
+<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
+to only count events that pass the level 3 trigger. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. Otherwise, we’ll run without
+recording. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
+stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
+<code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
+values each time begin is called. To provide a list, all devices
+must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
+<li><strong>mode</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – <p>This determines our run control during a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> scan with a
+<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> attached to a Daq object. There are three modes, with
+the <code class="docutils literal notranslate"><span class="pre">on</span></code> mode as the default:</p>
+<ul>
+<li><code class="docutils literal notranslate"><span class="pre">on</span></code>     (0): Take events always during runs</li>
+<li><code class="docutils literal notranslate"><span class="pre">manual</span></code> (1): Take events only during the <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> plan</li>
+<li><code class="docutils literal notranslate"><span class="pre">auto</span></code>   (2): Take events between <code class="docutils literal notranslate"><span class="pre">create</span></code> and <code class="docutils literal notranslate"><span class="pre">save</span></code></li>
+</ul>
+<p>If <code class="docutils literal notranslate"><span class="pre">mode</span></code> is omitted, we’ll use the previous value for <code class="docutils literal notranslate"><span class="pre">mode</span></code>.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>old, new</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">tuple</span></code> of <code class="docutils literal notranslate"><span class="pre">dict</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.daq.Daq.configured">
+<code class="descname">configured</code><a class="headerlink" href="#pcdsdaq.daq.Daq.configured" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is configured, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the live DAQ, giving full control to the Python process.</p>
+<p>To undo this, you may call <a class="reference internal" href="#pcdsdaq.daq.Daq.disconnect" title="pcdsdaq.daq.Daq.disconnect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">disconnect</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.daq.Daq.connected">
+<code class="descname">connected</code><a class="headerlink" href="#pcdsdaq.daq.Daq.connected" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is connected, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.describe_collect">
+<code class="descname">describe_collect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.describe_collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>As per the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface, this is how you interpret the null
+data from <a class="reference internal" href="#pcdsdaq.daq.Daq.collect" title="pcdsdaq.daq.Daq.collect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">collect</span></code></a>. There isn’t anything here, as nothing will be
+collected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.describe_configuration">
+<code class="descname">describe_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.describe_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for describing how to interpret the configured
+values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>config_desc</strong> – Mapping of config key to field metadata.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">dict</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.disconnect">
+<code class="descname">disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect from the live DAQ, giving control back to the GUI.</p>
+<p>This is the opposite of <a class="reference internal" href="#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.end_run">
+<code class="descname">end_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.end_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a>, then mark the run as finished.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.kickoff">
+<code class="descname">kickoff</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begin acquisition. This method is non-blocking.
+See <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> for a description of the parameters.</p>
+<p>This is part of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code> interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ready_status</strong> – <code class="docutils literal notranslate"><span class="pre">Status</span></code> that will be marked as done when the daq has begun.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">Status</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.pause">
+<code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for determining what to do when a plan is
+interrupted. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a>, but it will not call <a class="reference internal" href="#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">end_run</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.read_configuration">
+<code class="descname">read_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.read_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for checking the current configuration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>config</strong> – Mapping of config key to current configured value and timestamp
+when it was last set.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">dict</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.resume">
+<code class="descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for determining what to do when an interrupted
+plan is resumed. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.stage">
+<code class="descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stage" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for preparing a device for action.
+There is nothing to be done here, but we overwrite the default stage
+because we have no sub devices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>staged</strong> – list of devices staged</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.daq.Daq.state">
+<code class="descname">state</code><a class="headerlink" href="#pcdsdaq.daq.Daq.state" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>State as reported by the daq. Can be any of the following</em> –</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">Disconnected</span></code>: No active session in python</li>
+<li><code class="docutils literal notranslate"><span class="pre">Connected</span></code>:    Active session in python</li>
+<li><code class="docutils literal notranslate"><span class="pre">Configured</span></code>:   Connected, and the daq has been configured</li>
+<li><code class="docutils literal notranslate"><span class="pre">Open</span></code>:         We are in the middle of a run</li>
+<li><code class="docutils literal notranslate"><span class="pre">Running</span></code>:      We are collecting data in a run</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the current acquisition, ending it early.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.unstage">
+<code class="descname">unstage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.unstage" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for undoing the <a class="reference internal" href="#pcdsdaq.daq.Daq.stage" title="pcdsdaq.daq.Daq.stage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stage</span></code></a> routine.
+There is nothing to be done here, but we overwrite the default unstage
+because we have no sub devices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>unstaged</strong> – list of devices unstaged</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.wait">
+<code class="descname">wait</code><span class="sig-paren">(</span><em>timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pause the thread until the DAQ is done aquiring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) – Maximum time to wait in seconds.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pcdsdaq.daq.get_daq.html#pcdsdaq.daq.get_daq" title="pcdsdaq.daq.get_daq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_daq</span></code></a></td>
+<td>Called by other modules to get the registered <a class="reference internal" href="#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pcdsdaq.daq.register_daq.html#pcdsdaq.daq.register_daq" title="pcdsdaq.daq.register_daq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_daq</span></code></a></td>
+<td>Called by <a class="reference internal" href="#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> at the end of <code class="docutils literal notranslate"><span class="pre">__init__</span></code> to save our one daq instance as the real <a class="reference internal" href="#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pcdsdaq.daq.check_connect.html#pcdsdaq.daq.check_connect" title="pcdsdaq.daq.check_connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_connect</span></code></a></td>
+<td>Decorator to ensure that the <a class="reference internal" href="#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is connected before running a method.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="generated/pcdsdaq.daq.get_daq.html" class="btn btn-neutral float-right" title="pcdsdaq.daq.get_daq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="daq_config.html" class="btn btn-neutral" title="Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0+untagged.20.g117096c',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

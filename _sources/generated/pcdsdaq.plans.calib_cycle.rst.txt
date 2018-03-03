@@ -1,0 +1,6 @@
+pcdsdaq.plans.calib\_cycle
+==========================
+
+.. currentmodule:: pcdsdaq.plans
+
+.. autofunction:: calib_cycle
