@@ -11,8 +11,8 @@ resume a stopped run. `Daq.end_run` will end the run.
 I will step through the basic options for `Daq.begin` below. You can consult
 the full `api docs <./daq_api>` for more information.
 
-Creating a `Daq` object
------------------------
+Creating a Daq object
+---------------------
 First, I will set up the `Daq` class in simulated mode. In practice, the
 `Daq` class will be set up for you in the ``hutch-python`` configuration.
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; pcdsdaq 0+untagged.20.g117096c documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 0+untagged.22.gabcb144 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pcdsdaq 0+untagged.20.g117096c documentation" href="index.html"/>
+    <link rel="top" title="pcdsdaq 0+untagged.22.gabcb144 documentation" href="index.html"/>
         <link rel="next" title="Configuration" href="daq_config.html"/>
         <link rel="prev" title="pcdsdaq" href="index.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                0+untagged.20.g117096c
+                0+untagged.22.gabcb144
               </div>
             
           
@@ -93,7 +93,7 @@
               <p class="caption"><span class="caption-text">Running the DAQ</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object">Creating a <code class="docutils literal notranslate"><span class="pre">Daq</span></code> object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object">Creating a Daq object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-until-stop">Running Until Stop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-for-a-fixed-number-of-events">Running for a Fixed Number of Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#runing-for-a-fixed-time-duration">Runing for a Fixed Time Duration</a></li>
@@ -186,7 +186,7 @@ resume a stopped run. <a class="reference internal" href="daq_api.html#pcdsdaq.d
 <p>I will step through the basic options for <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> below. You can consult
 the full <a class="reference internal" href="daq_api.html"><span class="doc">api docs</span></a> for more information.</p>
 <div class="section" id="creating-a-daq-object">
-<h2>Creating a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> object<a class="headerlink" href="#creating-a-daq-object" title="Permalink to this headline">¶</a></h2>
+<h2>Creating a Daq object<a class="headerlink" href="#creating-a-daq-object" title="Permalink to this headline">¶</a></h2>
 <p>First, I will set up the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class in simulated mode. In practice, the
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class will be set up for you in the <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> configuration.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">time</span>
@@ -214,7 +214,7 @@ run the daq indefinitely, until we manually stop it.</p>
 <span class="gp">In [9]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [10]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0564188957214355</span>
+<span class="go">1.0572962760925293</span>
 </pre></div>
 </div>
 </div>
@@ -230,7 +230,7 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [13]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [14]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.008368730545044</span>
+<span class="go">2.0097973346710205</span>
 </pre></div>
 </div>
 </div>
@@ -243,7 +243,7 @@ We can pass the <code class="docutils literal notranslate"><span class="pre">wai
 <span class="gp">In [16]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="gp">In [17]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.5066885948181152</span>
+<span class="go">1.5069608688354492</span>
 </pre></div>
 </div>
 </div>
@@ -315,7 +315,7 @@ handled automatically with some of the <code class="docutils literal notranslate
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0+untagged.20.g117096c',
+            VERSION:'0+untagged.22.gabcb144',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

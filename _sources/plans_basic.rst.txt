@@ -7,8 +7,8 @@ This document will assume some familiarity with ``bluesky`` and how to use the
 I am going to introduce these through a series of examples. You can check the
 full `api docs <./plans_api>` for more information.
 
-Creating a `Daq` object with the ``RunEngine``
-----------------------------------------------
+Creating a Daq object with the RunEngine
+----------------------------------------
 The `Daq` needs to register a ``RunEngine`` instance for this to work. This
 must be the same ``RunEngine`` that will be running all of the plans.
 
