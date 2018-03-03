@@ -8,9 +8,9 @@ pcdsdaq
    :target: https://codecov.io/gh/pcdshub/pcdsdaq
    :alt: Code Coverage
 
-The pcdsdaq module provides a clean interface for user control of the LCLS1
-DAQ through the LCLS1 DAQ's Python c libraries, ``pydaq``, ``pycdb``, and
-``pyami``. It provides utilities for controlling DAQ runs and incorporating
+The pcdsdaq module provides a higher-level interface for user control of the
+LCLS1 DAQ through the LCLS1 DAQ's Python C libraries, ``pydaq``, ``pycdb``,
+and ``pyami``. It provides utilities for controlling DAQ runs and incorporating
 the DAQ into ``bluesky`` plans.
 
 Requirements

@@ -10,18 +10,22 @@ from .daq import get_daq
 
 def daq_wrapper(plan, **config):
     """
-    Run the plan with the daq. This must be applied outside the run_wrapper.
-    All configuration must be done either by supplying config kwargs to this
-    wrapper or by calling daq.configure before entering the daq_wrapper.
+    Run a plan with the `Daq`. This must be applied outside the
+    ``run_wrapper``. All configuration must be done either by supplying
+    config kwargs to this wrapper or by calling `Daq.configure` prior to
+    entering the `daq_wrapper`.
+
+    The `daq_decorator` is the same as the `daq_wrapper`, but it is meant to be
+    used as a function decorator.
 
     Parameters
     ----------
-    plan: plan
-        The plan to use the daq in
+    plan: ``plan``
+        The ``plan`` to use the daq in
 
     config: kwargs
-        See `daq.configure`. These keyword arguments will be passed directly to
-        the daq.
+        See `Daq.configure`. These keyword arguments will be passed directly to
+        the daq's configuration routine.
     """
     try:
         daq = get_daq()
@@ -43,29 +47,29 @@ def calib_cycle(events=None, duration=None, use_l3t=None, controls=None):
     Plan to put the daq through a single calib cycle. This will start the daq
     with the configured parameters and wait until completion. This will raise
     an exception if the daq is configured to run forever or if we aren't using
-    the daq_wrapper.
+    the `daq_wrapper`.
 
     All omitted arguments will fall back to the configured value.
 
     Parameters
     ----------
-    events: int, optional
+    events: ``int``, optional
         Number events to take in the daq.
 
-    duration: int, optional
-        Time to run the daq in seconds, if events was not provided.
+    duration: ``int``, optional
+        Time to run the daq in seconds, if ``events`` was not provided.
 
-    use_l3t: bool, optional
-        If True, we'll run with the level 3 trigger. This means that, if we
+    use_l3t: ``bool``, optional
+        If ``True``, we'll run with the level 3 trigger. This means that, if we
         specified a number of events, we will wait for that many "good"
         events as determined by the daq.
 
-    controls: dict{name: device} or list[device...], optional
+    controls: ``dict{name: device}`` or ``list[device...]``, optional
         If provided, values from these will make it into the DAQ data
-        stream as variables. We will check device.position and device.value
-        for quantities to use and we will update these values each time
-        begin is called. To provide a list, all devices must have a `name`
-        attribute.
+        stream as variables. We will check ``device.position`` and
+        ``device.value`` for quantities to use and we will update these values
+        each time begin is called. To provide a list, all devices must
+        have a ``name`` attribute.
     """
     def inner_calib_cycle():
         daq = get_daq()
@@ -89,34 +93,15 @@ def calib_cycle(events=None, duration=None, use_l3t=None, controls=None):
 
 def calib_at_step(events=None, duration=None, use_l3t=None, controls=None):
     """
-    Create a per_step hook suitable for plans such as bluesky.plans.scan that
-    moves the motors, reads the detectors, and puts the daq through one calib
-    cycle at each step. Arguments passed to this function will be passed
-    through to calib_cycle at each step.
+    Create a ``per_step`` hook suitable for built-in ``bluesky`` plans.
 
-    All omitted arguments will fall back to the configured value, except for
-    controls which will default to the detectors and motors in the plan, as
-    this information is available to the per_step hooks.
+    This hook will move the motors, read the detectors, and
+    put the daq through one calib cycle at each step. Arguments passed to
+    this function will be passed through to `calib_cycle` at each step.
 
-    Parameters
-    ----------
-    events: int, optional
-        Number events to take in the daq.
-
-    duration: int, optional
-        Time to run the daq in seconds, if events was not provided.
-
-    use_l3t: bool, optional
-        If True, we'll run with the level 3 trigger. This means that, if we
-        specified a number of events, we will wait for that many "good"
-        events as determined by the daq.
-
-    controls: dict{name: device} or list[device...], optional
-        If provided, values from these will make it into the DAQ data
-        stream as variables. We will check device.position and device.value
-        for quantities to use and we will update these values each time
-        begin is called. To provide a list, all devices must have a `name`
-        attribute.
+    The controls argument will default to the detectors and the motors in the
+    plan, because this information is available to the ``per_step`` hook. All
+    other parameters will act as in `calib_cycle`.
 
     Returns
     -------
