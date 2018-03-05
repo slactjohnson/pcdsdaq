@@ -1,8 +1,9 @@
 Using the DAQ with Bluesky
 ==========================
-Some utilities are provided for running the daq in sync with a bluesky plan.
-This document will assume some familiarity with ``bluesky`` and how to use the
-``RunEngine``, but does not require a full understanding of the internals.
+Some utilities are provided for running the daq in sync with a ``bluesky``
+``plan``. This document will assume some familiarity with ``bluesky`` and
+how to use the ``RunEngine``, but does not require a full understanding of
+the internals.
 
 I am going to introduce these through a series of examples. You can check the
 full `api docs <./plans_api>` for more information.
@@ -27,7 +28,7 @@ Basic Plan with Daq Support
 ---------------------------
 The simplest way to include the daq is to turn it on at the start of the plan
 and turn it off at the end of the plan. This is done using the default mode,
-``on``, which we'll configure explicitly in the ``daq_wrapper``.
+``on``, which we'll configure explicitly in the `daq_wrapper`.
 
 .. ipython:: python
 
@@ -77,7 +78,7 @@ configured with ``mode='manual'``.
 
 This plan will move ``motor`` from ``start`` to ``end`` in ``steps``
 evenly-spaced steps, checking readings from ``dets`` at each point
-and running a ``calib_cycle`` for ``events_per_point`` events.
+and running a `calib_cycle` for ``events_per_point`` events.
 
 .. ipython:: python
 
@@ -87,7 +88,7 @@ and running a ``calib_cycle`` for ``events_per_point`` events.
 
 Manual Calib Cycle
 ------------------
-You may also call calib_cycle directly:
+You may also call `calib_cycle` directly:
 
 .. ipython:: python
 
@@ -104,7 +105,7 @@ You may also call calib_cycle directly:
         return (yield from inner_daq_count())
 
 
-This plan will run ``calib_cycle`` ``num`` times for ``duration_per_point``
+This plan will run `calib_cycle` ``num`` times for ``duration_per_point``
 seconds each, waiting ``sleep_time`` seconds between cycles.
 
 .. ipython:: python
