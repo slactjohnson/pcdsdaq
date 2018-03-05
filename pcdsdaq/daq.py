@@ -5,7 +5,6 @@ import os
 import time
 import functools
 import threading
-import copy
 import enum
 import logging
 
@@ -608,7 +607,7 @@ class Daq(FlyerInterface):
             when it was last set.
         """
         logger.debug('Daq.read_configuration()')
-        return copy.copy(self._config_ts)
+        return self._config_ts.copy()
 
     def describe_configuration(self):
         """
