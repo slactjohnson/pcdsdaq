@@ -118,9 +118,9 @@ class Daq(FlyerInterface):
         The current configuration, e.g. the last call to `configure`
         """
         if self.configured:
-            return self._config
+            return self._config.copy()
         else:
-            return self.default_config
+            return self.default_config.copy()
 
     @property
     def state(self):
