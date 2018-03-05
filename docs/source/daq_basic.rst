@@ -33,7 +33,17 @@ Creating a Daq object
 First, I will set up the `Daq` class in simulated mode. In practice, the
 `Daq` class will be set up for you in the ``hutch-python`` configuration.
 
+.. code-block:: python
+
+    from pcdsdaq.daq import Daq
+    from pcdsdaq.sim import set_sim_mode
+
+    set_sim_mode(True)
+    daq = Daq(platform=4)  # Defined per hutch
+
+
 .. ipython:: python
+    :suppress:
 
     import time
     from pcdsdaq.daq import Daq
