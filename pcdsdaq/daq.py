@@ -46,18 +46,23 @@ def check_connect(f):
 
 class Daq(FlyerInterface):
     """
-    The LCLS1 DAQ as a flyer object. This uses the pydaq module to connect with
-    a running daq instance, controlling it via socket commands. It can be used
-    as a flyer in a bluesky plan to have the daq start at the beginning of the
-    run and end at the end of the run. It has additional knobs for pausing
-    and resuming acquisition. This can be done using three modes:
+    The LCLS1 daq as a ``Flyer`` object.
+
+    This uses the ``pydaq`` module to connect with a running daq instance,
+    controlling it via socket commands.
+    It can be used as a ``Flyer`` in a ``bluesky`` plan to have the daq start
+    at the beginning of the run and end at the end of the run.
+
+    It has additional knobs for pausing and resuming acquisition during a
+    plan. This can be done by calling `configure` with the ``mode`` parameter:
 
     - ``on``:      Always take events during the run
     - ``manual``:  Take events when `calib_cycle` is used
     - ``auto``:    Take events between ``create`` and ``save`` messages
 
-    Unlike a normal bluesky flyer, this has no data to report to the RunEngine
-    on the collect call. No data will pass into the python layer from the daq.
+    Unlike a normal ``bluesky`` ``Flyer``, this has no data to report to the
+    ``RunEngine`` on the ``collect`` call. No data will pass into the python
+    layer from the daq.
 
     Parameters
     ----------
@@ -65,7 +70,7 @@ class Daq(FlyerInterface):
         Set platform to match the definition in the daq cnf file
 
     RE: ``RunEngine``, optional
-        Set RE to the session's main RE for RunEngine support
+        Set ``RE`` to the session's main ``RunEngine``
     """
     _state_enum = enum.Enum('PydaqState',
                             'Disconnected Connected Configured Open Running',
@@ -372,7 +377,7 @@ class Daq(FlyerInterface):
         return {}
 
     @check_connect
-    def configure(self, events=None, duration=None, record=False,
+    def configure(self, events=None, duration=None, record=None,
                   use_l3t=False, controls=None, mode=None):
         """
         Changes the daq's configuration for the next run.
@@ -397,7 +402,8 @@ class Daq(FlyerInterface):
 
         record: ``bool``, optional
             If ``True``, we'll record the data. Otherwise, we'll run without
-            recording. Defaults to ``False``.
+            recording. Defaults to ``False``, or the last set value for
+            ``record``.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
@@ -432,6 +438,9 @@ class Daq(FlyerInterface):
 
         old = self.read_configuration()
 
+        if record is None:
+            record = self.config['record']
+
         if mode is None:
             mode = self.config['mode']
         if not isinstance(mode, self._mode_enum):
@@ -464,6 +473,23 @@ class Daq(FlyerInterface):
             raise RuntimeError(msg) from exc
         new = self.read_configuration()
         return old, new
+
+    def record(self, record=True):
+        """
+        Configure the daq to record data, or to stop recording data.
+
+        This works by calling `configure` with ``record=True`` and is provided
+        as a convenience method to avoid the large return statement from
+        `configure` that is mandated by ``bluesky``.
+
+        Parameters
+        ----------
+        record: ``bool``
+            If ``True``, we'll `configure` the daq to save the data to disk. If
+            ``False``, we'll stop recording data to disk. The default is
+            ``True``.
+        """
+        self.configure(record=record)
 
     def _update_config_ts(self):
         """
