@@ -257,3 +257,5 @@ def test_call_everything_else(daq, sig):
     daq.configure(controls=dict(sig=sig))
     daq.stage()
     daq.unstage()
+    daq_module.pydaq = None
+    daq_module.Daq()
