@@ -258,4 +258,5 @@ def test_call_everything_else(daq, sig):
     daq.stage()
     daq.unstage()
     daq_module.pydaq = None
-    daq_module.Daq()
+    with pytest.raises(ImportError):
+        daq_module.Daq()
