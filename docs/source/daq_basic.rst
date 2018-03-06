@@ -110,19 +110,19 @@ We can pass ``wait=True`` to skip the `Daq.wait` call.
 
 Recording Data
 --------------
-You can call `Daq.record` to record data. This is fairly simple:
+You can set `Daq.record` to ``True`` to record data. This is fairly simple:
 
 .. ipython:: python
 
-    daq.record()
+    daq.record = True
 
 
 After this call, future calls to `Daq.begin` will record data to disk.
-You can undo this by simply calling:
+You can undo this by simply setting:
 
 .. ipython:: python
 
-    daq.record(False)
+    daq.record = False
 
 
 Advanced Options

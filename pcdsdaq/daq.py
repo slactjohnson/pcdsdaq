@@ -87,6 +87,7 @@ class Daq(FlyerInterface):
         super().__init__()
         self._control = None
         self._config = None
+        self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
         self._plat = platform
@@ -270,7 +271,7 @@ class Daq(FlyerInterface):
         logger.debug('Daq.kickoff()')
 
         self._check_duration(duration)
-        if not self.configured:
+        if self._desired_config or not self.configured:
             self.configure()
 
         def start_thread(control, status, events, duration, use_l3t, controls):
@@ -437,6 +438,8 @@ class Daq(FlyerInterface):
 
         old = self.read_configuration()
 
+        record = self._desired_config.get('record', record)
+
         if record is None:
             record = self.config['record']
 
@@ -471,24 +474,26 @@ class Daq(FlyerInterface):
             logger.debug(msg, exc_info=True)
             raise RuntimeError(msg) from exc
         new = self.read_configuration()
+        self._desired_config = {}
         return old, new
 
-    def record(self, record=True):
+    @property
+    def record(self):
         """
-        Configure the daq to record data, or to stop recording data.
+        If ``True``, we'll configure the daq to record data. If ``False``, we
+        will configure the daq to not record data.
 
-        This works by calling `configure` with ``record=True`` and is provided
-        as a convenience method to avoid the large return statement from
-        `configure` that is mandated by ``bluesky``.
-
-        Parameters
-        ----------
-        record: ``bool``
-            If ``True``, we'll `configure` the daq to save the data to disk. If
-            ``False``, we'll stop recording data to disk. The default is
-            ``True``.
+        Setting this is the equivalent of scheduling a `configure` call to be
+        executed later, e.g. ``configure(record=True)``
         """
-        self.configure(record=record)
+        try:
+            return self._desired_config['record']
+        except KeyError:
+            return self.config['record']
+
+    @record.setter
+    def record(self, record):
+        self._desired_config['record'] = record
 
     def _update_config_ts(self):
         """
