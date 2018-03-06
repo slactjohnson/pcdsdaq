@@ -7,16 +7,13 @@ import functools
 import threading
 import enum
 import logging
+from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
 from ophyd.flyers import FlyerInterface
 
 logger = logging.getLogger(__name__)
-
-try:
-    import pydaq
-except ImportError:
-    logger.warning('pydaq not in environment. Will not be able to use DAQ!')
+pydaq = None
 
 # Wait up to this many seconds for daq to be ready for a begin call
 BEGIN_TIMEOUT = 2
@@ -84,6 +81,8 @@ class Daq(FlyerInterface):
     name = 'daq'
 
     def __init__(self, platform=0, RE=None):
+        if pydaq is None:
+            globals()['pydaq'] = import_module('pydaq')
         super().__init__()
         self._control = None
         self._config = None
