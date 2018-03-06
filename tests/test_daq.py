@@ -83,6 +83,31 @@ def test_configure(daq, sig):
         prev_config = daq.read_configuration()
 
 
+def test_record(daq):
+    """
+    Make sure the record convenience property works.
+    """
+    logger.debug('test_record')
+
+    daq.configure(record=True)
+    assert daq.record
+    daq.configure(record=False)
+    assert not daq.record
+
+    daq.record = True
+    assert daq.record
+    daq.configure()
+    assert daq.config['record']
+    assert daq.record
+
+    daq.record = False
+    assert not daq.record
+    daq.begin()
+    assert not daq.config['record']
+    assert not daq.record
+    daq.end_run()
+
+
 @pytest.mark.timeout(10)
 def test_basic_run(daq, sig):
     """

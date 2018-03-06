@@ -5,7 +5,6 @@ import os
 import time
 import functools
 import threading
-import copy
 import enum
 import logging
 
@@ -46,18 +45,23 @@ def check_connect(f):
 
 class Daq(FlyerInterface):
     """
-    The LCLS1 DAQ as a flyer object. This uses the pydaq module to connect with
-    a running daq instance, controlling it via socket commands. It can be used
-    as a flyer in a bluesky plan to have the daq start at the beginning of the
-    run and end at the end of the run. It has additional knobs for pausing
-    and resuming acquisition. This can be done using three modes:
+    The LCLS1 daq as a ``Flyer`` object.
+
+    This uses the ``pydaq`` module to connect with a running daq instance,
+    controlling it via socket commands.
+    It can be used as a ``Flyer`` in a ``bluesky`` plan to have the daq start
+    at the beginning of the run and end at the end of the run.
+
+    It has additional knobs for pausing and resuming acquisition during a
+    plan. This can be done by calling `configure` with the ``mode`` parameter:
 
     - ``on``:      Always take events during the run
     - ``manual``:  Take events when `calib_cycle` is used
     - ``auto``:    Take events between ``create`` and ``save`` messages
 
-    Unlike a normal bluesky flyer, this has no data to report to the RunEngine
-    on the collect call. No data will pass into the python layer from the daq.
+    Unlike a normal ``bluesky`` ``Flyer``, this has no data to report to the
+    ``RunEngine`` on the ``collect`` call. No data will pass into the python
+    layer from the daq.
 
     Parameters
     ----------
@@ -65,7 +69,7 @@ class Daq(FlyerInterface):
         Set platform to match the definition in the daq cnf file
 
     RE: ``RunEngine``, optional
-        Set RE to the session's main RE for RunEngine support
+        Set ``RE`` to the session's main ``RunEngine``
     """
     _state_enum = enum.Enum('PydaqState',
                             'Disconnected Connected Configured Open Running',
@@ -83,6 +87,7 @@ class Daq(FlyerInterface):
         super().__init__()
         self._control = None
         self._config = None
+        self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
         self._plat = platform
@@ -113,9 +118,9 @@ class Daq(FlyerInterface):
         The current configuration, e.g. the last call to `configure`
         """
         if self.configured:
-            return self._config
+            return self._config.copy()
         else:
-            return self.default_config
+            return self.default_config.copy()
 
     @property
     def state(self):
@@ -266,7 +271,7 @@ class Daq(FlyerInterface):
         logger.debug('Daq.kickoff()')
 
         self._check_duration(duration)
-        if not self.configured:
+        if self._desired_config or not self.configured:
             self.configure()
 
         def start_thread(control, status, events, duration, use_l3t, controls):
@@ -372,7 +377,7 @@ class Daq(FlyerInterface):
         return {}
 
     @check_connect
-    def configure(self, events=None, duration=None, record=False,
+    def configure(self, events=None, duration=None, record=None,
                   use_l3t=False, controls=None, mode=None):
         """
         Changes the daq's configuration for the next run.
@@ -397,7 +402,8 @@ class Daq(FlyerInterface):
 
         record: ``bool``, optional
             If ``True``, we'll record the data. Otherwise, we'll run without
-            recording. Defaults to ``False``.
+            recording. Defaults to ``False``, or the last set value for
+            ``record``.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
@@ -432,6 +438,11 @@ class Daq(FlyerInterface):
 
         old = self.read_configuration()
 
+        record = self._desired_config.get('record', record)
+
+        if record is None:
+            record = self.config['record']
+
         if mode is None:
             mode = self.config['mode']
         if not isinstance(mode, self._mode_enum):
@@ -463,7 +474,26 @@ class Daq(FlyerInterface):
             logger.debug(msg, exc_info=True)
             raise RuntimeError(msg) from exc
         new = self.read_configuration()
+        self._desired_config = {}
         return old, new
+
+    @property
+    def record(self):
+        """
+        If ``True``, we'll configure the daq to record data. If ``False``, we
+        will configure the daq to not record data.
+
+        Setting this is the equivalent of scheduling a `configure` call to be
+        executed later, e.g. ``configure(record=True)``
+        """
+        try:
+            return self._desired_config['record']
+        except KeyError:
+            return self.config['record']
+
+    @record.setter
+    def record(self, record):
+        self._desired_config['record'] = record
 
     def _update_config_ts(self):
         """
@@ -582,7 +612,7 @@ class Daq(FlyerInterface):
             when it was last set.
         """
         logger.debug('Daq.read_configuration()')
-        return copy.copy(self._config_ts)
+        return self._config_ts.copy()
 
     def describe_configuration(self):
         """

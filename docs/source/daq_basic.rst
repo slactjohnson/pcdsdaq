@@ -8,6 +8,23 @@ and start running the daq all in one call. `Daq.stop` can be used to stop
 acquiring data without ending a run. `Daq.begin` can be called again to
 resume a stopped run. `Daq.end_run` will end the run.
 
+`Daq.state` can be used to inspect what the daq is currently doing. It will
+return one of the following possibilities:
+
++------------------+------------------------------------------------+
+| State            | Meaning                                        |
++==================+================================================+
+| ``Disconnected`` | We are not controlling the daq                 |
++------------------+------------------------------------------------+
+| ``Connected``    | We are controlling the daq                     |
++------------------+------------------------------------------------+
+| ``Configured``   | ``Connected``, and `configure` has been called |
++------------------+------------------------------------------------+
+| ``Open``         | ``Configured``, and we are in a run            |
++------------------+------------------------------------------------+
+| ``Running``      | ``Open``, and we are collecting data           |
++------------------+------------------------------------------------+
+
 I will step through the basic options for `Daq.begin` below. You can consult
 the full `api docs <./daq_api>` for more information.
 
@@ -16,7 +33,17 @@ Creating a Daq object
 First, I will set up the `Daq` class in simulated mode. In practice, the
 `Daq` class will be set up for you in the ``hutch-python`` configuration.
 
+.. code-block:: python
+
+    from pcdsdaq.daq import Daq
+    from pcdsdaq.sim import set_sim_mode
+
+    set_sim_mode(True)
+    daq = Daq(platform=4)  # Defined per hutch
+
+
 .. ipython:: python
+    :suppress:
 
     import time
     from pcdsdaq.daq import Daq
@@ -30,14 +57,20 @@ Running Until Stop
 ------------------
 Calling `Daq.begin` with no arguments in the default configuration will
 run the daq indefinitely, until we manually stop it.
+Here I check `Daq.state` to verify that we've started running the daq.
 
 .. ipython:: python
 
+    daq.state
     start = time.time()
     daq.begin()
+    daq.state
     time.sleep(1)
     daq.stop()
     print(time.time() - start)
+    daq.state
+    daq.end_run()
+    daq.state
 
 
 Running for a Fixed Number of Events
@@ -48,37 +81,48 @@ Optionally, we can call `Daq.wait` to pause until acquisition is complete.
 
 .. ipython:: python
 
+    daq.state
     start = time.time()
     daq.begin(events=240)  # 120Hz
+    daq.state
     daq.wait()
     print(time.time() - start)
+    daq.state
+    daq.end_run()
+    daq.state
 
 
 Runing for a Fixed Time Duration
 --------------------------------
 Use the ``duration`` argument to specify duration in seconds.
-We can pass the ``wait`` argument to skip the `Daq.wait` call.
+We can pass ``wait=True`` to skip the `Daq.wait` call.
 
 .. ipython:: python
 
+    daq.state
     start = time.time()
     daq.begin(duration=1.5, wait=True)
     print(time.time() - start)
+    daq.state
+    daq.end_run()
+    daq.state
 
 
 Recording Data
 --------------
-You must call `Daq.configure` to record data. This is fairly simple:
+You can set `Daq.record` to ``True`` to record data. This is fairly simple:
 
 .. ipython:: python
-    daq.configure(record=True)
+
+    daq.record = True
 
 
 After this call, future calls to `Daq.begin` will record data to disk.
-You can undo this the same way:
+You can undo this by simply setting:
 
 .. ipython:: python
-    daq.configure(record=False)
+
+    daq.record = False
 
 
 Advanced Options
