@@ -145,23 +145,28 @@ def test_begin_record_arg(daq):
     daq.configure(record=False)
     assert not daq.record
     daq.begin(events=1, wait=True)
+    daq.end_run()
     assert not daq.config['record']
     assert not daq._desired_config
     # Did we record?
     daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
     assert daq.config['record']
     assert not daq._desired_config['record']
     # 2 in a row: did we record?
     daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
     assert daq.config['record']
     assert not daq._desired_config['record']
     # Remove record arg: did we not record?
     daq.begin(events=1, wait=True)
+    daq.end_run()
     assert not daq.config['record']
     assert not daq._desired_config
     # Configure for record=True, then also pass to begin
     daq.record = True
     daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
     assert daq.config['record']
     assert daq._desired_config['record']
 
@@ -169,19 +174,24 @@ def test_begin_record_arg(daq):
     daq.configure(record=True)
     assert daq.record
     daq.begin(events=1, wait=True)
+    daq.end_run()
     assert daq.config['record']
     assert daq._desired_config
     daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
     assert not daq.config['record']
     assert daq._desired_config['record']
     daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
     assert not daq.config['record']
     assert daq._desired_config['record']
     daq.begin(events=1, wait=True)
+    daq.end_run()
     assert daq.config['record']
     assert daq._desired_config
     daq.record = False
     daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
     assert not daq.config['record']
     assert not daq._desired_config['record']
 
