@@ -272,6 +272,10 @@ class Daq(FlyerInterface):
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
 
+        This method does not supply arguments for configuration parameters, it
+        supplies arguments directly to ``pydaq.Control.begin``. It will
+        configure before running if there are queued configuration changes.
+
         This is part of the ``bluesky`` ``Flyer`` interface.
 
         Returns
