@@ -193,8 +193,8 @@ class Daq(FlyerInterface):
             status = self._get_end_status()
             status_wait(status, timeout=timeout)
 
-    def begin(self, events=None, duration=None, use_l3t=None, controls=None,
-              wait=False):
+    def begin(self, events=None, duration=None, record=None, use_l3t=None,
+              controls=None, wait=False):
         """
         Start the daq and block until the daq has begun acquiring data.
         Optionally block until the daq has finished aquiring data.
@@ -212,6 +212,10 @@ class Daq(FlyerInterface):
         duration: ``int``, optional
             Time to run the daq in seconds, if ``events`` was not provided.
 
+        record: ``bool``, optional
+            If ``True``, we'll configure the daq to record data before this
+            run.
+
         use_l3t: ``bool``, optional
             If ``True``, we'll run with the level 3 trigger. This means that
             if we specified a number of events, we will wait for that many
@@ -227,10 +231,18 @@ class Daq(FlyerInterface):
         wait: bool, optional
             If ``True``, wait for the daq to finish aquiring data.
         """
-        logger.debug('Daq.begin(events=%s, duration=%s, wait=%s)',
-                     events, duration, wait)
+        logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
+                      'use_l3t=%s, controls=%s, wait=%s)',
+                     events, duration, record, use_l3t, controls, wait))
+        if record is not None and record != self.record:
+            old_record = self.record
+            self.record = record
         begin_status = self.kickoff(events=events, duration=duration,
                                     use_l3t=use_l3t, controls=controls)
+        try:
+            self.record = old_record
+        except NameError:
+            pass
         status_wait(begin_status, timeout=BEGIN_TIMEOUT)
         if wait:
             self.wait()
@@ -394,15 +406,15 @@ class Daq(FlyerInterface):
             If not provided, and ``events`` was also not provided, an empty
             call like ``begin()`` will run indefinitely.
 
-        use_l3t: ``bool``, optional
-            If ``True``, an ``events`` argument to begin will be reinterpreted
-            to only count events that pass the level 3 trigger. Defaults to
-            ``False``.
-
         record: ``bool``, optional
             If ``True``, we'll record the data. Otherwise, we'll run without
             recording. Defaults to ``False``, or the last set value for
             ``record``.
+
+        use_l3t: ``bool``, optional
+            If ``True``, an ``events`` argument to begin will be reinterpreted
+            to only count events that pass the level 3 trigger. Defaults to
+            ``False``.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
