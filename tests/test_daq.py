@@ -134,6 +134,58 @@ def test_basic_run(daq, sig):
     assert dt < BEGIN_TIMEOUT + 1
 
 
+@pytest.mark.timeout(10)
+def test_begin_record_arg(daq):
+    """
+    We expect that the record argument in begin overrides the daq's record
+    configuration for the run.
+    """
+    logger.debug('test_begin_record_arg')
+    # Sanity checks
+    daq.configure(record=False)
+    assert not daq.record
+    daq.begin(events=1, wait=True)
+    assert not daq.config['record']
+    assert not daq._desired_config
+    # Did we record?
+    daq.begin(events=1, wait=True, record=True)
+    assert daq.config['record']
+    assert not daq._desired_config['record']
+    # 2 in a row: did we record?
+    daq.begin(events=1, wait=True, record=True)
+    assert daq.config['record']
+    assert not daq._desired_config['record']
+    # Remove record arg: did we not record?
+    daq.begin(events=1, wait=True)
+    assert not daq.config['record']
+    assert not daq._desired_config
+    # Configure for record=True, then also pass to begin
+    daq.record = True
+    daq.begin(events=1, wait=True, record=True)
+    assert daq.config['record']
+    assert daq._desired_config['record']
+
+    # Same tests, but swap all the booleans
+    daq.configure(record=True)
+    assert daq.record
+    daq.begin(events=1, wait=True)
+    assert daq.config['record']
+    assert daq._desired_config
+    daq.begin(events=1, wait=True, record=False)
+    assert not daq.config['record']
+    assert daq._desired_config['record']
+    daq.begin(events=1, wait=True, record=False)
+    assert not daq.config['record']
+    assert daq._desired_config['record']
+    daq.begin(events=1, wait=True)
+    assert daq.config['record']
+    assert daq._desired_config
+    daq.record = False
+    daq.begin(events=1, wait=True, record=False)
+    assert not daq.config['record']
+    assert not daq._desired_config['record']
+
+
 @pytest.mark.timeout(3)
 def test_stop_run(daq):
     """
