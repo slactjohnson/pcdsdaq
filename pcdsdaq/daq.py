@@ -232,8 +232,8 @@ class Daq(FlyerInterface):
             If ``True``, wait for the daq to finish aquiring data.
         """
         logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
-                      'use_l3t=%s, controls=%s, wait=%s)',
-                     events, duration, record, use_l3t, controls, wait))
+                      'use_l3t=%s, controls=%s, wait=%s)'),
+                     events, duration, record, use_l3t, controls, wait)
         if record is not None and record != self.record:
             old_record = self.record
             self.record = record
