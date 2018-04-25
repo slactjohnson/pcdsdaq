@@ -168,7 +168,7 @@ def test_begin_record_arg(daq):
     daq.begin(events=1, wait=True, record=True)
     daq.end_run()
     assert daq.config['record']
-    assert daq._desired_config['record']
+    assert not daq._desired_config
 
     # Same tests, but swap all the booleans
     daq.configure(record=True)
@@ -176,7 +176,7 @@ def test_begin_record_arg(daq):
     daq.begin(events=1, wait=True)
     daq.end_run()
     assert daq.config['record']
-    assert daq._desired_config
+    assert not daq._desired_config
     daq.begin(events=1, wait=True, record=False)
     daq.end_run()
     assert not daq.config['record']
@@ -188,12 +188,12 @@ def test_begin_record_arg(daq):
     daq.begin(events=1, wait=True)
     daq.end_run()
     assert daq.config['record']
-    assert daq._desired_config
+    assert not daq._desired_config
     daq.record = False
     daq.begin(events=1, wait=True, record=False)
     daq.end_run()
     assert not daq.config['record']
-    assert not daq._desired_config['record']
+    assert not daq._desired_config
 
 
 @pytest.mark.timeout(3)
