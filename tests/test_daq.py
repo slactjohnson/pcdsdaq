@@ -5,7 +5,7 @@ import pytest
 from ophyd.status import wait as status_wait
 
 from pcdsdaq import daq as daq_module
-from pcdsdaq.daq import BEGIN_TIMEOUT
+from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
 
 logger = logging.getLogger(__name__)
 
@@ -305,8 +305,12 @@ def test_bad_stuff(daq, RE):
 
     # Configure during a run
     daq.begin(duration=1)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(StateTransitionError):
         daq.configure()
+
+    with pytest.raises(StateTransitionError):
+        daq.begin(record=True)
+
     daq.end_run()  # Prevent thread stalling
 
 
