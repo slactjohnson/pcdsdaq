@@ -290,8 +290,9 @@ class Daq(FlyerInterface):
             try:
                 self.configure()
             except StateTransitionError:
-                err = 'Illegal reconfigure with {} during an open run'
-                err = err.format(self._desired_config)
+                err = ('Illegal reconfigure with {} during an open run. End '
+                       'the current run with daq.end_run() before running '
+                       'with a new configuration'.format(self._desired_config))
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
