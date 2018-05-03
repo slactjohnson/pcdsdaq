@@ -228,7 +228,7 @@ class Daq(FlyerInterface):
             values each time begin is called. To provide a list, all devices
             must have a ``name`` attribute.
 
-        wait: bool, optional
+        wait: ``bool``, optional
             If ``True``, wait for the daq to finish aquiring data.
         """
         logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
@@ -287,7 +287,13 @@ class Daq(FlyerInterface):
 
         self._check_duration(duration)
         if self._desired_config or not self.configured:
-            self.configure()
+            try:
+                self.configure()
+            except StateTransitionError:
+                err = 'Illegal reconfigure with {} during an open run'
+                err = err.format(self._desired_config)
+                logger.debug(err, exc_info=True)
+                raise StateTransitionError(err)
 
         def start_thread(control, status, events, duration, use_l3t, controls):
             tmo = BEGIN_TIMEOUT
@@ -447,7 +453,8 @@ class Daq(FlyerInterface):
                      events, duration, record, use_l3t, controls, mode)
         state = self.state
         if state not in ('Connected', 'Configured'):
-            raise RuntimeError('Cannot configure from state {}!'.format(state))
+            err = 'Cannot configure from state {}!'.format(state)
+            raise StateTransitionError(err)
 
         self._check_duration(duration)
 
@@ -765,6 +772,10 @@ class Daq(FlyerInterface):
             self.disconnect()
         except Exception:
             pass
+
+
+class StateTransitionError(Exception):
+    pass
 
 
 _daq_instance = None
