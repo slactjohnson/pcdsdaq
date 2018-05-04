@@ -5,7 +5,7 @@ import pytest
 from ophyd.status import wait as status_wait
 
 from pcdsdaq import daq as daq_module
-from pcdsdaq.daq import BEGIN_TIMEOUT
+from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +134,68 @@ def test_basic_run(daq, sig):
     assert dt < BEGIN_TIMEOUT + 1
 
 
+@pytest.mark.timeout(10)
+def test_begin_record_arg(daq):
+    """
+    We expect that the record argument in begin overrides the daq's record
+    configuration for the run.
+    """
+    logger.debug('test_begin_record_arg')
+    # Sanity checks
+    daq.configure(record=False)
+    assert not daq.record
+    daq.begin(events=1, wait=True)
+    daq.end_run()
+    assert not daq.config['record']
+    assert not daq._desired_config
+    # Did we record?
+    daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
+    assert daq.config['record']
+    assert not daq._desired_config['record']
+    # 2 in a row: did we record?
+    daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
+    assert daq.config['record']
+    assert not daq._desired_config['record']
+    # Remove record arg: did we not record?
+    daq.begin(events=1, wait=True)
+    daq.end_run()
+    assert not daq.config['record']
+    assert not daq._desired_config
+    # Configure for record=True, then also pass to begin
+    daq.record = True
+    daq.begin(events=1, wait=True, record=True)
+    daq.end_run()
+    assert daq.config['record']
+    assert not daq._desired_config
+
+    # Same tests, but swap all the booleans
+    daq.configure(record=True)
+    assert daq.record
+    daq.begin(events=1, wait=True)
+    daq.end_run()
+    assert daq.config['record']
+    assert not daq._desired_config
+    daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
+    assert not daq.config['record']
+    assert daq._desired_config['record']
+    daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
+    assert not daq.config['record']
+    assert daq._desired_config['record']
+    daq.begin(events=1, wait=True)
+    daq.end_run()
+    assert daq.config['record']
+    assert not daq._desired_config
+    daq.record = False
+    daq.begin(events=1, wait=True, record=False)
+    daq.end_run()
+    assert not daq.config['record']
+    assert not daq._desired_config
+
+
 @pytest.mark.timeout(3)
 def test_stop_run(daq):
     """
@@ -243,8 +305,12 @@ def test_bad_stuff(daq, RE):
 
     # Configure during a run
     daq.begin(duration=1)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(StateTransitionError):
         daq.configure()
+
+    with pytest.raises(StateTransitionError):
+        daq.begin(record=True)
+
     daq.end_run()  # Prevent thread stalling
 
 
