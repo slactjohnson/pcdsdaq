@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 1.1.0+3.gc15bb13 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 1.1.0+13.g2af7668 documentation</title>
   
 
   
@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pcdsdaq 1.1.0+3.gc15bb13 documentation" href="index.html"/>
-        <link rel="next" title="pcdsdaq.daq.get_daq" href="generated/pcdsdaq.daq.get_daq.html"/>
-        <link rel="prev" title="Configuration" href="daq_config.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pcdsdaq.daq.get_daq" href="generated/pcdsdaq.daq.get_daq.html" />
+    <link rel="prev" title="Configuration" href="daq_config.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +59,7 @@
             
             
               <div class="version">
-                1.1.0+3.gc15bb13
+                1.1.0+13.g2af7668
               </div>
             
           
@@ -120,7 +113,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">pcdsdaq</a>
@@ -128,9 +121,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -206,7 +200,7 @@ layer from the daq.</p>
 </table>
 <dl class="method">
 <dt id="pcdsdaq.daq.Daq.begin">
-<code class="descname">begin</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
+<code class="descname">begin</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the daq and block until the daq has begun acquiring data.
 Optionally block until the daq has finished aquiring data.</p>
 <p>If omitted, any argument that is shared with <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>
@@ -219,6 +213,8 @@ will fall back to the configured value.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Number events to take in the daq.</li>
 <li><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Time to run the daq in seconds, if <code class="docutils literal notranslate"><span class="pre">events</span></code> was not provided.</li>
+<li><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll configure the daq to record data before this
+run.</li>
 <li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll run with the level 3 trigger. This means that
 if we specified a number of events, we will wait for that many
 “good” events as determined by the daq.</li>
@@ -227,7 +223,7 @@ stream as variables. We will check <code class="docutils literal notranslate"><s
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
 values each time begin is called. To provide a list, all devices
 must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
-<li><strong>wait</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, wait for the daq to finish aquiring data.</li>
+<li><strong>wait</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, wait for the daq to finish aquiring data.</li>
 </ul>
 </td>
 </tr>
@@ -286,12 +282,12 @@ If not provided, we’ll use the <code class="docutils literal notranslate"><spa
 stopping, unless we override in <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
 If not provided, and <code class="docutils literal notranslate"><span class="pre">events</span></code> was also not provided, an empty
 call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely.</li>
-<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
-to only count events that pass the level 3 trigger. Defaults to
-<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. Otherwise, we’ll run without
 recording. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, or the last set value for
 <code class="docutils literal notranslate"><span class="pre">record</span></code>.</li>
+<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
+to only count events that pass the level 3 trigger. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
 stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
@@ -382,6 +378,9 @@ values</p>
 <code class="descname">kickoff</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Begin acquisition. This method is non-blocking.
 See <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> for a description of the parameters.</p>
+<p>This method does not supply arguments for configuration parameters, it
+supplies arguments directly to <code class="docutils literal notranslate"><span class="pre">pydaq.Control.begin</span></code>. It will
+configure before running if there are queued configuration changes.</p>
 <p>This is part of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code> interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -527,9 +526,7 @@ because we have no sub devices.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -551,7 +548,7 @@ because we have no sub devices.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -569,7 +566,8 @@ because we have no sub devices.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.1.0+3.gc15bb13',
+            VERSION:'1.1.0+13.g2af7668',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -587,14 +585,13 @@ because we have no sub devices.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

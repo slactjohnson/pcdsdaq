@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; pcdsdaq 1.1.0+3.gc15bb13 documentation</title>
+  <title>Configuration &mdash; pcdsdaq 1.1.0+13.g2af7668 documentation</title>
   
 
   
@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pcdsdaq 1.1.0+3.gc15bb13 documentation" href="index.html"/>
-        <link rel="next" title="Daq API" href="daq_api.html"/>
-        <link rel="prev" title="Basic Usage" href="daq_basic.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Daq API" href="daq_api.html" />
+    <link rel="prev" title="Basic Usage" href="daq_basic.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +59,7 @@
             
             
               <div class="version">
-                1.1.0+3.gc15bb13
+                1.1.0+13.g2af7668
               </div>
             
           
@@ -115,7 +108,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">pcdsdaq</a>
@@ -123,9 +116,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -210,12 +204,12 @@ If not provided, we’ll use the <code class="docutils literal notranslate"><spa
 stopping, unless we override in <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
 If not provided, and <code class="docutils literal notranslate"><span class="pre">events</span></code> was also not provided, an empty
 call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely.</li>
-<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
-to only count events that pass the level 3 trigger. Defaults to
-<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. Otherwise, we’ll run without
 recording. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, or the last set value for
 <code class="docutils literal notranslate"><span class="pre">record</span></code>.</li>
+<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
+to only count events that pass the level 3 trigger. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
 stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
@@ -248,9 +242,7 @@ the <code class="docutils literal notranslate"><span class="pre">on</span></code
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -272,7 +264,7 @@ the <code class="docutils literal notranslate"><span class="pre">on</span></code
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -290,7 +282,8 @@ the <code class="docutils literal notranslate"><span class="pre">on</span></code
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.1.0+3.gc15bb13',
+            VERSION:'1.1.0+13.g2af7668',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -308,14 +301,13 @@ the <code class="docutils literal notranslate"><span class="pre">on</span></code
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
