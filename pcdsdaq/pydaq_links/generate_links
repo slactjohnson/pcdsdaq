@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+DAQ_ROOT="/reg/g/pcds/dist/pds"
+for hutch in current amo sxr xpp xcs mfx cxi mec
+do
+  for os in x86_64-linux x86_64-rhel7
+  do
+    my_dir="links/${hutch}/${os}"
+    mkdir -p "${my_dir}"
+    for module in pydaq pycdb
+    do
+      suffix="current/build/pdsapp/lib/${os}/${module}.so.3"
+      link_name="${my_dir}/${module}.so"
+      if [ "${hutch}" = "current" ]; then
+        ln -s "${DAQ_ROOT}/${suffix}" "${link_name}"
+      else
+        ln -s "${DAQ_ROOT}/${hutch}/${suffix}" "${link_name}"
+      fi
+    done
+  done
+done
