@@ -10,16 +10,14 @@ else
 fi
 
 OS_VER="$(uname -r | rev | cut -d . -f 2 | rev)"
-if [ "${OS_VER}" = el5 ]; then
-  OS_DIR=i386-linux
-elif [ "${OS_VER}" = el6 ]; then
+if [ "${OS_VER}" = el6 ]; then
   OS_DIR=x86_64-linux
 elif [ "${OS_VER}" = el7 ]; then
   OS_DIR=x86_64-rhel7
 fi
 
 if [ -z "${OS_DIR}" ]; then
-  echo "Could not determine OS version"
+  echo "OS must be rhel6 or rhel7"
 else
   # Add daq libraries
   for dir in pdsapp pdsalg pds pdsdata offlinedb
