@@ -26,7 +26,7 @@ if [ -z "${OS_DIR}" ]; then
 else
   # Expand pythonpath with correct link
   pcdsdaq_init="$(python -c 'import pcdsdaq; print(pcdsdaq.__file__)')"
-  pydaq_links="$(dirname ${pcdsdaq_init})/pydaq_links/${HUTCH}/${OS_DIR}"
+  pydaq_links="$(dirname ${pcdsdaq_init})/pydaq_links/links/${HUTCH}/${OS_DIR}"
   export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
 
   # Add daq libraries
