@@ -8,7 +8,7 @@ set -e
 if [ -z "${HUTCH}" ]; then
   # Default to daq latest
   DAQREL="/reg/g/pcds/dist/pds/current/build"
-  HUTCH='current'
+  HUTCH="current"
 else
   DAQREL="/reg/g/pcds/dist/pds/${HUTCH}/current/build"
 fi
@@ -20,7 +20,6 @@ elif [ "${OS_VER}" = el7 ]; then
   OS_DIR=x86_64-rhel7
 fi
 
-
 if [ -z "${OS_DIR}" ]; then
   echo "OS must be rhel6 or rhel7"
 else
@@ -30,7 +29,7 @@ else
   export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
 
   # Add daq libraries
-  for dir in pdsapp pdsalg pds pdsdata offlinedb
+  for dir in pdsapp pdsalg psalg pds pdsdata offlinedb
   do
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}"
   done
