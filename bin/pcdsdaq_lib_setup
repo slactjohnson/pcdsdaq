@@ -1,10 +1,14 @@
 #!/bin/bash
 # Source this to collect the correct daq libs for pydaq and pycdb
+# export HUTCH=<hutchname-lowercase> before sourcing
 # This is not guaranteed to be conflict-free with your python env
-# This works by expanding your LD_LIBRARY_PATH
+# This works by expanding your PYTHONPATH and LD_LIBRARY_PATH
+set -e
+
 if [ -z "${HUTCH}" ]; then
   # Default to daq latest
   DAQREL="/reg/g/pcds/dist/pds/current/build"
+  HUTCH='current'
 else
   DAQREL="/reg/g/pcds/dist/pds/${HUTCH}/current/build"
 fi
@@ -16,9 +20,15 @@ elif [ "${OS_VER}" = el7 ]; then
   OS_DIR=x86_64-rhel7
 fi
 
+
 if [ -z "${OS_DIR}" ]; then
   echo "OS must be rhel6 or rhel7"
 else
+  # Expand pythonpath with correct link
+  pcdsdaq_init="$(python -c 'import pcdsdaq; print(pcdsdaq.__file__)')"
+  pydaq_links="$(dirname ${pcdsdaq_init})/pydaq_links/${HUTCH}/${OS_DIR}"
+  export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
+
   # Add daq libraries
   for dir in pdsapp pdsalg pds pdsdata offlinedb
   do

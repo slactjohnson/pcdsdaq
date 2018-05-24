@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script generates a fresh links folder that contains links to the
+# pydaq.so and pycdb.so python modules. This is done because the modules
+# must be renamed from pydaq.so.3, etc. to be importable.
 set -e
 DAQ_ROOT="/reg/g/pcds/dist/pds"
 for hutch in current amo sxr xpp xcs mfx cxi mec
