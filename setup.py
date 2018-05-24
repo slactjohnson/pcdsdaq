@@ -7,5 +7,6 @@ setup(name='pcdsdaq',
       license='BSD',
       author='SLAC National Accelerator Laboratory',
       packages=find_packages(),
+      scripts=['bin/pcdsdaq_lib_setup'],
       description='DAQ Control Interface',
       )
