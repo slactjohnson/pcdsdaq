@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script generates a fresh links folder that contains links to the
+# This script generates a fresh linker script to create links to the
 # pydaq.so and pycdb.so python modules. This is done because the modules
 # must be renamed from pydaq.so.3, etc. to be importable.
 set -e
