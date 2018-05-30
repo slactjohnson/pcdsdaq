@@ -1,6 +1,13 @@
 Release History
 ###############
 
+Next Release
+============
+
+Features
+--------
+- Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
+
 v1.2.0 (2018-05-08)
 ===================
 
@@ -8,7 +15,6 @@ Features
 --------
 - Add the ``record`` option to the `begin` method. This allows a user running
   interactively to concisely activate recording for single runs.
-- Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
 
 v1.1.0 (2018-03-07)
 ===================
