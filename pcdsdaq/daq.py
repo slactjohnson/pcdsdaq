@@ -89,7 +89,6 @@ class Daq(FlyerInterface):
         self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
-        self._plat = platform
         self._is_bluesky = False
         self._RE = RE
         self._config_ts = {}
@@ -146,20 +145,30 @@ class Daq(FlyerInterface):
         To undo this, you may call `disconnect`.
         """
         logger.debug('Daq.connect()')
+        err = False
+        conn = False
         if self._control is None:
-            try:
-                logger.debug('instantiate Daq.control = pydaq.Control(%s, %s)',
-                             self._host, self._plat)
-                self._control = pydaq.Control(self._host, platform=self._plat)
-                logger.debug('Daq.control.connect()')
-                self._control.connect()
-                msg = 'Connected to DAQ'
-            except Exception:
+            for plat in reversed(range(6)):
+                try:
+                    logger.debug('instantiate Daq.control = pydaq.Control(%s, %s)',
+                                 self._host, plat)
+                    self._control = pydaq.Control(self._host, platform=plat)
+                    logger.debug('Daq.control.connect()')
+                    self._control.connect()
+                    msg = 'Connected to DAQ'
+                    conn = True
+                    break
+                except Exception as exc:
+                    if 'query' in str(exc):
+                        err = True
+                        msg = 'Failed to connect: DAQ is not allocated!'
+            if not conn:
+                err = True
+                msg = 'Failed to connect: DAQ is not up and allocated!'
+            if err:
                 logger.debug('del Daq.control')
                 del self._control
                 self._control = None
-                msg = ('Failed to connect to DAQ - check that it is up and '
-                       'allocated.')
         else:
             msg = 'Connect requested, but already connected to DAQ'
         logger.info(msg)
