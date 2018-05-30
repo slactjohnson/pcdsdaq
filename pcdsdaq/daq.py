@@ -150,7 +150,8 @@ class Daq(FlyerInterface):
         if self._control is None:
             for plat in reversed(range(6)):
                 try:
-                    logger.debug('instantiate Daq.control = pydaq.Control(%s, %s)',
+                    logger.debug(('instantiate Daq.control '
+                                  '= pydaq.Control(%s, %s)'),
                                  self._host, plat)
                     self._control = pydaq.Control(self._host, platform=plat)
                     logger.debug('Daq.control.connect()')
@@ -162,9 +163,10 @@ class Daq(FlyerInterface):
                     if 'query' in str(exc):
                         err = True
                         msg = 'Failed to connect: DAQ is not allocated!'
-            if not conn:
+            if not (err or conn):
                 err = True
-                msg = 'Failed to connect: DAQ is not up and allocated!'
+                msg = ('Failed to connect: DAQ is not running on this '
+                       'machine, and is not allocated!')
             if err:
                 logger.debug('del Daq.control')
                 del self._control
