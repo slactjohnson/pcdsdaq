@@ -23,3 +23,10 @@
    :hidden:
 
    sim.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Notes
+   :hidden:
+
+   releases.rst
