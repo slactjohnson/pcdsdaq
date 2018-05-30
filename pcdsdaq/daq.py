@@ -1,12 +1,13 @@
 """
 This module defines a control interface for the LCLS1 DAQ.
 """
+import enum
+import functools
+import logging
 import os
 import time
-import functools
 import threading
-import enum
-import logging
+import warnings
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
@@ -82,8 +83,9 @@ class Daq(FlyerInterface):
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
         if platform is not None:
-            logger.warning(('platform argument for daq class is deprecated '
-                            'and will be removed in a future release.'))
+            warnings.warn(('platform argument for daq class is deprecated '
+                           'and will be removed in a future release'),
+                          DeprecationWarning)
         self._control = None
         self._config = None
         self._desired_config = {}
