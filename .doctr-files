@@ -11,6 +11,7 @@
 ./_sources/index.rst.txt
 ./_sources/plans_api.rst.txt
 ./_sources/plans_basic.rst.txt
+./_sources/releases.rst.txt
 ./_sources/sim.rst.txt
 ./_static/ajax-loader.gif
 ./_static/basic.css
@@ -65,6 +66,7 @@
 ./objects.inv
 ./plans_api.html
 ./plans_basic.html
+./releases.html
 ./search.html
 ./searchindex.js
 ./sim.html

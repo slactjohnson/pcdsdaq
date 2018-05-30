@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; pcdsdaq 1.2.0+2.g8845bd5 documentation</title>
+  <title>Release History &mdash; pcdsdaq 1.2.0+2.g8845bd5 documentation</title>
   
 
   
@@ -28,7 +28,8 @@
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Simulated DAQ" href="sim.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -64,7 +65,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -97,8 +98,20 @@
 <li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v1-2-0-2018-05-08">v1.2.0 (2018-05-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-1-0-2018-03-07">v1.1.0 (2018-03-07)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bugfixes">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-0-0-2018-03-02">v1.0.0 (2018-03-02)</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -144,12 +157,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+      <li>Release History</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/releases.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -161,24 +176,54 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="release-history">
+<h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v1-2-0-2018-05-08">
+<h2>v1.2.0 (2018-05-08)<a class="headerlink" href="#v1-2-0-2018-05-08" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="features">
+<h3>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Add the <code class="docutils literal notranslate"><span class="pre">record</span></code> option to the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> method. This allows a user running
+interactively to concisely activate recording for single runs.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v1-1-0-2018-03-07">
+<h2>v1.1.0 (2018-03-07)<a class="headerlink" href="#v1-1-0-2018-03-07" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Add <code class="docutils literal notranslate"><span class="pre">daq.record</span></code> property to schedule that the next run sould be
+configured with <code class="docutils literal notranslate"><span class="pre">record=True</span></code></li>
+</ul>
+</div>
+<div class="section" id="bugfixes">
+<h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fix bug where configured record was overridden on every configure</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v1-0-0-2018-03-02">
+<h2>v1.0.0 (2018-03-02)<a class="headerlink" href="#v1-0-0-2018-03-02" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Initial release, transferred from <a class="reference external" href="https://github.com/pcdshub/pcdsdevices">https://github.com/pcdshub/pcdsdevices</a></li>
+</ul>
+</div>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="sim.html" class="btn btn-neutral" title="Simulated DAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -218,7 +263,6 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/searchtools.js"></script>
 
   
 
@@ -231,14 +275,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
-   
-
+  </script> 
 
 </body>
 </html>
