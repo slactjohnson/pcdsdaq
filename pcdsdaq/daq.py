@@ -62,9 +62,6 @@ class Daq(FlyerInterface):
 
     Parameters
     ----------
-    platform: ``int``, optional
-        Set platform to match the definition in the daq cnf file
-
     RE: ``RunEngine``, optional
         Set ``RE`` to the session's main ``RunEngine``
     """
@@ -80,7 +77,7 @@ class Daq(FlyerInterface):
                           mode=_mode_enum.on)
     name = 'daq'
 
-    def __init__(self, platform=0, RE=None):
+    def __init__(self, RE=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
@@ -148,7 +145,7 @@ class Daq(FlyerInterface):
         err = False
         conn = False
         if self._control is None:
-            for plat in reversed(range(6)):
+            for plat in range(6):
                 try:
                     logger.debug(('instantiate Daq.control '
                                   '= pydaq.Control(%s, %s)'),
