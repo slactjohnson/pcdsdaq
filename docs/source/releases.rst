@@ -1,6 +1,14 @@
 Release History
 ###############
 
+Next Release
+============
+
+Features
+--------
+- Add sourcable `pcdsdaq_lib_setup` script that will get `pydaq` and `pycdb`
+  ready for your python environment.
+
 v1.2.0 (2018-05-08)
 ===================
 
