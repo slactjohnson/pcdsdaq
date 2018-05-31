@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 1.2.0+2.g8845bd5 documentation</title>
+  <title>Release History &mdash; pcdsdaq 1.2.0+7.ge1bbf84 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                1.2.0+2.g8845bd5
+                1.2.0+7.ge1bbf84
               </div>
             
           
@@ -100,12 +100,16 @@
 <p class="caption"><span class="caption-text">Developer Notes</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#v1-2-0-2018-05-08">v1.2.0 (2018-05-08)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#next-release">Next Release</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#v1-1-0-2018-03-07">v1.1.0 (2018-03-07)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v1-2-0-2018-05-08">v1.2.0 (2018-05-08)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-1-0-2018-03-07">v1.1.0 (2018-03-07)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Features</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bugfixes">Bugfixes</a></li>
 </ul>
 </li>
@@ -178,10 +182,19 @@
             
   <div class="section" id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="v1-2-0-2018-05-08">
-<h2>v1.2.0 (2018-05-08)<a class="headerlink" href="#v1-2-0-2018-05-08" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="next-release">
+<h2>Next Release<a class="headerlink" href="#next-release" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="features">
 <h3>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Allow <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> during a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> call with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> to stop the run.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v1-2-0-2018-05-08">
+<h2>v1.2.0 (2018-05-08)<a class="headerlink" href="#v1-2-0-2018-05-08" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Add the <code class="docutils literal notranslate"><span class="pre">record</span></code> option to the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> method. This allows a user running
 interactively to concisely activate recording for single runs.</li>
@@ -190,8 +203,8 @@ interactively to concisely activate recording for single runs.</li>
 </div>
 <div class="section" id="v1-1-0-2018-03-07">
 <h2>v1.1.0 (2018-03-07)<a class="headerlink" href="#v1-1-0-2018-03-07" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Features<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Add <code class="docutils literal notranslate"><span class="pre">daq.record</span></code> property to schedule that the next run sould be
 configured with <code class="docutils literal notranslate"><span class="pre">record=True</span></code></li>
@@ -252,7 +265,7 @@ configured with <code class="docutils literal notranslate"><span class="pre">rec
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+2.g8845bd5',
+            VERSION:'1.2.0+7.ge1bbf84',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
