@@ -6,6 +6,7 @@ Next Release
 
 Features
 --------
+- Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
 - The `connect` method will provide more helpful error messages when it fails.
 
 Deprecations

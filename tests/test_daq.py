@@ -1,5 +1,8 @@
-import time
 import logging
+import os
+import signal
+import time
+from threading import Thread
 
 import pytest
 from ophyd.status import wait as status_wait
@@ -337,3 +340,17 @@ def test_call_everything_else(daq, sig):
     daq_module.pydaq = None
     with pytest.raises(ImportError):
         daq_module.Daq()
+
+
+def test_begin_sigint(daq):
+    logger.debug('test_begin_sigint')
+    pid = os.getpid()
+
+    def interrupt():
+        time.sleep(0.1)
+        os.kill(pid, signal.SIGINT)
+
+    start = time.time()
+    Thread(target=interrupt, args=()).start()
+    daq.begin(duration=1, wait=True)
+    assert time.time() - start < 0.5

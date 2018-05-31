@@ -210,7 +210,9 @@ class Daq(FlyerInterface):
               controls=None, wait=False):
         """
         Start the daq and block until the daq has begun acquiring data.
-        Optionally block until the daq has finished aquiring data.
+
+        Optionally block with ``wait=True`` until the daq has finished aquiring
+        data. If blocking, a ``ctrl+c`` will end the run and clean up.
 
         If omitted, any argument that is shared with `configure`
         will fall back to the configured value.
@@ -242,23 +244,30 @@ class Daq(FlyerInterface):
             must have a ``name`` attribute.
 
         wait: ``bool``, optional
-            If ``True``, wait for the daq to finish aquiring data.
+            If ``True``, wait for the daq to finish aquiring data. A
+            ``KeyboardInterrupt`` (``ctrl+c``) during this wait will end the
+            run and clean up.
         """
         logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
-        if record is not None and record != self.record:
-            old_record = self.record
-            self.record = record
-        begin_status = self.kickoff(events=events, duration=duration,
-                                    use_l3t=use_l3t, controls=controls)
         try:
-            self.record = old_record
-        except NameError:
-            pass
-        status_wait(begin_status, timeout=BEGIN_TIMEOUT)
-        if wait:
-            self.wait()
+            if record is not None and record != self.record:
+                old_record = self.record
+                self.record = record
+            begin_status = self.kickoff(events=events, duration=duration,
+                                        use_l3t=use_l3t, controls=controls)
+            status_wait(begin_status, timeout=BEGIN_TIMEOUT)
+            if wait:
+                self.wait()
+        except KeyboardInterrupt:
+            self.end_run()
+            logger.info('%s.begin interrupted, ending run', self.name)
+        finally:
+            try:
+                self.record = old_record
+            except NameError:
+                pass
 
     @check_connect
     def stop(self):
