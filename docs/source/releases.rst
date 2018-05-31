@@ -1,6 +1,13 @@
 Release History
 ###############
 
+Next Release
+============
+
+Features
+--------
+- Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
+
 v1.2.0 (2018-05-08)
 ===================
 
