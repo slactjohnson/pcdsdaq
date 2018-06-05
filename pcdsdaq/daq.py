@@ -92,6 +92,7 @@ class Daq(FlyerInterface):
         self._plat = platform
         self._is_bluesky = False
         self._RE = RE
+        self._re_cbid = None
         self._config_ts = {}
         self._update_config_ts()
         register_daq(self)
@@ -120,6 +121,18 @@ class Daq(FlyerInterface):
             return self._config.copy()
         else:
             return self.default_config.copy()
+
+    @property
+    def next_config(self):
+        """
+        The next queued configuration.
+
+        This can be different than `config` if we have queued up a
+        configuration to be run on the next begin.
+        """
+        cfg = self.config.copy()
+        cfg.update(self._desired_config)
+        return cfg
 
     @property
     def state(self):
@@ -273,6 +286,41 @@ class Daq(FlyerInterface):
         logger.debug('Daq.end_run()')
         self.stop()
         self._control.endrun()
+
+    # Reader interface
+    @check_connect
+    def trigger(self):
+        """
+        Begin acquisition. This method blocks until the run begins.
+
+        Returns a status object that will be marked done when the daq has
+        stopped acquiring.
+
+        This will raise a RuntimeError if the daq is configure to run forever.
+
+        Returns
+        -------
+        done_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
+        """
+        cfg = self.next_config
+        if all(cfg[key] is None for key in ('events', 'duration')):
+            raise RuntimeError(('Cannot start daq in scan step, configured '
+                                'to run forever!'))
+        self.begin()
+        return self._get_end_status()
+
+    def read(self):
+        """
+        Return data. There is no data implemented yet.
+        """
+        return {}
+
+    def describe(self):
+        """
+        Explain what read returns. There is nothing  yet.
+        """
+        return {}
 
     # Flyer interface
     @check_connect
@@ -683,8 +731,9 @@ class Daq(FlyerInterface):
     def stage(self):
         """
         ``bluesky`` interface for preparing a device for action.
-        There is nothing to be done here, but we overwrite the default stage
-        because we have no sub devices.
+
+        This sets up the daq to start runs on run start documents and ends run
+        on run stop documents.
 
         Returns
         -------
@@ -692,13 +741,22 @@ class Daq(FlyerInterface):
             list of devices staged
         """
         logger.debug('Daq.stage()')
+        if self._re_cbid is None:
+            self._re_cbid = self._RE.subscribe(self._re_manage_runs)
         return [self]
+
+    def _re_manage_runs(self, name, doc):
+        """
+        Callback for the RunEngine to manage run start and stop.
+        """
+        if name == 'start':
+            self.begin(events=1, use_l3t=False)
+        elif name == 'stop':
+            self.end_run()
 
     def unstage(self):
         """
         ``bluesky`` interface for undoing the `stage` routine.
-        There is nothing to be done here, but we overwrite the default unstage
-        because we have no sub devices.
 
         Returns
         -------
@@ -706,6 +764,9 @@ class Daq(FlyerInterface):
             list of devices unstaged
         """
         logger.debug('Daq.unstage()')
+        if self._re_cbid is not None:
+            self._RE.unsubscribe(self._re_cbid)
+            self._re_cbid = None
         return [self]
 
     def pause(self):
