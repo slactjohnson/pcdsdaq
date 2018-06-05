@@ -350,18 +350,28 @@ def test_bad_stuff(daq, RE):
     daq.end_run()  # Prevent thread stalling
 
 
-def test_call_everything_else(daq, sig):
+def test_call_bluesky(daq):
     """
     These are things that bluesky uses. Let's check them.
     """
-    logger.debug('test_call_everything_else')
+    logger.debug('test_call_bluesky')
+    daq.describe()
     daq.describe_configuration()
-    daq.configure(controls=dict(sig=sig))
     daq.stage()
     daq.unstage()
+
+
+def test_misc(daq, sig):
+    """
+    Blatant coverage-grab
+    """
+    logger.debug('test_misc')
+    daq.configure(controls=dict(sig=sig))
     daq_module.pydaq = None
     with pytest.raises(ImportError):
         daq_module.Daq()
+    end_status = daq._get_end_status()
+    status_wait(end_status)
 
 
 def test_begin_sigint(daq):
