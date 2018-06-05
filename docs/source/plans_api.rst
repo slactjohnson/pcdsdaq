@@ -8,5 +8,3 @@ Plans API
    
    daq_wrapper
    daq_decorator
-   calib_cycle
-   calib_at_step

@@ -125,6 +125,16 @@ You can undo this by simply setting:
     daq.record = False
 
 
+You can also record data for a single run using a keyword argument in
+`Daq.begin`:
+
+.. ipython:: python
+
+   daq.record
+   daq.begin(events=120, record=True)
+   daq.record
+
+
 Advanced Options
 ----------------
 - ``use_l3t=True``: This will reinterpret the ``events`` argument as
