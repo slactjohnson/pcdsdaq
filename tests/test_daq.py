@@ -326,10 +326,6 @@ def test_bad_stuff(daq, RE):
     """
     logger.debug('test_bad_stuff')
 
-    # Bad mode name
-    with pytest.raises(ValueError):
-        daq.configure(mode='cashews')
-
     # Daq internal error
     configure = daq._control.configure
     daq._control.configure = None
