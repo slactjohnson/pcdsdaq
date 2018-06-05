@@ -5,7 +5,9 @@ import time
 from threading import Thread
 
 import pytest
-from bluesky.plans import count, trigger_and_read
+from bluesky.plans import count
+from bluesky.plan_stubs import trigger_and_read
+from bluesky.preprocessors import run_wrapper
 from ophyd.status import wait as status_wait
 
 from pcdsdaq import daq as daq_module
@@ -141,17 +143,29 @@ def test_basic_run(daq, sig):
 @pytest.mark.timeout(10)
 def test_basic_plans(daq, RE):
     logger.debug('test_basic_plans')
-    daq.configure(duration=0.1)
+    daq.configure(events=12)
 
     start = time.time()
-    RE(trigger_and_read([daq]))
+    RE(run_wrapper(trigger_and_read([daq])))
     dt = time.time() - start
     assert 0.1 < dt < 0.2
+    assert daq.state == 'Configured'
 
     start = time.time()
-    RE(count([det], num=10))
+    RE(count([daq], num=10))
     dt = time.time() - start
     assert 1 < dt < 1.1
+    assert daq.state == 'Configured'
+
+    def n_runs(det, n):
+        for i in range(n):
+            yield from run_wrapper(trigger_and_read([det]))
+
+    start = time.time()
+    RE(n_runs(daq, 10))
+    dt = time.time() - start
+    assert 1 < dt < 1.1
+    assert daq.state == 'Configured'
 
 
 @pytest.mark.timeout(10)
