@@ -7,7 +7,7 @@ from threading import Thread
 import pytest
 from bluesky.plans import count
 from bluesky.plan_stubs import trigger_and_read
-from bluesky.preprocessors import run_wrapper
+from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
 from pcdsdaq import daq as daq_module
@@ -146,7 +146,7 @@ def test_basic_plans(daq, RE):
     daq.configure(events=12)
 
     start = time.time()
-    RE(run_wrapper(trigger_and_read([daq])))
+    RE(stage_wrapper(run_wrapper(trigger_and_read([daq]))), [daq])
     dt = time.time() - start
     assert 0.1 < dt < 0.2
     assert daq.state == 'Configured'
@@ -162,7 +162,7 @@ def test_basic_plans(daq, RE):
             yield from run_wrapper(trigger_and_read([det]))
 
     start = time.time()
-    RE(n_runs(daq, 10))
+    RE(stage_wrapper(n_runs(daq, 10), [daq]))
     dt = time.time() - start
     assert 1 < dt < 1.1
     assert daq.state == 'Configured'
