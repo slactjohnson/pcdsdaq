@@ -38,6 +38,13 @@ must be the same ``RunEngine`` that will be running all of the plans.
     daq = Daq(RE=RE)
 
 
+.. note::
+
+   The ``daq`` object must be staged if it's going to be used in a plan. This
+   is done automatically in `daq_wrapper`, `daq_decorator`, and most built-ins
+   like ``count`` and ``scan``.
+
+
 Basic Plan with Daq Support
 ---------------------------
 The simplest way to include the daq is to turn it on at the start of the plan
