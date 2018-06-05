@@ -154,7 +154,7 @@ def test_basic_plans(daq, RE):
     start = time.time()
     RE(count([daq], num=10))
     dt = time.time() - start
-    assert 1 < dt < 1.1
+    assert 1 < dt < 1.2
     assert daq.state == 'Configured'
 
     def n_runs(det, n):
@@ -164,7 +164,7 @@ def test_basic_plans(daq, RE):
     start = time.time()
     RE(stage_wrapper(n_runs(daq, 10), [daq]))
     dt = time.time() - start
-    assert 1 < dt < 1.1
+    assert 1 < dt < 1.2
     assert daq.state == 'Configured'
 
 
