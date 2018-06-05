@@ -10,7 +10,6 @@ import logging
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
-from ophyd.flyers import FlyerInterface
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -40,9 +39,9 @@ def check_connect(f):
     return wrapper
 
 
-class Daq(FlyerInterface):
+class Daq:
     """
-    The LCLS1 daq as a ``Flyer`` object.
+    The LCLS1 daq as a ``bluesky``-compatible object.
 
     This uses the ``pydaq`` module to connect with a running daq instance,
     controlling it via socket commands.
