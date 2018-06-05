@@ -146,7 +146,7 @@ def test_basic_plans(daq, RE):
     daq.configure(events=12)
 
     start = time.time()
-    RE(stage_wrapper(run_wrapper(trigger_and_read([daq]))), [daq])
+    RE(stage_wrapper(run_wrapper(trigger_and_read([daq])), [daq]))
     dt = time.time() - start
     assert 0.1 < dt < 0.2
     assert daq.state == 'Configured'
