@@ -313,6 +313,13 @@ def test_basic_plans(daq, RE):
     assert daq.state == 'Configured'
 
 
+def test_trigger_error(daq, RE):
+    logger.debug('test_trigger_error')
+    daq.configure(events=None, duration=None)
+    with pytest.raises(RuntimeError):
+        daq.trigger()
+
+
 def test_bad_stuff(daq, RE):
     """
     Miscellaneous exception raises
