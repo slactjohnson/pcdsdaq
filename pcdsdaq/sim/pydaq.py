@@ -159,7 +159,7 @@ class Control:
             except Exception:
                 pass
         end = time.time()
-        logger.debug('%ss elapased in SimControl._begin_thread(%s)',
+        logger.debug('%ss elapsed in SimControl._begin_thread(%s)',
                      end-start, duration)
 
     def end(self):
