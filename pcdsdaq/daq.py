@@ -68,13 +68,11 @@ class Daq(FlyerInterface):
     _state_enum = enum.Enum('PydaqState',
                             'Disconnected Connected Configured Open Running',
                             start=0)
-    _mode_enum = enum.Enum('ScanMode', 'on manual auto', start=0)
     default_config = dict(events=None,
                           duration=None,
                           use_l3t=False,
                           record=False,
-                          controls=None,
-                          mode=_mode_enum.on)
+                          controls=None)
     name = 'daq'
     parent = None
 
@@ -88,7 +86,6 @@ class Daq(FlyerInterface):
         self._reset_begin()
         self._host = os.uname()[1]
         self._plat = platform
-        self._is_bluesky = False
         self._RE = RE
         self._re_cbid = None
         self._config_ts = {}
@@ -431,8 +428,7 @@ class Daq(FlyerInterface):
 
     def collect(self):
         """
-        End the run as part of the ``bluesky`` ``Flyer`` interface, when the
-        flying is done.
+        Collect data as part of the ``bluesky`` ``Flyer`` interface.
 
         As per the ``bluesky`` interface, this is a generator that is expected
         to output partial event documents. However, since we don't have any
@@ -440,7 +436,6 @@ class Daq(FlyerInterface):
         ends.
         """
         logger.debug('Daq.collect()')
-        self.end_run()
         return
         yield
 
@@ -455,7 +450,7 @@ class Daq(FlyerInterface):
 
     @check_connect
     def configure(self, events=None, duration=None, record=None,
-                  use_l3t=False, controls=None, mode=None):
+                  use_l3t=False, controls=None):
         """
         Changes the daq's configuration for the next run.
 
@@ -489,24 +484,13 @@ class Daq(FlyerInterface):
             values each time begin is called. To provide a list, all devices
             must have a ``name`` attribute.
 
-        mode: ``str`` or ``int``, optional
-            This determines our run control during a ``bluesky`` scan with a
-            ``RunEngine`` attached to a Daq object. There are three modes, with
-            the ``on`` mode as the default:
-
-            - ``on``     (0): Take events always during runs
-            - ``manual`` (1): Take events only during the `calib_cycle` plan
-            - ``auto``   (2): Take events between ``create`` and ``save``
-
-            If ``mode`` is omitted, we'll use the previous value for ``mode``.
-
         Returns
         -------
         old, new: ``tuple`` of ``dict``
         """
         logger.debug(('Daq.configure(events=%s, duration=%s, record=%s, '
-                      'use_l3t=%s, controls=%s, mode=%s)'),
-                     events, duration, record, use_l3t, controls, mode)
+                      'use_l3t=%s, controls=%s)'),
+                     events, duration, record, use_l3t, controls)
         state = self.state
         if state not in ('Connected', 'Configured'):
             err = 'Cannot configure from state {}!'.format(state)
@@ -521,18 +505,6 @@ class Daq(FlyerInterface):
         if record is None:
             record = self.config['record']
 
-        if mode is None:
-            mode = self.config['mode']
-        if not isinstance(mode, self._mode_enum):
-            try:
-                mode = getattr(self._mode_enum, mode)
-            except (TypeError, AttributeError):
-                try:
-                    mode = self._mode_enum(mode)
-                except ValueError:
-                    err = '{} is not a valid scan mode!'
-                    raise ValueError(err.format(mode))
-
         config_args = self._config_args(record, use_l3t, controls)
         try:
             logger.debug('Daq.control.configure(%s)',
@@ -542,7 +514,7 @@ class Daq(FlyerInterface):
             # this is different than the arguments that pydaq.Control expects
             self._config = dict(events=events, duration=duration,
                                 record=record, use_l3t=use_l3t,
-                                controls=controls, mode=mode)
+                                controls=controls)
             self._update_config_ts()
             msg = 'Daq configured'
             logger.info(msg)
@@ -641,13 +613,6 @@ class Daq(FlyerInterface):
         logger.debug('Daq._begin_args(%s, %s, %s, %s)',
                      events, duration, use_l3t, controls)
         begin_args = {}
-        if all((self._is_bluesky,
-                not self.config['mode'] == self._mode_enum.on,
-                not self.state == 'Open')):
-            # Open a run without taking events
-            events = 1
-            duration = None
-            use_l3t = False
         if events is None and duration is None:
             events = self.config['events']
             duration = self.config['duration']
@@ -722,9 +687,7 @@ class Daq(FlyerInterface):
                     controls=dict(source='daq_control_vars',
                                   dtype='array',
                                   shape=controls_shape),
-                    always_on=dict(source='daq_mode',
-                                   dtype='number',
-                                   shape=None))
+                    )
 
     def stage(self):
         """
@@ -784,32 +747,6 @@ class Daq(FlyerInterface):
         logger.debug('Daq.resume()')
         if self.state == 'Open':
             self.begin()
-
-    def _interpret_message(self, msg):
-        """
-        ``msg_hook`` for the daq to snoop on the ``RunEngine``. This will
-        always start a run at ``open_run`` and end a run at ``close_run``,
-        and in ``auto`` mode this will also `pause` at ``save`` messages and
-        `resume` at ``create`` messages.
-        """
-        logger.debug('Daq._interpret_message(%s)', msg)
-        cmds = ('open_run', 'close_run', 'create', 'save')
-        if msg.command not in cmds:
-            return
-        if msg.command == 'open_run':
-            self._is_bluesky = True
-        elif msg.command == 'close_run':
-            self._is_bluesky = False
-        if self.config['mode'] == self._mode_enum.auto:
-            if msg.command == 'create':
-                # If already runing, pause first to start a fresh begin
-                self.pause()
-                self.resume()
-            elif msg.command == 'save':
-                if self._events or self._duration:
-                    self.wait()
-                else:
-                    self.pause()
 
     @property
     def _events(self):
