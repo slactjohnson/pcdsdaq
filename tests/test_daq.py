@@ -326,6 +326,8 @@ def test_bad_stuff(daq, RE):
     """
     logger.debug('test_bad_stuff')
 
+    daq.connect()
+
     # Daq internal error
     configure = daq._control.configure
     daq._control.configure = None
