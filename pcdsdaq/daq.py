@@ -79,6 +79,7 @@ class Daq(FlyerInterface):
                           controls=None,
                           mode=_mode_enum.on)
     name = 'daq'
+    parent = None
 
     def __init__(self, platform=0, RE=None):
         if pydaq is None:
