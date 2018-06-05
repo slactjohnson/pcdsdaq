@@ -435,8 +435,7 @@ class Daq:
         ends.
         """
         logger.debug('Daq.collect()')
-        return
-        yield
+        yield from ()
 
     def describe_collect(self):
         """
