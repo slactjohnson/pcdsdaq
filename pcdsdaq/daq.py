@@ -46,19 +46,16 @@ class Daq(FlyerInterface):
 
     This uses the ``pydaq`` module to connect with a running daq instance,
     controlling it via socket commands.
+
+    It can be used as a ``Reader`` in a ``bluesky`` plan to take data at
+    discrete scan points.
+
     It can be used as a ``Flyer`` in a ``bluesky`` plan to have the daq start
     at the beginning of the run and end at the end of the run.
 
-    It has additional knobs for pausing and resuming acquisition during a
-    plan. This can be done by calling `configure` with the ``mode`` parameter:
-
-    - ``on``:      Always take events during the run
-    - ``manual``:  Take events when `calib_cycle` is used
-    - ``auto``:    Take events between ``create`` and ``save`` messages
-
-    Unlike a normal ``bluesky`` ``Flyer``, this has no data to report to the
-    ``RunEngine`` on the ``collect`` call. No data will pass into the python
-    layer from the daq.
+    Unlike normal ``bluesky`` readable devices or flyers, this has no data to
+    report to the ``RunEngine`` on the ``read`` or ``collect`` calls. No data
+    will pass into the python layer from the daq.
 
     Parameters
     ----------
