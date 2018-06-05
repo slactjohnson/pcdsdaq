@@ -1,6 +1,6 @@
-Plans API
-=========
-.. currentmodule:: pcdsdaq.plans
+Preprocessors API
+=================
+.. currentmodule:: pcdsdaq.preprocessors
 
 .. autosummary::
    :nosignatures:

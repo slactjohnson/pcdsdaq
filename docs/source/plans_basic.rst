@@ -1,12 +1,13 @@
 Using the DAQ with Bluesky
 ==========================
-Some utilities are provided for running the daq in sync with a ``bluesky``
-``plan``. This document will assume some familiarity with ``bluesky`` and
+The `Daq` class is designed as a drop-in ``bluesky`` readable. That means
+you can put it into built-in ``bluesky`` plans in the ``dets`` list and it will
+collect data at each scan point.
+
+This document will assume some familiarity with ``bluesky`` and
 how to use the ``RunEngine``, but does not require a full understanding of
 the internals.
 
-I am going to introduce these through a series of examples. You can check the
-full `api docs <./plans_api>` for more information.
 
 Creating a Daq object with the RunEngine
 ----------------------------------------
@@ -45,11 +46,40 @@ must be the same ``RunEngine`` that will be running all of the plans.
    like ``count`` and ``scan``.
 
 
-Basic Plan with Daq Support
----------------------------
+Calib Cycles
+------------
+Including calib cycles in a built-in plan is as simple as including the `Daq`
+as a reader or detector. The `Daq` will start and run for the configured
+duration or number of events at every scan step.
+
+The built-in ``scan`` will move ``motor1`` from ``0`` to ``10`` in ``11``
+steps. Prior to the scan, we configure the ``daq`` to take ``120`` events at
+each point. Since ``daq`` is included in the detectors list, it is run at every
+step.
+
+.. code-block:: python
+
+    from bluesky.plans import scan
+    daq.configure(events=120)
+
+
+.. ipython:: python
+    :suppress:
+
+    from bluesky.plans import scan
+    daq.configure(events=120)
+
+
+.. ipython:: python
+
+    RE(scan([daq], motor1, 0, 10, 11))
+
+
+Running for an Entire Plan Duration
+-----------------------------------
 The simplest way to include the daq is to turn it on at the start of the plan
 and turn it off at the end of the plan. This is done using the `daq_wrapper`
-or `daq_decorator`.
+or `daq_decorator`, which treat the `Daq` as a ``bluesky`` ``Flyer``.
 
 .. code-block:: python
 
@@ -72,7 +102,7 @@ or `daq_decorator`.
     from bluesky.preprocessors import run_decorator
     from pcdsdaq.plans import daq_decorator
 
-    @daq_decorator(mode='on')
+    @daq_decorator()
     @run_decorator()
     def basic_plan(motor, start, end):
         yield from mv(motor, start)
@@ -89,22 +119,5 @@ and back to the ``start`` positions, and then end the run.
 
 
 If you ignore the `daq_decorator`, this is just a normal ``plan``.
-This makes it simple to add the daq to a normal ``bluesky`` ``plan``.
-
-
-Calib Cycles
-------------
-Including calib cycles in a built-in plan is as simple as including the `Daq`
-as a reader or detector. The `Daq` will start and run for the configured
-duration or number of events at every scan step.
-
-The built-in ``scan`` will move ``motor1`` from ``0`` to ``10`` in ``11``
-steps. Prior to the scan, we configure the ``daq`` to take ``120`` events at
-each point. Since ``daq`` is included in the detectors list, it is run at every
-step.
-
-.. ipython:: python
-
-    from bluesky.plans import scan
-    daq.configure(events=120)
-    RE(scan([daq], motor1, 0, 10, 11))
+This makes it simple to add the daq collecting data in the background
+to a normal ``bluesky`` ``plan``.

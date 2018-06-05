@@ -15,7 +15,7 @@
    :hidden:
 
    plans_basic.rst
-   plans_api.rst
+   preprocessors_api.rst
 
 .. toctree::
    :maxdepth: 1
