@@ -161,10 +161,7 @@ def test_basic_plans(daq, RE):
         for i in range(n):
             yield from run_wrapper(trigger_and_read([det]))
 
-    start = time.time()
     RE(stage_wrapper(n_runs(daq, 10), [daq]))
-    dt = time.time() - start
-    assert 1 < dt < 1.2
     assert daq.state == 'Configured'
 
 
