@@ -141,31 +141,6 @@ def test_basic_run(daq, sig):
 
 
 @pytest.mark.timeout(10)
-def test_basic_plans(daq, RE):
-    logger.debug('test_basic_plans')
-    daq.configure(events=12)
-
-    start = time.time()
-    RE(stage_wrapper(run_wrapper(trigger_and_read([daq])), [daq]))
-    dt = time.time() - start
-    assert 0.1 < dt < 0.2
-    assert daq.state == 'Configured'
-
-    start = time.time()
-    RE(count([daq], num=10))
-    dt = time.time() - start
-    assert 1 < dt < 1.2
-    assert daq.state == 'Configured'
-
-    def n_runs(det, n):
-        for i in range(n):
-            yield from run_wrapper(trigger_and_read([det]))
-
-    RE(stage_wrapper(n_runs(daq, 10), [daq]))
-    assert daq.state == 'Configured'
-
-
-@pytest.mark.timeout(10)
 def test_begin_record_arg(daq):
     """
     We expect that the record argument in begin overrides the daq's record
@@ -311,6 +286,31 @@ def test_check_connect(nodaq):
     logger.debug('test_check_connect')
     with pytest.raises(RuntimeError):
         nodaq.wait()
+
+
+@pytest.mark.timeout(10)
+def test_basic_plans(daq, RE):
+    logger.debug('test_basic_plans')
+    daq.configure(events=12)
+
+    start = time.time()
+    RE(stage_wrapper(run_wrapper(trigger_and_read([daq])), [daq]))
+    dt = time.time() - start
+    assert 0.1 < dt < 0.2
+    assert daq.state == 'Configured'
+
+    start = time.time()
+    RE(count([daq], num=10))
+    dt = time.time() - start
+    assert 1 < dt < 1.2
+    assert daq.state == 'Configured'
+
+    def n_runs(det, n):
+        for i in range(n):
+            yield from run_wrapper(trigger_and_read([det]))
+
+    RE(stage_wrapper(n_runs(daq, 10), [daq]))
+    assert daq.state == 'Configured'
 
 
 def test_bad_stuff(daq, RE):
