@@ -1,6 +1,7 @@
 ./_sources/daq_api.rst.txt
 ./_sources/daq_basic.rst.txt
 ./_sources/daq_config.rst.txt
+./_sources/env.rst.txt
 ./_sources/generated/pcdsdaq.daq.check_connect.rst.txt
 ./_sources/generated/pcdsdaq.daq.get_daq.rst.txt
 ./_sources/generated/pcdsdaq.daq.register_daq.rst.txt
@@ -54,6 +55,7 @@
 ./daq_api.html
 ./daq_basic.html
 ./daq_config.html
+./env.html
 ./generated/pcdsdaq.daq.check_connect.html
 ./generated/pcdsdaq.daq.get_daq.html
 ./generated/pcdsdaq.daq.register_daq.html

@@ -7,6 +7,8 @@ Next Release
 Features
 --------
 - Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
+- Add sourcable `pcdsdaq_lib_setup` script that will get `pydaq` and `pycdb`
+  ready for your python environment.
 
 v1.2.0 (2018-05-08)
 ===================
