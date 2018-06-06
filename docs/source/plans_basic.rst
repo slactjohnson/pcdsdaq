@@ -85,7 +85,7 @@ or `daq_decorator`, which treat the `Daq` as a ``bluesky`` ``Flyer``.
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.plans import daq_decorator
+    from pcdsdaq.preprocessors import daq_decorator
 
     @daq_decorator()
     @run_decorator()
@@ -100,7 +100,7 @@ or `daq_decorator`, which treat the `Daq` as a ``bluesky`` ``Flyer``.
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.plans import daq_decorator
+    from pcdsdaq.preprocessors import daq_decorator
 
     @daq_decorator()
     @run_decorator()
