@@ -1,12 +1,13 @@
 """
 This module defines a control interface for the LCLS1 DAQ.
 """
+import enum
+import functools
+import logging
 import os
 import time
-import functools
 import threading
-import enum
-import logging
+import warnings
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
@@ -62,9 +63,6 @@ class Daq(FlyerInterface):
 
     Parameters
     ----------
-    platform: ``int``, optional
-        Set platform to match the definition in the daq cnf file
-
     RE: ``RunEngine``, optional
         Set ``RE`` to the session's main ``RunEngine``
     """
@@ -80,16 +78,19 @@ class Daq(FlyerInterface):
                           mode=_mode_enum.on)
     name = 'daq'
 
-    def __init__(self, platform=0, RE=None):
+    def __init__(self, platform=None, RE=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
+        if platform is not None:
+            warnings.warn(('platform argument for daq class is deprecated '
+                           'and will be removed in a future release'),
+                          DeprecationWarning)
         self._control = None
         self._config = None
         self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
-        self._plat = platform
         self._is_bluesky = False
         self._RE = RE
         self._config_ts = {}
@@ -146,23 +147,35 @@ class Daq(FlyerInterface):
         To undo this, you may call `disconnect`.
         """
         logger.debug('Daq.connect()')
+        err = False
+        conn = False
         if self._control is None:
-            try:
-                logger.debug('instantiate Daq.control = pydaq.Control(%s, %s)',
-                             self._host, self._plat)
-                self._control = pydaq.Control(self._host, platform=self._plat)
-                logger.debug('Daq.control.connect()')
-                self._control.connect()
-                msg = 'Connected to DAQ'
-            except Exception:
+            for plat in range(6):
+                try:
+                    logger.debug(('instantiate Daq.control '
+                                  '= pydaq.Control(%s, %s)'),
+                                 self._host, plat)
+                    self._control = pydaq.Control(self._host, platform=plat)
+                    logger.debug('Daq.control.connect()')
+                    self._control.connect()
+                    logger.info('Connected to DAQ')
+                    conn = True
+                    break
+                except Exception as exc:
+                    if 'query' in str(exc):
+                        err = True
+                        logger.error(('Failed to connect: DAQ is not '
+                                      'allocated!'))
+            if not (err or conn):
+                err = True
+                logger.error(('Failed to connect: DAQ is not running on this '
+                              'machine, and is not allocated!'))
+            if err:
                 logger.debug('del Daq.control')
                 del self._control
                 self._control = None
-                msg = ('Failed to connect to DAQ - check that it is up and '
-                       'allocated.')
         else:
-            msg = 'Connect requested, but already connected to DAQ'
-        logger.info(msg)
+            logger.info('Connect requested, but already connected to DAQ')
 
     def disconnect(self):
         """

@@ -7,6 +7,7 @@ from threading import Thread
 import pytest
 from ophyd.status import wait as status_wait
 
+import pcdsdaq.sim.pydaq as sim_pydaq
 from pcdsdaq import daq as daq_module
 from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
 
@@ -28,6 +29,16 @@ def test_connect(daq):
     daq_module.pydaq = None
     daq.connect()
     assert daq._control is None
+
+
+def test_connect_errors(daq):
+    # Make sure we cover these so the log statements don't fail
+    sim_pydaq.conn_err = 'Initial query failed'
+    daq.connect()
+    sim_pydaq.conn_err = 'Connect failed'
+    daq.connect()
+    with pytest.raises(RuntimeError):
+        daq.begin()
 
 
 def test_disconnect(daq):
