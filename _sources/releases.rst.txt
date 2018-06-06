@@ -9,6 +9,12 @@ Features
 - Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
 - Add sourcable `pcdsdaq_lib_setup` script that will get `pydaq` and `pycdb`
   ready for your python environment.
+- The `connect` method will provide more helpful error messages when it fails.
+
+Deprecations
+------------
+- The daq no longer needs to be passed a ``platform`` argument. This argument
+  will be removed in a future release, and will log a warning if you pass it.
 
 v1.2.0 (2018-05-08)
 ===================

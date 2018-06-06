@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 1.2.0+24.g742fe3e documentation</title>
+  <title>Daq API &mdash; pcdsdaq 1.2.0+37.g0a1ae12 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                1.2.0+24.g742fe3e
+                1.2.0+37.g0a1ae12
               </div>
             
           
@@ -175,7 +175,7 @@
 <h1>Daq API<a class="headerlink" href="#daq-api" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pcdsdaq.daq.Daq">
-<em class="property">class </em><code class="descclassname">pcdsdaq.daq.</code><code class="descname">Daq</code><span class="sig-paren">(</span><em>platform=0</em>, <em>RE=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pcdsdaq.daq.</code><code class="descname">Daq</code><span class="sig-paren">(</span><em>platform=None</em>, <em>RE=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
 <dd><p>The LCLS1 daq as a <code class="docutils literal notranslate"><span class="pre">Flyer</span></code> object.</p>
 <p>This uses the <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> module to connect with a running daq instance,
 controlling it via socket commands.
@@ -195,11 +195,7 @@ layer from the daq.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>platform</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Set platform to match the definition in the daq cnf file</li>
-<li><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set <code class="docutils literal notranslate"><span class="pre">RE</span></code> to the session’s main <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code></li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set <code class="docutils literal notranslate"><span class="pre">RE</span></code> to the session’s main <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -574,7 +570,7 @@ because we have no sub devices.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+24.g742fe3e',
+            VERSION:'1.2.0+37.g0a1ae12',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
