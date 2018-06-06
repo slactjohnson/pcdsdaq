@@ -12,6 +12,9 @@ class SimNoDaq(Daq):
         logger.debug('SimNoDaq.connect()')
 
 
+conn_err = None
+
+
 class Control:
     _all_states = ['Disconnected', 'Connected', 'Configured', 'Open',
                    'Running']
@@ -63,6 +66,8 @@ class Control:
 
     def connect(self):
         logger.debug('SimControl.connect()')
+        if conn_err is not None:
+            raise RuntimeError(conn_err)
         self._do_transition('connect')
 
     def disconnect(self):

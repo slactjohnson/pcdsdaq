@@ -7,6 +7,9 @@ Next Release
 Features
 --------
 - Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
+- Add sourcable `pcdsdaq_lib_setup` script that will get `pydaq` and `pycdb`
+  ready for your python environment.
+- The `connect` method will provide more helpful error messages when it fails.
 - Allow the `Daq` class to be used as a ``bluesky`` readable device.
   Once staged, runs will begin and end on run start/stop documents.
   A calibcycle will be run when the `Daq` is triggered, and triggering will be
@@ -22,6 +25,11 @@ API Changes
   submodule, as a parallel to the ``bluesky`` structure.
 - ``complete`` no longer ends the run. This makes it more in line with the
   ``bluesky`` API.
+
+Deprecations
+------------
+- The daq no longer needs to be passed a ``platform`` argument. This argument
+  will be removed in a future release, and will log a warning if you pass it.
 
 v1.2.0 (2018-05-08)
 ===================

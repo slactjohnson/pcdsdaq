@@ -29,4 +29,5 @@
    :caption: Developer Notes
    :hidden:
 
+   env.rst
    releases.rst
