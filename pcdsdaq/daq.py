@@ -303,7 +303,7 @@ class Daq:
         Returns a status object that will be marked done when the daq has
         stopped acquiring.
 
-        This will raise a RuntimeError if the daq is configure to run forever.
+        This will raise a RuntimeError if the daq is configured to run forever.
 
         Returns
         -------
@@ -704,8 +704,7 @@ class Daq:
         """
         ``bluesky`` interface for preparing a device for action.
 
-        This sets up the daq to start runs on run start documents and ends run
-        on run stop documents.
+        This sets up the daq to end runs on run stop documents.
 
         Returns
         -------
@@ -721,9 +720,7 @@ class Daq:
         """
         Callback for the RunEngine to manage run start and stop.
         """
-        if name == 'start':
-            self.begin(events=1, use_l3t=False)
-        elif name == 'stop':
+        if name == 'stop':
             self.end_run()
 
     def unstage(self):
