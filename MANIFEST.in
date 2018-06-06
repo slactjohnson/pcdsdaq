@@ -1,2 +1,3 @@
 include versioneer.py
 include pcdsdaq/_version.py
+include pcdsdaq/pydaq_links/*

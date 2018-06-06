@@ -35,6 +35,8 @@ script:
   - coverage run run_tests.py
   - coverage report -m
   - flake8 pcdsdaq
+  # Make sure the links folder was created
+  - ls "$(dirname $(which python))/../lib/python3.6/site-packages/pcdsdaq/pydaq_links/links"
   # Build docs
   - set -e
   - |
