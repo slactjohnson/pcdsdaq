@@ -1,5 +1,5 @@
 """
-This module defines utilities for incorporating the daq into a bluesky plan.
+This module defines bluesky preprocessors for using the daq as a flyer.
 """
 from bluesky.plan_stubs import configure
 from bluesky.preprocessors import fly_during_wrapper, stage_wrapper
