@@ -3,6 +3,7 @@ import logging
 from bluesky.callbacks.core import CallbackBase
 from ophyd.device import Device, Component as Cpt
 from ophyd.signal import EpicsSignal
+from toolz import partition
 
 from .daq import get_daq
 
@@ -63,9 +64,11 @@ class ScanVars(Device, CallbackBase):
             # second, check for start/stop points
             try:
                 motor_info = doc['plan_pattern_args']['args']
-                for i, (_, start, stop) in enumerate(motor_info[:3]):
-                    sig_max = getattr(self, 'var{}max'.format(i))
-                    sig_min = getattr(self, 'var{}min'.format(i))
+                for i, (_, start, stop) in enumerate(partition(3, motor_info)):
+                    if i > 2:
+                        break
+                    sig_max = getattr(self, 'var{}_max'.format(i))
+                    sig_min = getattr(self, 'var{}_min'.format(i))
                     sig_max.put(max(start, stop))
                     sig_min.put(min(start, stop))
             except KeyError:
