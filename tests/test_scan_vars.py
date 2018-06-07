@@ -45,6 +45,8 @@ class CheckVals(CallbackBase):
 
         if self.plan == 'custom':
             assert self.scan_vars.n_shots.get() == 0
+        else:
+            assert self.scan_vars.n_shots.get() == 120
 
 
 def test_scan_vars(RE, daq):
