@@ -12,10 +12,15 @@ from pcdsdaq.scan_vars import ScanVars
 logger = logging.getLogger(__name__)
 
 
+class FakeSignal(Signal):
+    def __init__(self, prefix, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 # Placeholder for the make_fake_device in next ophyd
-for cpt_name in ScanVars.component.names:
+for cpt_name in ScanVars.component_names:
     cpt = getattr(ScanVars, cpt_name)
-    cpt.cls = Signal
+    cpt.cls = FakeSignal
 
 
 # Lets check the setup a bit, but doing reflexive checks on istep, etc. is
