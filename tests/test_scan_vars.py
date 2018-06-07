@@ -31,6 +31,7 @@ class CheckVals(CallbackBase):
         self.plan = None
 
     def start(self, doc):
+        logger.debug(doc)
         if self.plan == 'scan':
             assert self.scan_vars.var0.get() == 'motor1'
             assert self.scan_vars.var1.get() == 'motor2'
