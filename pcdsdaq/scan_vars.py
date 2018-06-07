@@ -38,14 +38,6 @@ class ScanVars(Device, CallbackBase):
             self._RE.unsubscribe(self._cbid)
             self._cbid = None
 
-    def stage(self):
-        self.enable()
-        return super().stage()
-
-    def unstage(self):
-        self.disable()
-        return super().unstage()
-
     def start(self, doc):
         """
         Initialize the scan variables at the start of a run.
