@@ -736,6 +736,9 @@ class Daq:
         if self._re_cbid is not None:
             self._RE.unsubscribe(self._re_cbid)
             self._re_cbid = None
+        # If we're still running, end now
+        if self.state in ('Open', 'Running'):
+            self.end_run()
         return [self]
 
     def pause(self):
