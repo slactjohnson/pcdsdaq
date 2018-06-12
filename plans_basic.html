@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 1.2.0+37.g0a1ae12 documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 1.2.0+70.gc74b4ea documentation</title>
   
 
   
@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Plans API" href="plans_api.html" />
+    <link rel="next" title="Preprocessors API" href="preprocessors_api.html" />
     <link rel="prev" title="pcdsdaq.daq.check_connect" href="generated/pcdsdaq.daq.check_connect.html" /> 
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                1.2.0+37.g0a1ae12
+                1.2.0+70.gc74b4ea
               </div>
             
           
@@ -93,13 +93,11 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Using the DAQ with Bluesky</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object-with-the-runengine">Creating a Daq object with the RunEngine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#basic-plan-with-daq-support">Basic Plan with Daq Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#calib-cycle-per-step">Calib Cycle Per Step</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#manual-calib-cycle">Manual Calib Cycle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#auto-mode">Auto Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calib-cycles">Calib Cycles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-for-an-entire-plan-duration">Running for an Entire Plan Duration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="plans_api.html">Plans API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Sim Mode</span></p>
 <ul>
@@ -175,12 +173,12 @@
             
   <div class="section" id="using-the-daq-with-bluesky">
 <h1>Using the DAQ with Bluesky<a class="headerlink" href="#using-the-daq-with-bluesky" title="Permalink to this headline">¶</a></h1>
-<p>Some utilities are provided for running the daq in sync with a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>
-<code class="docutils literal notranslate"><span class="pre">plan</span></code>. This document will assume some familiarity with <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> and
+<p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class is designed as a drop-in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable. That means
+you can put it into built-in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plans in the <code class="docutils literal notranslate"><span class="pre">dets</span></code> list and it will
+collect data at each scan point.</p>
+<p>This document will assume some familiarity with <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> and
 how to use the <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, but does not require a full understanding of
 the internals.</p>
-<p>I am going to introduce these through a series of examples. You can check the
-full <a class="reference internal" href="plans_api.html"><span class="doc">api docs</span></a> for more information.</p>
 <div class="section" id="creating-a-daq-object-with-the-runengine">
 <h2>Creating a Daq object with the RunEngine<a class="headerlink" href="#creating-a-daq-object-with-the-runengine" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> needs to register a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance for this to work. This
@@ -194,17 +192,42 @@ must be the same <code class="docutils literal notranslate"><span class="pre">Ru
 <span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">(</span><span class="n">RE</span><span class="o">=</span><span class="n">RE</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">daq</span></code> object must be staged if it’s going to be used in a plan. This
+is done automatically in <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a>, <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, and
+most built-ins like <code class="docutils literal notranslate"><span class="pre">count</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code>.</p>
 </div>
-<div class="section" id="basic-plan-with-daq-support">
-<h2>Basic Plan with Daq Support<a class="headerlink" href="#basic-plan-with-daq-support" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="calib-cycles">
+<h2>Calib Cycles<a class="headerlink" href="#calib-cycles" title="Permalink to this headline">¶</a></h2>
+<p>Including calib cycles in a built-in plan is as simple as including the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>
+as a reader or detector. The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> will start and run for the configured
+duration or number of events at every scan step.</p>
+<p>The built-in <code class="docutils literal notranslate"><span class="pre">scan</span></code> will move <code class="docutils literal notranslate"><span class="pre">motor1</span></code> from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">10</span></code> in <code class="docutils literal notranslate"><span class="pre">11</span></code>
+steps. Prior to the scan, we configure the <code class="docutils literal notranslate"><span class="pre">daq</span></code> to take <code class="docutils literal notranslate"><span class="pre">120</span></code> events at
+each point. Since <code class="docutils literal notranslate"><span class="pre">daq</span></code> is included in the detectors list, it is run at every
+step.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plans</span> <span class="kn">import</span> <span class="n">scan</span>
+<span class="n">daq</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+<span class="gh">Out[1]: </span><span class="go">(&#39;04b89815-88b9-48de-a40a-56116821e727&#39;,)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-for-an-entire-plan-duration">
+<h2>Running for an Entire Plan Duration<a class="headerlink" href="#running-for-an-entire-plan-duration" title="Permalink to this headline">¶</a></h2>
 <p>The simplest way to include the daq is to turn it on at the start of the plan
-and turn it off at the end of the plan. This is done using the default mode,
-<code class="docutils literal notranslate"><span class="pre">on</span></code>, which we’ll configure explicitly in the <a class="reference internal" href="generated/pcdsdaq.plans.daq_wrapper.html#pcdsdaq.plans.daq_wrapper" title="pcdsdaq.plans.daq_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_wrapper</span></code></a>.</p>
+and turn it off at the end of the plan. This is done using the
+<a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, which treat
+the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plan_stubs</span> <span class="kn">import</span> <span class="n">mv</span>
 <span class="kn">from</span> <span class="nn">bluesky.preprocessors</span> <span class="kn">import</span> <span class="n">run_decorator</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.plans</span> <span class="kn">import</span> <span class="n">daq_decorator</span>
+<span class="kn">from</span> <span class="nn">pcdsdaq.preprocessors</span> <span class="kn">import</span> <span class="n">daq_during_decorator</span>
 
-<span class="nd">@daq_decorator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;on&#39;</span><span class="p">)</span>
+<span class="nd">@daq_during_decorator</span><span class="p">()</span>
 <span class="nd">@run_decorator</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">basic_plan</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
     <span class="k">yield from</span> <span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
@@ -214,63 +237,13 @@ and turn it off at the end of the plan. This is done using the default mode,
 </div>
 <p>This plan will start the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>, move <code class="docutils literal notranslate"><span class="pre">motor</span></code> to the <code class="docutils literal notranslate"><span class="pre">start</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>,
 and back to the <code class="docutils literal notranslate"><span class="pre">start</span></code> positions, and then end the run.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">basic_plan</span><span class="p">(</span><span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">basic_plan</span><span class="p">(</span><span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gh">Out[2]: </span><span class="go">()</span>
 </pre></div>
 </div>
-<p>If you ignore the <a class="reference internal" href="generated/pcdsdaq.plans.daq_decorator.html#pcdsdaq.plans.daq_decorator" title="pcdsdaq.plans.daq_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_decorator</span></code></a>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
-This makes it simple to add the daq to a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p>
-</div>
-<div class="section" id="calib-cycle-per-step">
-<h2>Calib Cycle Per Step<a class="headerlink" href="#calib-cycle-per-step" title="Permalink to this headline">¶</a></h2>
-<p>Including calib cycles in a built-in plan with a <code class="docutils literal notranslate"><span class="pre">per_step</span></code> hook
-is also simple using <a class="reference internal" href="generated/pcdsdaq.plans.calib_at_step.html#pcdsdaq.plans.calib_at_step" title="pcdsdaq.plans.calib_at_step"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_at_step</span></code></a>. Take care to make sure the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is
-configured with <code class="docutils literal notranslate"><span class="pre">mode='manual'</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plans</span> <span class="kn">import</span> <span class="n">scan</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.plans</span> <span class="kn">import</span> <span class="n">calib_at_step</span>
-
-<span class="k">def</span> <span class="nf">daq_scan</span><span class="p">(</span><span class="n">dets</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">events_per_point</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="nd">@daq_decorator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">inner_daq_scan</span><span class="p">():</span>
-        <span class="k">yield from</span> <span class="n">scan</span><span class="p">(</span><span class="n">dets</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span>
-                        <span class="n">per_step</span><span class="o">=</span><span class="n">calib_at_step</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">events_per_point</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">inner_daq_scan</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>This plan will move <code class="docutils literal notranslate"><span class="pre">motor</span></code> from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> in <code class="docutils literal notranslate"><span class="pre">steps</span></code>
-evenly-spaced steps, checking readings from <code class="docutils literal notranslate"><span class="pre">dets</span></code> at each point
-and running a <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> for <code class="docutils literal notranslate"><span class="pre">events_per_point</span></code> events.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">daq_scan</span><span class="p">([</span><span class="n">det1</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">120</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="manual-calib-cycle">
-<h2>Manual Calib Cycle<a class="headerlink" href="#manual-calib-cycle" title="Permalink to this headline">¶</a></h2>
-<p>You may also call <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plan_stubs</span> <span class="kn">import</span> <span class="n">sleep</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.plans</span> <span class="kn">import</span> <span class="n">calib_cycle</span>
-
-<span class="k">def</span> <span class="nf">daq_count</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">sleep_time</span><span class="p">,</span> <span class="n">duration_per_point</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="nd">@daq_decorator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="p">)</span>
-    <span class="nd">@run_decorator</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">inner_daq_count</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
-            <span class="k">yield from</span> <span class="n">calib_cycle</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">duration_per_point</span><span class="p">)</span>
-            <span class="k">yield from</span> <span class="n">sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="k">yield from</span> <span class="n">inner_daq_count</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>This plan will run <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> <code class="docutils literal notranslate"><span class="pre">num</span></code> times for <code class="docutils literal notranslate"><span class="pre">duration_per_point</span></code>
-seconds each, waiting <code class="docutils literal notranslate"><span class="pre">sleep_time</span></code> seconds between cycles.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">daq_count</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="auto-mode">
-<h2>Auto Mode<a class="headerlink" href="#auto-mode" title="Permalink to this headline">¶</a></h2>
-<p>In addition to <code class="docutils literal notranslate"><span class="pre">on</span></code> and <code class="docutils literal notranslate"><span class="pre">manual</span></code> modes, an <code class="docutils literal notranslate"><span class="pre">auto</span></code> mode exists. This will
-run the daq for the duration of time that a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plan is reading
-data. This is between <code class="docutils literal notranslate"><span class="pre">create</span></code> and <code class="docutils literal notranslate"><span class="pre">save</span></code> messages.</p>
+<p>If you ignore the <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
+This makes it simple to add the daq collecting data in the background
+to a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p>
 </div>
 </div>
 
@@ -282,7 +255,7 @@ data. This is between <code class="docutils literal notranslate"><span class="pr
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="plans_api.html" class="btn btn-neutral float-right" title="Plans API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="preprocessors_api.html" class="btn btn-neutral float-right" title="Preprocessors API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="generated/pcdsdaq.daq.check_connect.html" class="btn btn-neutral" title="pcdsdaq.daq.check_connect" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -316,7 +289,7 @@ data. This is between <code class="docutils literal notranslate"><span class="pr
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+37.g0a1ae12',
+            VERSION:'1.2.0+70.gc74b4ea',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

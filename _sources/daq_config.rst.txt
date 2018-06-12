@@ -10,13 +10,6 @@ Arguments that are shared between the two methods act as defaults.
 For example, calling ``daq.configure(duration=3)`` will set the
 no-arguments behavior of ``daq.begin()`` to run the daq for 3 seconds.
 
-The additional arguments are parameters that can only be changed
-through the `Daq.configure` method.  ``record`` is a parameter that
-tells the daq whether or not to save to disk, and ``mode`` is a
-parameter that sets up the ``bluesky`` behavior. See
-`basic usage <./daq_basic>` and
-`using the daq with bluesky <./plans_basic>`.
-
 You can get the current configuration from `Daq.config`.
 Shown here is the default config:
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 1.2.0+37.g0a1ae12 documentation</title>
+  <title>Release History &mdash; pcdsdaq 1.2.0+70.gc74b4ea documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                1.2.0+37.g0a1ae12
+                1.2.0+70.gc74b4ea
               </div>
             
           
@@ -91,7 +91,7 @@
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plans_api.html">Plans API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Sim Mode</span></p>
 <ul>
@@ -103,6 +103,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#next-release">Next Release</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api-changes">API Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deprecations">Deprecations</a></li>
 </ul>
 </li>
@@ -193,6 +194,26 @@
 <li>Add sourcable <code class="xref any docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> script that will get <code class="xref any docutils literal notranslate"><span class="pre">pydaq</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">pycdb</span></code>
 ready for your python environment.</li>
 <li>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a> method will provide more helpful error messages when it fails.</li>
+<li>Allow the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class to be used as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable device.
+Once staged, runs will end on run stop documents.
+A calibcycle will be run when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is triggered, and triggering will be
+reported as done when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> has stopped. This means it is viable to use
+the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> inside normal plans like <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="api-changes">
+<h3>API Changes<a class="headerlink" href="#api-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">calib_cycle</span></code> and related <code class="docutils literal notranslate"><span class="pre">plans</span></code> module has been removed, as using the
+<a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a readable device is more intuitive and it’s still early enough to
+break my API.</li>
+<li><code class="docutils literal notranslate"><span class="pre">daq_wrapper</span></code> and <code class="docutils literal notranslate"><span class="pre">daq_decorator</span></code> have been move to the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code>
+submodule, as a parallel to the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> structure. They have been renamed
+to <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> and <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a> as a parallel to the
+built-in <code class="docutils literal notranslate"><span class="pre">fly_during_wrapper</span></code>. These are now simple preprocessors to
+run the daq at the same time as a daq-agnostic plan.</li>
+<li><code class="docutils literal notranslate"><span class="pre">complete</span></code> no longer ends the run. This makes it more in line with the
+<code class="docutils literal notranslate"><span class="pre">bluesky</span></code> API.</li>
 </ul>
 </div>
 <div class="section" id="deprecations">
@@ -277,7 +298,7 @@ configured with <code class="docutils literal notranslate"><span class="pre">rec
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+37.g0a1ae12',
+            VERSION:'1.2.0+70.gc74b4ea',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

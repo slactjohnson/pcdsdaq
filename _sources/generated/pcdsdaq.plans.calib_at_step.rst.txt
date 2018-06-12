@@ -1,6 +1,0 @@
-pcdsdaq.plans.calib\_at\_step
-=============================
-
-.. currentmodule:: pcdsdaq.plans
-
-.. autofunction:: calib_at_step

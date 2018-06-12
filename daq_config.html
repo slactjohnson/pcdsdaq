@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; pcdsdaq 1.2.0+37.g0a1ae12 documentation</title>
+  <title>Configuration &mdash; pcdsdaq 1.2.0+70.gc74b4ea documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                1.2.0+37.g0a1ae12
+                1.2.0+70.gc74b4ea
               </div>
             
           
@@ -92,7 +92,7 @@
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plans_api.html">Plans API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Sim Mode</span></p>
 <ul>
@@ -175,12 +175,6 @@ those that are shared with <a class="reference internal" href="daq_api.html#pcds
 <p>Arguments that are shared between the two methods act as defaults.
 For example, calling <code class="docutils literal notranslate"><span class="pre">daq.configure(duration=3)</span></code> will set the
 no-arguments behavior of <code class="docutils literal notranslate"><span class="pre">daq.begin()</span></code> to run the daq for 3 seconds.</p>
-<p>The additional arguments are parameters that can only be changed
-through the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.configure</span></code></a> method.  <code class="docutils literal notranslate"><span class="pre">record</span></code> is a parameter that
-tells the daq whether or not to save to disk, and <code class="docutils literal notranslate"><span class="pre">mode</span></code> is a
-parameter that sets up the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> behavior. See
-<a class="reference internal" href="daq_basic.html"><span class="doc">basic usage</span></a> and
-<a class="reference internal" href="plans_basic.html"><span class="doc">using the daq with bluesky</span></a>.</p>
 <p>You can get the current configuration from <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config" title="pcdsdaq.daq.Daq.config"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.config</span></code></a>.
 Shown here is the default config:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">daq</span><span class="o">.</span><span class="n">config</span>
@@ -189,13 +183,12 @@ Shown here is the default config:</p>
 <span class="go"> &#39;duration&#39;: None,</span>
 <span class="go"> &#39;use_l3t&#39;: False,</span>
 <span class="go"> &#39;record&#39;: False,</span>
-<span class="go"> &#39;controls&#39;: None,</span>
-<span class="go"> &#39;mode&#39;: &lt;ScanMode.on: 0&gt;}</span>
+<span class="go"> &#39;controls&#39;: None}</span>
 </pre></div>
 </div>
 <dl class="method">
 <dt>
-<code class="descclassname">Daq.</code><code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=False</em>, <em>controls=None</em>, <em>mode=None</em><span class="sig-paren">)</span></dt>
+<code class="descclassname">Daq.</code><code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=False</em>, <em>controls=None</em><span class="sig-paren">)</span></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -220,16 +213,6 @@ stream as variables. We will check <code class="docutils literal notranslate"><s
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
 values each time begin is called. To provide a list, all devices
 must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
-<li><strong>mode</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – <p>This determines our run control during a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> scan with a
-<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> attached to a Daq object. There are three modes, with
-the <code class="docutils literal notranslate"><span class="pre">on</span></code> mode as the default:</p>
-<ul>
-<li><code class="docutils literal notranslate"><span class="pre">on</span></code>     (0): Take events always during runs</li>
-<li><code class="docutils literal notranslate"><span class="pre">manual</span></code> (1): Take events only during the <a class="reference internal" href="generated/pcdsdaq.plans.calib_cycle.html#pcdsdaq.plans.calib_cycle" title="pcdsdaq.plans.calib_cycle"><code class="xref any py py-func docutils literal notranslate"><span class="pre">calib_cycle</span></code></a> plan</li>
-<li><code class="docutils literal notranslate"><span class="pre">auto</span></code>   (2): Take events between <code class="docutils literal notranslate"><span class="pre">create</span></code> and <code class="docutils literal notranslate"><span class="pre">save</span></code></li>
-</ul>
-<p>If <code class="docutils literal notranslate"><span class="pre">mode</span></code> is omitted, we’ll use the previous value for <code class="docutils literal notranslate"><span class="pre">mode</span></code>.</p>
-</li>
 </ul>
 </td>
 </tr>
@@ -287,7 +270,7 @@ the <code class="docutils literal notranslate"><span class="pre">on</span></code
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+37.g0a1ae12',
+            VERSION:'1.2.0+70.gc74b4ea',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

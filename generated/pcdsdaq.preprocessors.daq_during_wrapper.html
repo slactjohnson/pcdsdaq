@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pcdsdaq.plans.calib_cycle &mdash; pcdsdaq 1.2.0+37.g0a1ae12 documentation</title>
+  <title>pcdsdaq.preprocessors.daq_during_wrapper &mdash; pcdsdaq 1.2.0+70.gc74b4ea documentation</title>
   
 
   
@@ -29,8 +29,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pcdsdaq.plans.calib_at_step" href="pcdsdaq.plans.calib_at_step.html" />
-    <link rel="prev" title="pcdsdaq.plans.daq_decorator" href="pcdsdaq.plans.daq_decorator.html" /> 
+    <link rel="next" title="pcdsdaq.preprocessors.daq_during_decorator" href="pcdsdaq.preprocessors.daq_during_decorator.html" />
+    <link rel="prev" title="Preprocessors API" href="../preprocessors_api.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                1.2.0+37.g0a1ae12
+                1.2.0+70.gc74b4ea
               </div>
             
           
@@ -92,11 +92,9 @@
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../plans_basic.html">Using the DAQ with Bluesky</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../plans_api.html">Plans API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.plans.daq_wrapper.html">pcdsdaq.plans.daq_wrapper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.plans.daq_decorator.html">pcdsdaq.plans.daq_decorator</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">pcdsdaq.plans.calib_cycle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.plans.calib_at_step.html">pcdsdaq.plans.calib_at_step</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preprocessors_api.html">Preprocessors API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pcdsdaq.preprocessors.daq_during_wrapper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.preprocessors.daq_during_decorator.html">pcdsdaq.preprocessors.daq_during_decorator</a></li>
 </ul>
 </li>
 </ul>
@@ -153,15 +151,15 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../plans_api.html">Plans API</a> &raquo;</li>
+          <li><a href="../preprocessors_api.html">Preprocessors API</a> &raquo;</li>
         
-      <li>pcdsdaq.plans.calib_cycle</li>
+      <li>pcdsdaq.preprocessors.daq_during_wrapper</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/generated/pcdsdaq.plans.calib_cycle.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pcdsdaq.preprocessors.daq_during_wrapper.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -174,31 +172,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pcdsdaq-plans-calib-cycle">
-<h1>pcdsdaq.plans.calib_cycle<a class="headerlink" href="#pcdsdaq-plans-calib-cycle" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pcdsdaq-preprocessors-daq-during-wrapper">
+<h1>pcdsdaq.preprocessors.daq_during_wrapper<a class="headerlink" href="#pcdsdaq-preprocessors-daq-during-wrapper" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="pcdsdaq.plans.calib_cycle">
-<code class="descclassname">pcdsdaq.plans.</code><code class="descname">calib_cycle</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.plans.calib_cycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plan to put the daq through a single calib cycle. This will start the daq
-with the configured parameters and wait until completion. This will raise
-an exception if the daq is configured to run forever or if we aren’t using
-the <a class="reference internal" href="pcdsdaq.plans.daq_wrapper.html#pcdsdaq.plans.daq_wrapper" title="pcdsdaq.plans.daq_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_wrapper</span></code></a>.</p>
-<p>All omitted arguments will fall back to the configured value.</p>
+<dt id="pcdsdaq.preprocessors.daq_during_wrapper">
+<code class="descclassname">pcdsdaq.preprocessors.</code><code class="descname">daq_during_wrapper</code><span class="sig-paren">(</span><em>plan</em>, <em>record=None</em>, <em>use_l3t=False</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.preprocessors.daq_during_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a plan with the <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>.</p>
+<p>This can be used with an ordinary <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plan that you’d like the daq
+to run along with. This also stages the daq so that the run start/stop
+will be synchronized with the bluesky runs.</p>
+<p>This must be applied outside the <code class="docutils literal notranslate"><span class="pre">run_wrapper</span></code>. All configuration must
+be done by supplying config kwargs to this wrapper.</p>
+<p>The <a class="reference internal" href="pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a> is the same as the <a class="reference internal" href="#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a>,
+but it is meant to be used as a function decorator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Number events to take in the daq.</li>
-<li><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – Time to run the daq in seconds, if <code class="docutils literal notranslate"><span class="pre">events</span></code> was not provided.</li>
-<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll run with the level 3 trigger. This means that, if we
-specified a number of events, we will wait for that many “good”
-events as determined by the daq.</li>
+<li><strong>plan</strong> (<code class="docutils literal notranslate"><span class="pre">plan</span></code>) – The <code class="docutils literal notranslate"><span class="pre">plan</span></code> to use the daq in</li>
+<li><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. Otherwise, we’ll run without
+recording. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, or the last set value for
+<code class="docutils literal notranslate"><span class="pre">record</span></code>.</li>
+<li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
+to only count events that pass the level 3 trigger. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
 stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
-<code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these values
-each time begin is called. To provide a list, all devices must
-have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
+<code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
+values each time begin is called. To provide a list, all devices
+must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
 </ul>
 </td>
 </tr>
@@ -216,10 +219,10 @@ have a <code class="docutils literal notranslate"><span class="pre">name</span><
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pcdsdaq.plans.calib_at_step.html" class="btn btn-neutral float-right" title="pcdsdaq.plans.calib_at_step" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="pcdsdaq.preprocessors.daq_during_decorator.html" class="btn btn-neutral float-right" title="pcdsdaq.preprocessors.daq_during_decorator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="pcdsdaq.plans.daq_decorator.html" class="btn btn-neutral" title="pcdsdaq.plans.daq_decorator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../preprocessors_api.html" class="btn btn-neutral" title="Preprocessors API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -250,7 +253,7 @@ have a <code class="docutils literal notranslate"><span class="pre">name</span><
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.2.0+37.g0a1ae12',
+            VERSION:'1.2.0+70.gc74b4ea',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
