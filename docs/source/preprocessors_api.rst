@@ -6,5 +6,5 @@ Preprocessors API
    :nosignatures:
    :toctree: generated
    
-   daq_wrapper
-   daq_decorator
+   daq_during_wrapper
+   daq_during_decorator

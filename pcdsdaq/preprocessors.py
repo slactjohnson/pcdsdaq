@@ -8,7 +8,7 @@ from bluesky.utils import make_decorator
 from .daq import get_daq
 
 
-def daq_wrapper(plan, record=None, use_l3t=False, controls=None):
+def daq_during_wrapper(plan, record=None, use_l3t=False, controls=None):
     """
     Run a plan with the `Daq`.
 
@@ -19,8 +19,8 @@ def daq_wrapper(plan, record=None, use_l3t=False, controls=None):
     This must be applied outside the ``run_wrapper``. All configuration must
     be done by supplying config kwargs to this wrapper.
 
-    The `daq_decorator` is the same as the `daq_wrapper`, but it is meant to be
-    used as a function decorator.
+    The `daq_during_decorator` is the same as the `daq_during_wrapper`,
+    but it is meant to be used as a function decorator.
 
     Parameters
     ----------
@@ -50,4 +50,4 @@ def daq_wrapper(plan, record=None, use_l3t=False, controls=None):
     yield from stage_wrapper(fly_during_wrapper(plan, flyers=[daq]), [daq])
 
 
-daq_decorator = make_decorator(daq_wrapper)
+daq_during_decorator = make_decorator(daq_during_wrapper)

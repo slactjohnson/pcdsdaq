@@ -5,7 +5,7 @@ from bluesky.plan_stubs import (trigger_and_read,
                                 create, read, save, null)
 from bluesky.preprocessors import run_decorator
 
-from pcdsdaq.preprocessors import daq_wrapper, daq_decorator
+from pcdsdaq.preprocessors import daq_during_wrapper, daq_during_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def test_flyer_scan(daq, RE, sig):
     """
     logger.debug('test_flyer_scan')
 
-    @daq_decorator()
+    @daq_during_decorator()
     @run_decorator()
     def plan(reader):
         yield from null()
@@ -55,6 +55,6 @@ def test_post_daq_RE(daq, RE, sig):
             yield from read(reader)
             yield from save()
 
-    RE(daq_wrapper(plan(sig, 'Running')))
+    RE(daq_during_wrapper(plan(sig, 'Running')))
     RE(plan(sig, 'Configured'))
     assert daq.state == 'Configured'

@@ -42,8 +42,8 @@ must be the same ``RunEngine`` that will be running all of the plans.
 .. note::
 
    The ``daq`` object must be staged if it's going to be used in a plan. This
-   is done automatically in `daq_wrapper`, `daq_decorator`, and most built-ins
-   like ``count`` and ``scan``.
+   is done automatically in `daq_during_wrapper`, `daq_during_decorator`, and
+   most built-ins like ``count`` and ``scan``.
 
 
 Calib Cycles
@@ -78,16 +78,17 @@ step.
 Running for an Entire Plan Duration
 -----------------------------------
 The simplest way to include the daq is to turn it on at the start of the plan
-and turn it off at the end of the plan. This is done using the `daq_wrapper`
-or `daq_decorator`, which treat the `Daq` as a ``bluesky`` ``Flyer``.
+and turn it off at the end of the plan. This is done using the
+`daq_during_wrapper` or `daq_during_decorator`, which treat
+the `Daq` as a ``bluesky`` ``Flyer``.
 
 .. code-block:: python
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.preprocessors import daq_decorator
+    from pcdsdaq.preprocessors import daq_during_decorator
 
-    @daq_decorator()
+    @daq_during_decorator()
     @run_decorator()
     def basic_plan(motor, start, end):
         yield from mv(motor, start)
@@ -100,9 +101,9 @@ or `daq_decorator`, which treat the `Daq` as a ``bluesky`` ``Flyer``.
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.preprocessors import daq_decorator
+    from pcdsdaq.preprocessors import daq_during_decorator
 
-    @daq_decorator()
+    @daq_during_decorator()
     @run_decorator()
     def basic_plan(motor, start, end):
         yield from mv(motor, start)
@@ -118,6 +119,6 @@ and back to the ``start`` positions, and then end the run.
     RE(basic_plan(motor1, 0, 10))
 
 
-If you ignore the `daq_decorator`, this is just a normal ``plan``.
+If you ignore the `daq_during_decorator`, this is just a normal ``plan``.
 This makes it simple to add the daq collecting data in the background
 to a normal ``bluesky`` ``plan``.

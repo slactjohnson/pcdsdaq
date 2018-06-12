@@ -21,8 +21,11 @@ API Changes
 - ``calib_cycle`` and related ``plans`` module has been removed, as using the
   `Daq` as a readable device is more intuitive and it's still early enough to
   break my API.
-- `daq_wrapper` and `daq_decorator` have been move to the ``preprocessors``
-  submodule, as a parallel to the ``bluesky`` structure.
+- ``daq_wrapper`` and ``daq_decorator`` have been move to the ``preprocessors``
+  submodule, as a parallel to the ``bluesky`` structure. They have been renamed
+  to `daq_during_wrapper` and `daq_during_decorator` as a parallel to the
+  built-in ``fly_during_wrapper``. These are now simple preprocessors to
+  run the daq at the same time as a daq-agnostic plan.
 - ``complete`` no longer ends the run. This makes it more in line with the
   ``bluesky`` API.
 
