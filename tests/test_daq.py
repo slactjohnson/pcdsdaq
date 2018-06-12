@@ -313,7 +313,7 @@ def test_basic_plans(daq, RE):
     start = time.time()
     RE(count([daq], num=10))
     dt = time.time() - start
-    assert 1 < dt < 1.4
+    assert 1 < dt < 2
     assert daq.state == 'Configured'
 
     def n_runs(det, n):
@@ -361,6 +361,7 @@ def test_bad_stuff(daq, RE):
     daq.end_run()  # Prevent thread stalling
 
 
+@pytest.mark.timeout(3)
 def test_call_bluesky(daq):
     """
     These are things that bluesky uses. Let's check them.
@@ -369,9 +370,12 @@ def test_call_bluesky(daq):
     daq.describe()
     daq.describe_configuration()
     daq.stage()
+    daq.begin(duration=10)
+    # unstage should end the run and we don't time out
     daq.unstage()
 
 
+@pytest.mark.timeout(3)
 def test_misc(daq, sig):
     """
     Blatant coverage-grab
@@ -383,6 +387,10 @@ def test_misc(daq, sig):
         daq_module.Daq()
     end_status = daq._get_end_status()
     status_wait(end_status)
+    daq.begin(duration=10)
+    # Interrupt run with new run and we don't time out
+    daq.begin(events=12)
+    daq.wait()
 
 
 def test_begin_sigint(daq):

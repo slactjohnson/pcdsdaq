@@ -13,7 +13,7 @@ import pytest
 def daq(RE):
     set_sim_mode(True)
     sim_pydaq.conn_err = None
-    return Daq(RE=RE)
+    return Daq(RE=RE, platform=0)
 
 
 @pytest.fixture(scope='function')
