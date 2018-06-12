@@ -1,12 +1,13 @@
 Using the DAQ with Bluesky
 ==========================
-Some utilities are provided for running the daq in sync with a ``bluesky``
-``plan``. This document will assume some familiarity with ``bluesky`` and
+The `Daq` class is designed as a drop-in ``bluesky`` readable. That means
+you can put it into built-in ``bluesky`` plans in the ``dets`` list and it will
+collect data at each scan point.
+
+This document will assume some familiarity with ``bluesky`` and
 how to use the ``RunEngine``, but does not require a full understanding of
 the internals.
 
-I am going to introduce these through a series of examples. You can check the
-full `api docs <./plans_api>` for more information.
 
 Creating a Daq object with the RunEngine
 ----------------------------------------
@@ -38,19 +39,56 @@ must be the same ``RunEngine`` that will be running all of the plans.
     daq = Daq(RE=RE)
 
 
-Basic Plan with Daq Support
----------------------------
+.. note::
+
+   The ``daq`` object must be staged if it's going to be used in a plan. This
+   is done automatically in `daq_during_wrapper`, `daq_during_decorator`, and
+   most built-ins like ``count`` and ``scan``.
+
+
+Calib Cycles
+------------
+Including calib cycles in a built-in plan is as simple as including the `Daq`
+as a reader or detector. The `Daq` will start and run for the configured
+duration or number of events at every scan step.
+
+The built-in ``scan`` will move ``motor1`` from ``0`` to ``10`` in ``11``
+steps. Prior to the scan, we configure the ``daq`` to take ``120`` events at
+each point. Since ``daq`` is included in the detectors list, it is run at every
+step.
+
+.. code-block:: python
+
+    from bluesky.plans import scan
+    daq.configure(events=120)
+
+
+.. ipython:: python
+    :suppress:
+
+    from bluesky.plans import scan
+    daq.configure(events=120)
+
+
+.. ipython:: python
+
+    RE(scan([daq], motor1, 0, 10, 11))
+
+
+Running for an Entire Plan Duration
+-----------------------------------
 The simplest way to include the daq is to turn it on at the start of the plan
-and turn it off at the end of the plan. This is done using the default mode,
-``on``, which we'll configure explicitly in the `daq_wrapper`.
+and turn it off at the end of the plan. This is done using the
+`daq_during_wrapper` or `daq_during_decorator`, which treat
+the `Daq` as a ``bluesky`` ``Flyer``.
 
 .. code-block:: python
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.plans import daq_decorator
+    from pcdsdaq.preprocessors import daq_during_decorator
 
-    @daq_decorator(mode='on')
+    @daq_during_decorator()
     @run_decorator()
     def basic_plan(motor, start, end):
         yield from mv(motor, start)
@@ -63,9 +101,9 @@ and turn it off at the end of the plan. This is done using the default mode,
 
     from bluesky.plan_stubs import mv
     from bluesky.preprocessors import run_decorator
-    from pcdsdaq.plans import daq_decorator
+    from pcdsdaq.preprocessors import daq_during_decorator
 
-    @daq_decorator(mode='on')
+    @daq_during_decorator()
     @run_decorator()
     def basic_plan(motor, start, end):
         yield from mv(motor, start)
@@ -81,97 +119,6 @@ and back to the ``start`` positions, and then end the run.
     RE(basic_plan(motor1, 0, 10))
 
 
-If you ignore the `daq_decorator`, this is just a normal ``plan``.
-This makes it simple to add the daq to a normal ``bluesky`` ``plan``.
-
-
-Calib Cycle Per Step
---------------------
-Including calib cycles in a built-in plan with a ``per_step`` hook
-is also simple using `calib_at_step`. Take care to make sure the `Daq` is
-configured with ``mode='manual'``.
-
-.. code-block:: python
-
-    from bluesky.plans import scan
-    from pcdsdaq.plans import calib_at_step
-
-    def daq_scan(dets, motor, start, end, steps, events_per_point, record=False):
-        @daq_decorator(mode='manual', record=record)
-        def inner_daq_scan():
-            yield from scan(dets, motor, start, end, steps,
-                            per_step=calib_at_step(events=events_per_point)
-        return (yield from inner_daq_scan())
-
-
-.. ipython:: python
-    :suppress:
-
-    from bluesky.plans import scan
-    from pcdsdaq.plans import calib_at_step
-
-    def daq_scan(dets, motor, start, end, steps, events_per_point, record=False):
-        @daq_decorator(mode='manual', record=record)
-        def inner_daq_scan():
-            yield from scan(dets, motor, start, end, steps,
-                            per_step=calib_at_step(events=events_per_point)
-        return (yield from inner_daq_scan())
-
-
-This plan will move ``motor`` from ``start`` to ``end`` in ``steps``
-evenly-spaced steps, checking readings from ``dets`` at each point
-and running a `calib_cycle` for ``events_per_point`` events.
-
-.. ipython:: python
-
-    RE(daq_scan([det1], motor1, 0, 10, 11, 120))
-
-
-Manual Calib Cycle
-------------------
-You may also call `calib_cycle` directly:
-
-.. code-block:: python
-
-    from bluesky.plan_stubs import sleep
-    from pcdsdaq.plans import calib_cycle
-
-    def daq_count(num, sleep_time, duration_per_point, record=False):
-        @daq_decorator(mode='manual', record=record)
-        @run_decorator()
-        def inner_daq_count():
-            for i in range(num):
-                yield from calib_cycle(duration=duration_per_point)
-                yield from sleep(sleep_time)
-        return (yield from inner_daq_count())
-
-
-.. ipython:: python
-    :suppress:
-
-    from bluesky.plan_stubs import sleep
-    from pcdsdaq.plans import calib_cycle
-
-    def daq_count(num, sleep_time, duration_per_point, record=False):
-        @daq_decorator(mode='manual', record=record)
-        @run_decorator()
-        def inner_daq_count():
-            for i in range(num):
-                yield from calib_cycle(duration=duration_per_point)
-                yield from sleep(sleep_time)
-        return (yield from inner_daq_count())
-
-
-This plan will run `calib_cycle` ``num`` times for ``duration_per_point``
-seconds each, waiting ``sleep_time`` seconds between cycles.
-
-.. ipython:: python
-
-    RE(daq_count(5, 2, 3, record=True))
-
-
-Auto Mode
----------
-In addition to ``on`` and ``manual`` modes, an ``auto`` mode exists. This will
-run the daq for the duration of time that a normal ``bluesky`` plan is reading
-data. This is between ``create`` and ``save`` messages.
+If you ignore the `daq_during_decorator`, this is just a normal ``plan``.
+This makes it simple to add the daq collecting data in the background
+to a normal ``bluesky`` ``plan``.

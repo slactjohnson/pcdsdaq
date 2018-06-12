@@ -5,6 +5,9 @@ import time
 from threading import Thread
 
 import pytest
+from bluesky.plans import count
+from bluesky.plan_stubs import trigger_and_read
+from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
 import pcdsdaq.sim.pydaq as sim_pydaq
@@ -296,15 +299,45 @@ def test_check_connect(nodaq):
         nodaq.wait()
 
 
+@pytest.mark.timeout(10)
+def test_basic_plans(daq, RE):
+    logger.debug('test_basic_plans')
+    daq.configure(events=12)
+
+    start = time.time()
+    RE(stage_wrapper(run_wrapper(trigger_and_read([daq])), [daq]))
+    dt = time.time() - start
+    assert 0.1 < dt < 0.2
+    assert daq.state == 'Configured'
+
+    start = time.time()
+    RE(count([daq], num=10))
+    dt = time.time() - start
+    assert 1 < dt < 2
+    assert daq.state == 'Configured'
+
+    def n_runs(det, n):
+        for i in range(n):
+            yield from run_wrapper(trigger_and_read([det]))
+
+    RE(stage_wrapper(n_runs(daq, 10), [daq]))
+    assert daq.state == 'Configured'
+
+
+def test_trigger_error(daq, RE):
+    logger.debug('test_trigger_error')
+    daq.configure(events=None, duration=None)
+    with pytest.raises(RuntimeError):
+        daq.trigger()
+
+
 def test_bad_stuff(daq, RE):
     """
     Miscellaneous exception raises
     """
     logger.debug('test_bad_stuff')
 
-    # Bad mode name
-    with pytest.raises(ValueError):
-        daq.configure(mode='cashews')
+    daq.connect()
 
     # Daq internal error
     configure = daq._control.configure
@@ -328,18 +361,36 @@ def test_bad_stuff(daq, RE):
     daq.end_run()  # Prevent thread stalling
 
 
-def test_call_everything_else(daq, sig):
+@pytest.mark.timeout(3)
+def test_call_bluesky(daq):
     """
     These are things that bluesky uses. Let's check them.
     """
-    logger.debug('test_call_everything_else')
+    logger.debug('test_call_bluesky')
+    daq.describe()
     daq.describe_configuration()
-    daq.configure(controls=dict(sig=sig))
     daq.stage()
+    daq.begin(duration=10)
+    # unstage should end the run and we don't time out
     daq.unstage()
+
+
+@pytest.mark.timeout(3)
+def test_misc(daq, sig):
+    """
+    Blatant coverage-grab
+    """
+    logger.debug('test_misc')
+    daq.configure(controls=dict(sig=sig))
     daq_module.pydaq = None
     with pytest.raises(ImportError):
         daq_module.Daq()
+    end_status = daq._get_end_status()
+    status_wait(end_status)
+    daq.begin(duration=10)
+    # Interrupt run with new run and we don't time out
+    daq.begin(events=12)
+    daq.wait()
 
 
 def test_begin_sigint(daq):
