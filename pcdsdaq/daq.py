@@ -273,7 +273,9 @@ class Daq:
             status_wait(begin_status, timeout=BEGIN_TIMEOUT)
             if wait:
                 self.wait()
-            if end_run:
+                if end_run:
+                    self.end_run()
+            if end_run and not wait:
                 threading.Thread(target=self._ender_thread, args=()).start()
         except KeyboardInterrupt:
             self.end_run()
