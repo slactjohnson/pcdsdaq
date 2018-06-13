@@ -126,7 +126,7 @@ class Daq:
         This can be different than `config` if we have queued up a
         configuration to be run on the next begin.
         """
-        cfg = self.config.copy()
+        cfg = self.config
         cfg.update(self._desired_config)
         return cfg
 
@@ -460,11 +460,40 @@ class Daq:
         logger.debug('Daq.describe_collect()')
         return {}
 
+    def preconfig(self, events=None, duration=None, record=None, use_l3t=None,
+                  controls=None, show_queued_cfg=True):
+        """
+        Queue configuration parameters for next call to `configure`.
+
+        These will be overridden by arguments passed directly to `configure`.
+        These will be cleared after each call to `configure`.
+
+        This can be used to `configure` the `Daq` object without connecting.
+
+        This will display the next queued configuration using logger.info,
+        assuming the logger has been configured.
+        """
+        for arg, name in zip((events, duration, record, use_l3t, controls),
+                             ('events', 'duration', 'record', 'use_l3t',
+                              'controls')):
+            if arg is not None:
+                self._desired_config[name] = arg
+
+        if show_queued_cfg:
+            txt = 'The following config is queued:\n'
+            for key, value in self.next_config.items():
+                if value is not None:
+                    txt.append('{}: {}\n'.format(key, value))
+            logger.info(txt)
+
     @check_connect
     def configure(self, events=None, duration=None, record=None,
-                  use_l3t=False, controls=None):
+                  use_l3t=None, controls=None):
         """
         Changes the daq's configuration for the next run.
+
+        This is the method that directly interfaces with the daq. If you simply
+        want to get a configuration ready for later, use `preconfig`.
 
         Parameters
         ----------
@@ -487,7 +516,7 @@ class Daq:
         use_l3t: ``bool``, optional
             If ``True``, an ``events`` argument to begin will be reinterpreted
             to only count events that pass the level 3 trigger. Defaults to
-            ``False``.
+            its last configured value, or ``False``.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
@@ -499,6 +528,9 @@ class Daq:
         Returns
         -------
         old, new: ``tuple`` of ``dict``
+            The old configuration and the new configuration. These dictionaries
+            are verbose, containing all configuration values and the timestamps
+            at which they were configured, as specified by ``bluesky``.
         """
         logger.debug(('Daq.configure(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s)'),
@@ -509,13 +541,18 @@ class Daq:
             raise StateTransitionError(err)
 
         self._check_duration(duration)
-
         old = self.read_configuration()
 
-        record = self._desired_config.get('record', record)
+        self.preconfig(events=events, duration=duration, record=record,
+                       use_l3t=use_l3t, controls=controls,
+                       show_queued_cfg=False)
+        config = self.next_config()
 
-        if record is None:
-            record = self.config['record']
+        events = config['events']
+        duration = config['duration']
+        record = config['record']
+        use_l3t = config['use_l3t']
+        controls = config['controls']
 
         config_args = self._config_args(record, use_l3t, controls)
         try:
@@ -548,14 +585,11 @@ class Daq:
         Setting this is the equivalent of scheduling a `configure` call to be
         executed later, e.g. ``configure(record=True)``
         """
-        try:
-            return self._desired_config['record']
-        except KeyError:
-            return self.config['record']
+        return self.next_config['record']
 
     @record.setter
     def record(self, record):
-        self._desired_config['record'] = record
+        self.preconfig(record=record)
 
     def _update_config_ts(self):
         """
@@ -747,7 +781,7 @@ class Daq:
         if self._pre_run_state == 'Disconnected':
             self.disconnect()
         elif self._pre_run_state == 'Running':
-            self.begin(events=None, duration=None, record=False)
+            self.begin(events=0, record=False, use_l3t=False)
         # For other states, end_run was sufficient.
         return [self]
 
