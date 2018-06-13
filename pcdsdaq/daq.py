@@ -838,7 +838,7 @@ class Daq:
         if self._pre_run_state == 'Disconnected':
             self.disconnect()
         elif self._pre_run_state == 'Running':
-            self.begin(events=0, record=False, use_l3t=False)
+            self.begin_infinite()
         # For other states, end_run was sufficient.
         return [self]
 
