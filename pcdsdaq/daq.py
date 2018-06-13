@@ -90,6 +90,7 @@ class Daq:
         self._re_cbid = None
         self._config_ts = {}
         self._update_config_ts()
+        self._pre_run_state = None
         register_daq(self)
 
     # Convenience properties
@@ -705,6 +706,8 @@ class Daq:
         ``bluesky`` interface for preparing a device for action.
 
         This sets up the daq to end runs on run stop documents.
+        It also caches the current state, so we know what state to return to
+        after the ``bluesky`` scan.
 
         Returns
         -------
@@ -712,6 +715,7 @@ class Daq:
             list of devices staged
         """
         logger.debug('Daq.stage()')
+        self._pre_run_state = self.state
         if self._re_cbid is None:
             self._re_cbid = self._RE.subscribe(self._re_manage_runs)
         return [self]
@@ -739,6 +743,12 @@ class Daq:
         # If we're still running, end now
         if self.state in ('Open', 'Running'):
             self.end_run()
+        # Return to the state we had at stage
+        if self._pre_run_state == 'Disconnected':
+            self.disconnect()
+        elif self._pre_run_state == 'Running':
+            self.begin(events=None, duration=None, record=False)
+        # For other states, end_run was sufficient.
         return [self]
 
     def pause(self):
