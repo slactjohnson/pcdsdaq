@@ -193,6 +193,7 @@ class Daq:
         """
         logger.debug('Daq.disconnect()')
         if self._control is not None:
+            self.end_run()
             self._control.disconnect()
         del self._control
         self._control = None
@@ -216,7 +217,7 @@ class Daq:
             status_wait(status, timeout=timeout)
 
     def begin(self, events=None, duration=None, record=None, use_l3t=None,
-              controls=None, wait=False):
+              controls=None, wait=False, end_run=False):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -256,6 +257,9 @@ class Daq:
             If ``True``, wait for the daq to finish aquiring data. A
             ``KeyboardInterrupt`` (``ctrl+c``) during this wait will end the
             run and clean up.
+
+        end_run: ``bool``, optional
+            If ``True``, we'll end the run after the daq has stopped.
         """
         logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, wait=%s)'),
@@ -263,20 +267,36 @@ class Daq:
         try:
             if record is not None and record != self.record:
                 old_record = self.record
-                self.record = record
+                self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
             status_wait(begin_status, timeout=BEGIN_TIMEOUT)
             if wait:
                 self.wait()
+            if end_run:
+                threading.Thread(target=self._ender_thread, args=()).start()
         except KeyboardInterrupt:
             self.end_run()
             logger.info('%s.begin interrupted, ending run', self.name)
         finally:
             try:
-                self.record = old_record
+                self.preconfig(record=old_record, show_queued_cfg=False)
             except NameError:
                 pass
+
+    def begin_infinite(self, record=None, use_l3t=None, controls=None):
+        """
+        Start the daq to run forever in the background.
+        """
+        self.begin(events=0, record=record, use_l3t=use_l3t,
+                   controls=controls, wait=False, end_run=False)
+
+    def _ender_thread(self):
+        """
+        End the run when the daq stops aquiring
+        """
+        self.wait()
+        self.end_run()
 
     @check_connect
     def stop(self):
@@ -474,18 +494,21 @@ class Daq:
         This will display the next queued configuration using logger.info,
         assuming the logger has been configured.
         """
-        for arg, name in zip((events, duration, record, use_l3t, controls),
-                             ('events', 'duration', 'record', 'use_l3t',
-                              'controls')):
+        # Only one of (events, duration) should be preconfigured.
+        if events is not None:
+            self._desired_config['events'] = events
+            self._desired_config['duration'] = None
+        elif duration is not None:
+            self._desired_config['events'] = None
+            self._desired_config['duration'] = duration
+
+        for arg, name in zip((record, use_l3t, controls),
+                             ('record', 'use_l3t', 'controls')):
             if arg is not None:
                 self._desired_config[name] = arg
 
         if show_queued_cfg:
-            txt = 'The following config is queued:\n'
-            for key, value in self.next_config.items():
-                if value is not None:
-                    txt.append('{}: {}\n'.format(key, value))
-            logger.info(txt)
+            self.config_info(self.next_config, 'Queued config:')
 
     @check_connect
     def configure(self, events=None, duration=None, record=None,
@@ -547,13 +570,18 @@ class Daq:
         self.preconfig(events=events, duration=duration, record=record,
                        use_l3t=use_l3t, controls=controls,
                        show_queued_cfg=False)
-        config = self.next_config()
+        config = self.next_config
 
         events = config['events']
         duration = config['duration']
         record = config['record']
         use_l3t = config['use_l3t']
         controls = config['controls']
+
+        logger.debug(('Updated with queued config, now we have: '
+                      'events=%s, duration=%s, record=%s, '
+                      'use_l3t=%s, controls=%s'),
+                     events, duration, record, use_l3t, controls)
 
         config_args = self._config_args(record, use_l3t, controls)
         try:
@@ -566,8 +594,7 @@ class Daq:
                                 record=record, use_l3t=use_l3t,
                                 controls=controls)
             self._update_config_ts()
-            msg = 'Daq configured'
-            logger.info(msg)
+            self.config_info(header='Daq configured:')
         except Exception as exc:
             self._config = None
             msg = 'Failed to configure!'
@@ -576,6 +603,32 @@ class Daq:
         new = self.read_configuration()
         self._desired_config = {}
         return old, new
+
+    def config_info(self, config=None, header='Config:'):
+        """
+        Show the config information as a logger.info message.
+
+        This will print to the screen if the logger is configured correctly.
+
+        Parameters
+        ----------
+        config: ``dict``, optional
+            The configuration to show. If omitted, we'll use the current
+            config.
+
+        header: ``str``, optional
+            A prefix for the config line.
+        """
+        if config is None:
+            config = self.config
+
+        txt = []
+        for key, value in config.items():
+            if value is not None:
+                txt.append('{}={}'.format(key, value))
+        if header:
+            header += ' '
+        logger.info(header + ', '.join(txt))
 
     @property
     def record(self):
@@ -743,6 +796,8 @@ class Daq:
         This sets up the daq to end runs on run stop documents.
         It also caches the current state, so we know what state to return to
         after the ``bluesky`` scan.
+        If a run is already started, we'll end it here so that we can start a
+        new run during the scan.
 
         Returns
         -------
@@ -753,6 +808,7 @@ class Daq:
         self._pre_run_state = self.state
         if self._re_cbid is None:
             self._re_cbid = self._RE.subscribe(self._re_manage_runs)
+        self.end_run()
         return [self]
 
     def _re_manage_runs(self, name, doc):
@@ -829,8 +885,6 @@ class Daq:
 
     def __del__(self):
         try:
-            if self.state in ('Open', 'Running'):
-                self.end_run()
             self.disconnect()
         except Exception:
             pass
