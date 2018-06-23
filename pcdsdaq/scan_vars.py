@@ -84,8 +84,13 @@ class ScanVars(Device, CallbackBase):
 
             # inspect the daq
             daq = get_daq()
-            if daq.config['events'] is not None:
-                self.n_shots.put(daq.config['events'])
+            if daq is None:
+                logger.debug('Skip n_shots, no daq')
+            else:
+                if daq.config['events'] is None:
+                    logger.debug('Skip n_shots, daq configured for duration')
+                else:
+                    self.n_shots.put(daq.config['events'])
         except Exception as exc:
             err = 'Error setting up scan var pvs: %s'
             logger.error(err, exc)
