@@ -11,6 +11,27 @@ logger = logging.getLogger(__name__)
 
 
 class ScanVars(Device, CallbackBase):
+    """
+    Collection of PVs to keep track of the scan state.
+
+    Use `enable` to set up automatic updating of these PVs
+    during a ``RunEngine`` scan. This relies on proper
+    metadata like the metadata in the built in ``scan``
+    and ``count`` plans to populate the PVS.
+
+    Use `disable` to remove this from the ``RunEngine``.
+
+    Parameters
+    ----------
+    prefix: ``str``
+        The PV prefix, e.g. ``XPP:SCAN``
+
+    name: ``str``, required keyword
+        A name to refer to this object by
+
+    RE: ``RunEngine``, required keyword
+        The ``RunEngine`` instance associated with the session.
+    """
     i_step = Cpt(EpicsSignal, ':ISTEP')
     is_scan = Cpt(EpicsSignal, ':ISSCAN')
     var0 = Cpt(EpicsSignal, ':SCANVAR00')
@@ -31,10 +52,16 @@ class ScanVars(Device, CallbackBase):
         self._RE = RE
 
     def enable(self):
+        """
+        Enable automatic updating of PVs during a scan.
+        """
         if self._cbid is None:
             self._cbid = self._RE.subscribe(self)
 
     def disable(self):
+        """
+        Disable automatic updating of PVs during a scan.
+        """
         if self._cbid is not None:
             self._RE.unsubscribe(self._cbid)
             self._cbid = None

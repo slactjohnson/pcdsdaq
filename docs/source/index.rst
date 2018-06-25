@@ -17,6 +17,14 @@
    plans_basic.rst
    preprocessors_api.rst
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Auxiliary Features
+   :hidden:
+
+   scan_pvs.rst
+
 .. toctree::
    :maxdepth: 1
    :caption: Sim Mode
