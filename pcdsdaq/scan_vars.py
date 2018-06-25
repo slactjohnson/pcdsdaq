@@ -31,6 +31,10 @@ class ScanVars(Device, CallbackBase):
 
     RE: ``RunEngine``, required keyword
         The ``RunEngine`` instance associated with the session.
+
+    i_start: ``int``, optional
+        The starting count for the i_step tracker. This defaults to zero,
+        which is offset by one from the one-indexed bluesky counter.
     """
     i_step = Cpt(EpicsSignal, ':ISTEP')
     is_scan = Cpt(EpicsSignal, ':ISSCAN')
@@ -46,10 +50,11 @@ class ScanVars(Device, CallbackBase):
     n_steps = Cpt(EpicsSignal, ':NSTEPS')
     n_shots = Cpt(EpicsSignal, ':NSHOTS')
 
-    def __init__(self, prefix, *, name, RE, **kwargs):
+    def __init__(self, prefix, *, name, RE, i_start=0, **kwargs):
         super().__init__(prefix, name=name, **kwargs)
         self._cbid = None
         self._RE = RE
+        self._i_start = i_start
 
     def enable(self):
         """
@@ -76,7 +81,7 @@ class ScanVars(Device, CallbackBase):
         """
         logger.debug('Seting up scan var pvs')
         try:
-            self.i_step.put(1)
+            self.i_step.put(self._i_start)
             self.is_scan.put(1)
             # inspect the doc
             # first, check for motor names
@@ -131,7 +136,7 @@ class ScanVars(Device, CallbackBase):
         this runs immediately after a scan step and recieves an event doc from
         the step that just ran.
         """
-        self.i_step.put(doc['seq_num']+1)
+        self.i_step.put(doc['seq_num']-1 + self._i_start)
 
     def stop(self, doc):
         """
