@@ -24,7 +24,7 @@ PVs
 PV Suffix           Function
 ISTEP               Current scan step, 0-indexed by default
 ISSCAN              1 if we are doing a scan, 0 otherwise
-SCANVAR{0,1,2}      The name of our {1st, 2nd, 3rd} positioner
+SCANVAR0{0,1,2}     The name of our {1st, 2nd, 3rd} positioner
 MAX0{0,1,2}         The max scan position of each positioner
 MIN0{0,1,2}         The min scan position of each positioner
 NSTEPS              The total number of steps in the scan
