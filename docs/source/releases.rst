@@ -1,8 +1,8 @@
 Release History
 ###############
 
-Next Release
-============
+v2.0.0 (2018-05-27)
+===================
 
 Features
 --------
@@ -15,6 +15,12 @@ Features
   A calibcycle will be run when the `Daq` is triggered, and triggering will be
   reported as done when the `Daq` has stopped. This means it is viable to use
   the `Daq` inside normal plans like ``scan`` and ``count``.
+- Add an argument to `Daq.begin`: ``end_run=True`` will end the run once the
+  daq stops running, rather than leaving the run open.
+- Add `Daq.begin_infinite`
+- Add `Daq.config_info`
+- Restore daq state after a ``bluesky`` ``plan``, e.g. disconnect if we were
+  disconnected, run if we were running, etc.
 
 API Changes
 -----------
