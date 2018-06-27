@@ -21,6 +21,9 @@ Features
 - Add `Daq.config_info`
 - Restore daq state after a ``bluesky`` ``plan``, e.g. disconnect if we were
   disconnected, run if we were running, etc.
+- Add support for scan PVs via the `ScanVars` class. This class attaches
+  itself to a ``RunEngine`` and knows when to update each PV, provided that
+  the ``plan`` has reasonable metadata.
 
 API Changes
 -----------
