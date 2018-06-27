@@ -15,6 +15,9 @@ Features
   A calibcycle will be run when the `Daq` is triggered, and triggering will be
   reported as done when the `Daq` has stopped. This means it is viable to use
   the `Daq` inside normal plans like ``scan`` and ``count``.
+- Add support for scan PVs via the `ScanVars` class. This class attaches
+  itself to a ``RunEngine`` and knows when to update each PV, provided that
+  the ``plan`` has reasonable metadata.
 
 API Changes
 -----------

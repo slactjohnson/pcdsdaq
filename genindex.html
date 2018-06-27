@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; pcdsdaq 1.2.0+70.gc74b4ea documentation</title>
+  <title>Index &mdash; pcdsdaq 1.2.0+86.ga4896e2 documentation</title>
   
 
   
@@ -25,8 +25,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -58,7 +57,7 @@
             
             
               <div class="version">
-                1.2.0+70.gc74b4ea
+                1.2.0+86.ga4896e2
               </div>
             
           
@@ -92,6 +91,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Auxiliary Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Sim Mode</span></p>
 <ul>
@@ -172,6 +175,7 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -179,6 +183,7 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
@@ -223,13 +228,15 @@
 </li>
       <li><a href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper">daq_during_wrapper() (in module pcdsdaq.preprocessors)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.describe">describe() (pcdsdaq.daq.Daq method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.describe_collect">describe_collect() (pcdsdaq.daq.Daq method)</a>
 </li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.describe_configuration">describe_configuration() (pcdsdaq.daq.Daq method)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.disable">disable() (pcdsdaq.scan_vars.ScanVars method)</a>
 </li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.disconnect">disconnect() (pcdsdaq.daq.Daq method)</a>
 </li>
@@ -239,7 +246,13 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.enable">enable() (pcdsdaq.scan_vars.ScanVars method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.end_run">end_run() (pcdsdaq.daq.Daq method)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.event">event() (pcdsdaq.scan_vars.ScanVars method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -248,6 +261,18 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/pcdsdaq.daq.get_daq.html#pcdsdaq.daq.get_daq">get_daq() (in module pcdsdaq.daq)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.i_step">i_step (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.is_scan">is_scan (pcdsdaq.scan_vars.ScanVars attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -263,6 +288,12 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.n_shots">n_shots (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.n_steps">n_steps (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.next_config">next_config (pcdsdaq.daq.Daq attribute)</a>
 </li>
   </ul></td>
@@ -297,16 +328,24 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars">ScanVars (class in pcdsdaq.scan_vars)</a>
+</li>
       <li><a href="sim.html#pcdsdaq.sim.set_sim_mode">set_sim_mode() (in module pcdsdaq.sim)</a>
 </li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.stage">stage() (pcdsdaq.daq.Daq method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.start">start() (pcdsdaq.scan_vars.ScanVars method)</a>
+</li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.state">state (pcdsdaq.daq.Daq attribute)</a>
 </li>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.stop">stop() (pcdsdaq.daq.Daq method)</a>
+
+      <ul>
+        <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.stop">(pcdsdaq.scan_vars.ScanVars method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -322,6 +361,32 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="daq_api.html#pcdsdaq.daq.Daq.unstage">unstage() (pcdsdaq.daq.Daq method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var0">var0 (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var0_max">var0_max (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var0_min">var0_min (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var1">var1 (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var1_max">var1_max (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var1_min">var1_min (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var2">var2 (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var2_max">var2_max (pcdsdaq.scan_vars.ScanVars attribute)</a>
+</li>
+      <li><a href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars.var2_min">var2_min (pcdsdaq.scan_vars.ScanVars attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -368,7 +433,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+70.gc74b4ea',
+            VERSION:'1.2.0+86.ga4896e2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -382,10 +447,7 @@
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {
