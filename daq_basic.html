@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; pcdsdaq 1.2.0+86.ga4896e2 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 1.2.0+97.gb095ab5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                1.2.0+86.ga4896e2
+                1.2.0+97.gb095ab5
               </div>
             
           
@@ -89,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#running-until-stop">Running Until Stop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-for-a-fixed-number-of-events">Running for a Fixed Number of Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#runing-for-a-fixed-time-duration">Runing for a Fixed Time Duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ending-a-run">Ending a Run</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#recording-data">Recording Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-options">Advanced Options</a></li>
 </ul>
@@ -225,7 +226,7 @@ the full <a class="reference internal" href="daq_api.html"><span class="doc">api
 <span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
 
 <span class="n">set_sim_mode</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">(</span><span class="n">platform</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># Defined per hutch</span>
+<span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -233,6 +234,8 @@ the full <a class="reference internal" href="daq_api.html"><span class="doc">api
 <h2>Running Until Stop<a class="headerlink" href="#running-until-stop" title="Permalink to this headline">¶</a></h2>
 <p>Calling <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> with no arguments in the default configuration will
 run the daq indefinitely, until we manually stop it.
+You can also use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a> to run the daq indefinitely with
+any configuration.
 Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.state" title="pcdsdaq.daq.Daq.state"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.state</span></code></a> to verify that we’ve started running the daq.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[1]: </span><span class="go">&#39;Disconnected&#39;</span>
@@ -249,7 +252,7 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gp">In [6]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [7]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0588147640228271</span>
+<span class="go">1.0573365688323975</span>
 
 <span class="gp">In [8]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="go">                   Out[8]: &#39;Open&#39;</span>
@@ -279,10 +282,10 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [15]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [16]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.0103087425231934</span>
+<span class="go">2.009479522705078</span>
 
 <span class="gp">In [17]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
-<span class="go">                   Out[17]: &#39;Open&#39;</span>
+<span class="go">                  Out[17]: &#39;Open&#39;</span>
 
 <span class="gp">In [18]: </span><span class="n">daq</span><span class="o">.</span><span class="n">end_run</span><span class="p">()</span>
 
@@ -303,7 +306,7 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gp">In [22]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="gp">In [23]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.5065300464630127</span>
+<span class="go">1.5063166618347168</span>
 
 <span class="gp">In [24]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="go">                   Out[24]: &#39;Open&#39;</span>
@@ -315,26 +318,41 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 </pre></div>
 </div>
 </div>
+<div class="section" id="ending-a-run">
+<h2>Ending a Run<a class="headerlink" href="#ending-a-run" title="Permalink to this headline">¶</a></h2>
+<p>As seen in the previous examples, <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.end_run</span></code></a> can be used to tell the daq
+that the current run is over. You can also do with with an argument to
+<a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> for a nice one-liner:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
+<span class="gh">Out[27]: </span><span class="go">&#39;Configured&#39;</span>
+
+<span class="gp">In [28]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">end_run</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="gp">In [29]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
+<span class="gh">Out[29]: </span><span class="go">&#39;Configured&#39;</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="recording-data">
 <h2>Recording Data<a class="headerlink" href="#recording-data" title="Permalink to this headline">¶</a></h2>
 <p>You can set <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.record" title="pcdsdaq.daq.Daq.record"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.record</span></code></a> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to record data. This is fairly simple:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [27]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="bp">True</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [30]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="bp">True</span>
 </pre></div>
 </div>
 <p>After this call, future calls to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> will record data to disk.
 You can undo this by simply setting:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [28]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="bp">False</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [31]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="bp">False</span>
 </pre></div>
 </div>
 <p>You can also record data for a single run using a keyword argument in
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [29]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span>
-<span class="gh">Out[29]: </span><span class="go">False</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [32]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span>
+<span class="gh">Out[32]: </span><span class="go">False</span>
 
-<span class="gp">In [30]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">In [33]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-<span class="gp">In [31]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span>
-<span class="gh">Out[31]: </span><span class="go">False</span>
+<span class="gp">In [34]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span>
+<span class="gh">Out[34]: </span><span class="go">False</span>
 </pre></div>
 </div>
 </div>
@@ -398,7 +416,7 @@ handled automatically with some of the <code class="docutils literal notranslate
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+86.ga4896e2',
+            VERSION:'1.2.0+97.gb095ab5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

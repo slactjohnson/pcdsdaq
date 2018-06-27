@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 1.2.0+86.ga4896e2 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 1.2.0+97.gb095ab5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                1.2.0+86.ga4896e2
+                1.2.0+97.gb095ab5
               </div>
             
           
@@ -199,7 +199,7 @@ will pass into the python layer from the daq.</p>
 </table>
 <dl class="method">
 <dt id="pcdsdaq.daq.Daq.begin">
-<code class="descname">begin</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
+<code class="descname">begin</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>wait=False</em>, <em>end_run=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the daq and block until the daq has begun acquiring data.</p>
 <p>Optionally block with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> until the daq has finished aquiring
 data. If blocking, a <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> will end the run and clean up.</p>
@@ -226,11 +226,18 @@ must have a <code class="docutils literal notranslate"><span class="pre">name</s
 <li><strong>wait</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, wait for the daq to finish aquiring data. A
 <code class="docutils literal notranslate"><span class="pre">KeyboardInterrupt</span></code> (<code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code>) during this wait will end the
 run and clean up.</li>
+<li><strong>end_run</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll end the run after the daq has stopped.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.begin_infinite">
+<code class="descname">begin_infinite</code><span class="sig-paren">(</span><em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin_infinite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the daq to run forever in the background.</p>
 </dd></dl>
 
 <dl class="method">
@@ -268,9 +275,31 @@ acquiring</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="pcdsdaq.daq.Daq.config_info">
+<code class="descname">config_info</code><span class="sig-paren">(</span><em>config=None</em>, <em>header='Config:'</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.config_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the config information as a logger.info message.</p>
+<p>This will print to the screen if the logger is configured correctly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>config</strong> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>, optional) – The configuration to show. If omitted, we’ll use the current
+config.</li>
+<li><strong>header</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, optional) – A prefix for the config line.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pcdsdaq.daq.Daq.configure">
-<code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=False</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
+<p>This is the method that directly interfaces with the daq. If you simply
+want to get a configuration ready for later, use <a class="reference internal" href="#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -288,7 +317,7 @@ recording. Defaults to <code class="docutils literal notranslate"><span class="p
 <code class="docutils literal notranslate"><span class="pre">record</span></code>.</li>
 <li><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
 to only count events that pass the level 3 trigger. Defaults to
-<code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+its last configured value, or <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
 <li><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
 stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
@@ -297,7 +326,9 @@ must have a <code class="docutils literal notranslate"><span class="pre">name</s
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>old, new</strong></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>old, new</strong> – The old configuration and the new configuration. These dictionaries
+are verbose, containing all configuration values and the timestamps
+at which they were configured, as specified by <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">tuple</span></code> of <code class="docutils literal notranslate"><span class="pre">dict</span></code></p>
@@ -407,6 +438,17 @@ interrupted. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq
 </dd></dl>
 
 <dl class="method">
+<dt id="pcdsdaq.daq.Daq.preconfig">
+<code class="descname">preconfig</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>show_queued_cfg=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queue configuration parameters for next call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
+<p>These will be overridden by arguments passed directly to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.
+These will be cleared after each call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
+<p>This can be used to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a> the <a class="reference internal" href="#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> object without connecting.</p>
+<p>This will display the next queued configuration using logger.info,
+assuming the logger has been configured.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pcdsdaq.daq.Daq.read">
 <code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return data. There is no data implemented yet.</p>
@@ -449,7 +491,11 @@ plan is resumed. This will call <a class="reference internal" href="#pcdsdaq.daq
 <dt id="pcdsdaq.daq.Daq.stage">
 <code class="descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stage" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for preparing a device for action.</p>
-<p>This sets up the daq to end runs on run stop documents.</p>
+<p>This sets up the daq to end runs on run stop documents.
+It also caches the current state, so we know what state to return to
+after the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> scan.
+If a run is already started, we’ll end it here so that we can start a
+new run during the scan.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -593,7 +639,7 @@ stopped acquiring.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+86.ga4896e2',
+            VERSION:'1.2.0+97.gb095ab5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -39,7 +39,7 @@ First, I will set up the `Daq` class in simulated mode. In practice, the
     from pcdsdaq.sim import set_sim_mode
 
     set_sim_mode(True)
-    daq = Daq(platform=4)  # Defined per hutch
+    daq = Daq()
 
 
 .. ipython:: python
@@ -50,13 +50,15 @@ First, I will set up the `Daq` class in simulated mode. In practice, the
     from pcdsdaq.sim import set_sim_mode
 
     set_sim_mode(True)
-    daq = Daq(platform=4)  # Defined per hutch
+    daq = Daq()
 
 
 Running Until Stop
 ------------------
 Calling `Daq.begin` with no arguments in the default configuration will
 run the daq indefinitely, until we manually stop it.
+You can also use `Daq.begin_infinite` to run the daq indefinitely with
+any configuration.
 Here I check `Daq.state` to verify that we've started running the daq.
 
 .. ipython:: python
@@ -105,6 +107,19 @@ We can pass ``wait=True`` to skip the `Daq.wait` call.
     print(time.time() - start)
     daq.state
     daq.end_run()
+    daq.state
+
+
+Ending a Run
+------------
+As seen in the previous examples, `Daq.end_run` can be used to tell the daq
+that the current run is over. You can also do with with an argument to
+`Daq.begin` for a nice one-liner:
+
+.. ipython:: python
+
+    daq.state
+    daq.begin(duration=1, wait=True, end_run=True)
     daq.state
 
 

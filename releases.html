@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 1.2.0+86.ga4896e2 documentation</title>
+  <title>Release History &mdash; pcdsdaq 1.2.0+97.gb095ab5 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                1.2.0+86.ga4896e2
+                1.2.0+97.gb095ab5
               </div>
             
           
@@ -104,7 +104,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#next-release">Next Release</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v2-0-0-2018-05-27">v2.0.0 (2018-05-27)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#api-changes">API Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deprecations">Deprecations</a></li>
@@ -188,8 +188,8 @@
             
   <div class="section" id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="next-release">
-<h2>Next Release<a class="headerlink" href="#next-release" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="v2-0-0-2018-05-27">
+<h2>v2.0.0 (2018-05-27)<a class="headerlink" href="#v2-0-0-2018-05-27" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="features">
 <h3>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -202,6 +202,12 @@ Once staged, runs will end on run stop documents.
 A calibcycle will be run when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is triggered, and triggering will be
 reported as done when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> has stopped. This means it is viable to use
 the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> inside normal plans like <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code>.</li>
+<li>Add an argument to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>: <code class="docutils literal notranslate"><span class="pre">end_run=True</span></code> will end the run once the
+daq stops running, rather than leaving the run open.</li>
+<li>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a></li>
+<li>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a></li>
+<li>Restore daq state after a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>, e.g. disconnect if we were
+disconnected, run if we were running, etc.</li>
 <li>Add support for scan PVs via the <a class="reference internal" href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class. This class attaches
 itself to a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> and knows when to update each PV, provided that
 the <code class="docutils literal notranslate"><span class="pre">plan</span></code> has reasonable metadata.</li>
@@ -304,7 +310,7 @@ configured with <code class="docutils literal notranslate"><span class="pre">rec
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+86.ga4896e2',
+            VERSION:'1.2.0+97.gb095ab5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
