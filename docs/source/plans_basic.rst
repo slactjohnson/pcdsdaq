@@ -122,3 +122,11 @@ and back to the ``start`` positions, and then end the run.
 If you ignore the `daq_during_decorator`, this is just a normal ``plan``.
 This makes it simple to add the daq collecting data in the background
 to a normal ``bluesky`` ``plan``.
+
+
+After the Plan
+--------------
+The daq will automatically be returned to whatever state it was in before
+running the ``bluesky`` ``plan``. This means if you start from a disconnected
+state, we will disconnect, if you start from a running state we will return
+to running, and if you start from a configured state we'll stay connected.

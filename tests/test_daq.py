@@ -100,6 +100,14 @@ def test_configure(daq, sig):
         prev_config = daq.read_configuration()
 
 
+def test_disconnect_config(daq):
+    logger.debug('test_disconnect_config')
+
+    daq.configure(events=120)
+    daq.disconnect()
+    assert daq.next_config['events'] == 120
+
+
 def test_record(daq):
     """
     Make sure the record convenience property works.
@@ -141,6 +149,19 @@ def test_basic_run(daq, sig):
     daq.end_run()
     assert daq.state == 'Configured'
     daq.begin(events=1, wait=True, use_l3t=True)
+    daq.end_run()
+    # Configure for 1 event, if takes less than 1s then inf broken
+    daq.configure(events=1)
+    daq.begin_infinite()
+    time.sleep(1)
+    assert daq.state == 'Running'
+    daq.end_run()
+    daq.begin(events=1, wait=True, end_run=True)
+    assert daq.state == 'Configured'
+    daq.begin(events=1, wait=False, end_run=True)
+    time.sleep(0.2)
+    assert daq.state == 'Configured'
+
     # now we force the kickoff to time out
     daq._control._state = 'Disconnected'
     start = time.time()
@@ -329,6 +350,38 @@ def test_trigger_error(daq, RE):
     daq.configure(events=None, duration=None)
     with pytest.raises(RuntimeError):
         daq.trigger()
+
+
+def test_preconfig(daq):
+    logger.debug('test_preconfig')
+
+    daq.preconfig(events=120, use_l3t=True)
+    assert daq.state == 'Disconnected'
+    daq.configure()
+    assert daq.config['events'] == 120
+    assert daq.config['use_l3t']
+
+    daq.preconfig(events=240, use_l3t=True)
+    daq.preconfig(duration=1)
+    daq.configure(use_l3t=False)
+    assert daq.config['events'] is None
+    assert daq.config['duration'] == 1
+    assert not daq.config['use_l3t']
+
+
+def test_restore_state(daq, RE):
+    logger.debug('test_restore_state')
+
+    assert daq.state == 'Disconnected'
+    daq.preconfig(events=1)
+    RE(count([daq]))
+    assert daq.state == 'Disconnected'
+
+    daq.begin_infinite()
+    assert daq.state == 'Running'
+    RE(count([daq]))
+    assert daq.state == 'Running'
+    daq.end_run()
 
 
 def test_bad_stuff(daq, RE):

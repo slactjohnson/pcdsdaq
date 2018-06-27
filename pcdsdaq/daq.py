@@ -90,6 +90,7 @@ class Daq:
         self._re_cbid = None
         self._config_ts = {}
         self._update_config_ts()
+        self._pre_run_state = None
         register_daq(self)
 
     # Convenience properties
@@ -125,7 +126,7 @@ class Daq:
         This can be different than `config` if we have queued up a
         configuration to be run on the next begin.
         """
-        cfg = self.config.copy()
+        cfg = self.config
         cfg.update(self._desired_config)
         return cfg
 
@@ -192,9 +193,11 @@ class Daq:
         """
         logger.debug('Daq.disconnect()')
         if self._control is not None:
+            self.end_run()
             self._control.disconnect()
         del self._control
         self._control = None
+        self._desired_config = self._config
         self._config = None
         logger.info('DAQ is disconnected.')
 
@@ -214,7 +217,7 @@ class Daq:
             status_wait(status, timeout=timeout)
 
     def begin(self, events=None, duration=None, record=None, use_l3t=None,
-              controls=None, wait=False):
+              controls=None, wait=False, end_run=False):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -254,6 +257,9 @@ class Daq:
             If ``True``, wait for the daq to finish aquiring data. A
             ``KeyboardInterrupt`` (``ctrl+c``) during this wait will end the
             run and clean up.
+
+        end_run: ``bool``, optional
+            If ``True``, we'll end the run after the daq has stopped.
         """
         logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, wait=%s)'),
@@ -261,20 +267,38 @@ class Daq:
         try:
             if record is not None and record != self.record:
                 old_record = self.record
-                self.record = record
+                self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
             status_wait(begin_status, timeout=BEGIN_TIMEOUT)
             if wait:
                 self.wait()
+                if end_run:
+                    self.end_run()
+            if end_run and not wait:
+                threading.Thread(target=self._ender_thread, args=()).start()
         except KeyboardInterrupt:
             self.end_run()
             logger.info('%s.begin interrupted, ending run', self.name)
         finally:
             try:
-                self.record = old_record
+                self.preconfig(record=old_record, show_queued_cfg=False)
             except NameError:
                 pass
+
+    def begin_infinite(self, record=None, use_l3t=None, controls=None):
+        """
+        Start the daq to run forever in the background.
+        """
+        self.begin(events=0, record=record, use_l3t=use_l3t,
+                   controls=controls, wait=False, end_run=False)
+
+    def _ender_thread(self):
+        """
+        End the run when the daq stops aquiring
+        """
+        self.wait()
+        self.end_run()
 
     @check_connect
     def stop(self):
@@ -459,11 +483,43 @@ class Daq:
         logger.debug('Daq.describe_collect()')
         return {}
 
+    def preconfig(self, events=None, duration=None, record=None, use_l3t=None,
+                  controls=None, show_queued_cfg=True):
+        """
+        Queue configuration parameters for next call to `configure`.
+
+        These will be overridden by arguments passed directly to `configure`.
+        These will be cleared after each call to `configure`.
+
+        This can be used to `configure` the `Daq` object without connecting.
+
+        This will display the next queued configuration using logger.info,
+        assuming the logger has been configured.
+        """
+        # Only one of (events, duration) should be preconfigured.
+        if events is not None:
+            self._desired_config['events'] = events
+            self._desired_config['duration'] = None
+        elif duration is not None:
+            self._desired_config['events'] = None
+            self._desired_config['duration'] = duration
+
+        for arg, name in zip((record, use_l3t, controls),
+                             ('record', 'use_l3t', 'controls')):
+            if arg is not None:
+                self._desired_config[name] = arg
+
+        if show_queued_cfg:
+            self.config_info(self.next_config, 'Queued config:')
+
     @check_connect
     def configure(self, events=None, duration=None, record=None,
-                  use_l3t=False, controls=None):
+                  use_l3t=None, controls=None):
         """
         Changes the daq's configuration for the next run.
+
+        This is the method that directly interfaces with the daq. If you simply
+        want to get a configuration ready for later, use `preconfig`.
 
         Parameters
         ----------
@@ -486,7 +542,7 @@ class Daq:
         use_l3t: ``bool``, optional
             If ``True``, an ``events`` argument to begin will be reinterpreted
             to only count events that pass the level 3 trigger. Defaults to
-            ``False``.
+            its last configured value, or ``False``.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
@@ -498,6 +554,9 @@ class Daq:
         Returns
         -------
         old, new: ``tuple`` of ``dict``
+            The old configuration and the new configuration. These dictionaries
+            are verbose, containing all configuration values and the timestamps
+            at which they were configured, as specified by ``bluesky``.
         """
         logger.debug(('Daq.configure(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s)'),
@@ -508,13 +567,23 @@ class Daq:
             raise StateTransitionError(err)
 
         self._check_duration(duration)
-
         old = self.read_configuration()
 
-        record = self._desired_config.get('record', record)
+        self.preconfig(events=events, duration=duration, record=record,
+                       use_l3t=use_l3t, controls=controls,
+                       show_queued_cfg=False)
+        config = self.next_config
 
-        if record is None:
-            record = self.config['record']
+        events = config['events']
+        duration = config['duration']
+        record = config['record']
+        use_l3t = config['use_l3t']
+        controls = config['controls']
+
+        logger.debug(('Updated with queued config, now we have: '
+                      'events=%s, duration=%s, record=%s, '
+                      'use_l3t=%s, controls=%s'),
+                     events, duration, record, use_l3t, controls)
 
         config_args = self._config_args(record, use_l3t, controls)
         try:
@@ -527,8 +596,7 @@ class Daq:
                                 record=record, use_l3t=use_l3t,
                                 controls=controls)
             self._update_config_ts()
-            msg = 'Daq configured'
-            logger.info(msg)
+            self.config_info(header='Daq configured:')
         except Exception as exc:
             self._config = None
             msg = 'Failed to configure!'
@@ -537,6 +605,32 @@ class Daq:
         new = self.read_configuration()
         self._desired_config = {}
         return old, new
+
+    def config_info(self, config=None, header='Config:'):
+        """
+        Show the config information as a logger.info message.
+
+        This will print to the screen if the logger is configured correctly.
+
+        Parameters
+        ----------
+        config: ``dict``, optional
+            The configuration to show. If omitted, we'll use the current
+            config.
+
+        header: ``str``, optional
+            A prefix for the config line.
+        """
+        if config is None:
+            config = self.config
+
+        txt = []
+        for key, value in config.items():
+            if value is not None:
+                txt.append('{}={}'.format(key, value))
+        if header:
+            header += ' '
+        logger.info(header + ', '.join(txt))
 
     @property
     def record(self):
@@ -547,14 +641,11 @@ class Daq:
         Setting this is the equivalent of scheduling a `configure` call to be
         executed later, e.g. ``configure(record=True)``
         """
-        try:
-            return self._desired_config['record']
-        except KeyError:
-            return self.config['record']
+        return self.next_config['record']
 
     @record.setter
     def record(self, record):
-        self._desired_config['record'] = record
+        self.preconfig(record=record)
 
     def _update_config_ts(self):
         """
@@ -705,6 +796,10 @@ class Daq:
         ``bluesky`` interface for preparing a device for action.
 
         This sets up the daq to end runs on run stop documents.
+        It also caches the current state, so we know what state to return to
+        after the ``bluesky`` scan.
+        If a run is already started, we'll end it here so that we can start a
+        new run during the scan.
 
         Returns
         -------
@@ -712,8 +807,10 @@ class Daq:
             list of devices staged
         """
         logger.debug('Daq.stage()')
+        self._pre_run_state = self.state
         if self._re_cbid is None:
             self._re_cbid = self._RE.subscribe(self._re_manage_runs)
+        self.end_run()
         return [self]
 
     def _re_manage_runs(self, name, doc):
@@ -739,6 +836,12 @@ class Daq:
         # If we're still running, end now
         if self.state in ('Open', 'Running'):
             self.end_run()
+        # Return to the state we had at stage
+        if self._pre_run_state == 'Disconnected':
+            self.disconnect()
+        elif self._pre_run_state == 'Running':
+            self.begin_infinite()
+        # For other states, end_run was sufficient.
         return [self]
 
     def pause(self):
@@ -784,8 +887,6 @@ class Daq:
 
     def __del__(self):
         try:
-            if self.state in ('Open', 'Running'):
-                self.end_run()
             self.disconnect()
         except Exception:
             pass

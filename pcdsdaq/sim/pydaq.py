@@ -151,6 +151,7 @@ class Control:
     def _begin_thread(self, duration):
         logger.debug('SimControl._begin_thread(%s)', duration)
         start = time.time()
+        initial_duration = duration
         interrupted = False
         dt = 0.1
         while duration > 0:
@@ -165,7 +166,7 @@ class Control:
                 pass
         end = time.time()
         logger.debug('%ss elapsed in SimControl._begin_thread(%s)',
-                     end-start, duration)
+                     end-start, initial_duration)
 
     def end(self):
         logger.debug('SimControl.end()')
