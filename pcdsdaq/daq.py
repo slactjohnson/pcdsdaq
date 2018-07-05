@@ -5,6 +5,7 @@ import enum
 import functools
 import logging
 import os
+import subprocess
 import time
 import threading
 import warnings
@@ -884,6 +885,54 @@ class Daq:
         """
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
+
+    def run_number(self, hutch_name=None):
+        """
+        Determine the run number of the last run, or current run if running.
+
+        This requires you to be on an NFS-mounted host. If hutch is
+        unambiguous, it doesn't need to be passed in.
+
+        This is a method and not a property because all properties are
+        ran when you try to tab complete, and this isn't necessarily an
+        instant check. It can also display log messages, which would be
+        annoying on tab complete.
+
+        Parameters
+        ----------
+        hutch_name: ``str``, optional
+            The hutch to check the run number for. If omitted, we'll guess
+            the hutch based on your session details.
+
+        Returns
+        -------
+        run_number: ``int``
+            The current run number, or previous run if not recording. If we
+            cannot get a valid run number, this will be ``None``.
+        """
+        scripts = '/reg/g/pcds/engineering_tools/{}/scripts/{}'
+        get_hutch = scripts.format('latest', 'get_hutch_name')
+        if not os.path.exists(get_hutch):
+            logger.error('No access to nfs, cannot determine run number.')
+            logger.debug('Path %s did not exist', get_hutch)
+            return None
+        if hutch_name is None:
+            hutch_name = subprocess.check_output(get_hutch,
+                                                 universal_newlines=True)
+        hutch_name = hutch_name.lower().strip(' \n')
+        if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi', 'mec'):
+            logger.error(('%s is not a valid hutch, '
+                          'cannot determine run number'), hutch_name)
+            return None
+        get_run = scripts.format(hutch_name, 'get_lastRun')
+        args = [get_run, '-i', hutch_name]
+        if self.state in ('Open', 'Running') and self.record:
+            run_number = subprocess.check_output(args + ['l'],
+                                                 universal_newlines=True)
+        else:
+            run_number = subprocess.check_output(args,
+                                                 universal_newlines=True)
+        return int(run_number)
 
     def __del__(self):
         try:
