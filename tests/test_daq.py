@@ -1,6 +1,8 @@
 import logging
 import os
+import os.path
 import signal
+import subprocess
 import time
 from threading import Thread
 
@@ -458,3 +460,32 @@ def test_begin_sigint(daq):
     Thread(target=interrupt, args=()).start()
     daq.begin(duration=1, wait=True)
     assert time.time() - start < 0.5
+
+
+def test_run_number(daq, monkeypatch):
+    def check_output(script, *args, **kwargs):
+        if 'get_hutch_name' in script:
+            return monkey_hutch + '\n'
+        else:
+            return str(monkey_run) + '\n'
+
+    # Simulate not being on nfs
+    monkeypatch.setattr(os.path, 'exists', lambda x: False)
+    assert daq.run_number() is None
+
+    # Check the success states
+    monkeypatch.setattr(os.path, 'exists', lambda x: True)
+    monkeypatch.setattr(subprocess, 'check_output', check_output)
+
+    monkey_hutch = 'xpp'
+    monkey_run = 4
+
+    assert daq.run_number() == 4
+    assert daq.run_number('xcs') == 4
+    monkey_run = 7
+    daq.begin(record=True)
+    assert daq.run_number() == 7
+    daq.end_run()
+
+    # Bad hutch name
+    assert daq.run_number('bad_hutch_name') is None
