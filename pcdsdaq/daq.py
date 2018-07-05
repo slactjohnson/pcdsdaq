@@ -401,7 +401,7 @@ class Daq:
             if self.state in ('Configured', 'Open'):
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
-                if self.record:
+                if self.config['record']:
                     prev_run = self.run_number()
                     if prev_run is not None:
                         next_run = self.run_number() + 1
