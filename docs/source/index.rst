@@ -24,6 +24,7 @@
    :hidden:
 
    scan_pvs.rst
+   misc.rst
 
 .. toctree::
    :maxdepth: 1
