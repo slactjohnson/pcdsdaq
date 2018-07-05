@@ -401,6 +401,9 @@ class Daq:
             if self.state in ('Configured', 'Open'):
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
+                if self.record:
+                    next_run = self.run_number() + 1
+                    logger.info('Beginning daq run %s', next_run)
                 logger.debug('daq.control.begin(%s)', begin_args)
                 control.begin(**begin_args)
                 # Cache these so we know what the most recent begin was told
