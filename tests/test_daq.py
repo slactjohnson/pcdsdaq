@@ -471,7 +471,8 @@ def test_run_number(daq, monkeypatch):
 
     # Simulate not being on nfs
     monkeypatch.setattr(os.path, 'exists', lambda x: False)
-    assert daq.run_number() is None
+    with pytest.raises(RuntimeError):
+        daq.run_number()
 
     # Check the success states
     monkeypatch.setattr(os.path, 'exists', lambda x: True)
@@ -488,4 +489,5 @@ def test_run_number(daq, monkeypatch):
     daq.end_run()
 
     # Bad hutch name
-    assert daq.run_number('bad_hutch_name') is None
+    with pytest.raises(ValueError):
+        daq.run_number('bad_hutch_name')

@@ -402,10 +402,13 @@ class Daq:
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
                 if self.config['record']:
-                    prev_run = self.run_number()
-                    if prev_run is not None:
-                        next_run = self.run_number() + 1
+                    try:
+                        prev_run = self.run_number()
+                        next_run = prev_run + 1
                         logger.info('Beginning daq run %s', next_run)
+                    except (RuntimeError, ValueError):
+                        logger.debug('Error getting run number in kickoff',
+                                     exc_info=True)
                 logger.debug('daq.control.begin(%s)', begin_args)
                 control.begin(**begin_args)
                 # Cache these so we know what the most recent begin was told
@@ -913,23 +916,27 @@ class Daq:
         Returns
         -------
         run_number: ``int``
-            The current run number, or previous run if not recording. If we
-            cannot get a valid run number, this will be ``None``.
+            The current run number, or previous run if not recording.
+
+        Raises
+        ------
+        RuntimeError:
+            if we have no access to NFS
+        ValueError:
+            if an invalid hutch was passed
         """
         scripts = '/reg/g/pcds/engineering_tools/{}/scripts/{}'
         get_hutch = scripts.format('latest', 'get_hutch_name')
         if not os.path.exists(get_hutch):
-            logger.error('No access to nfs, cannot determine run number.')
             logger.debug('Path %s did not exist', get_hutch)
-            return None
+            raise RuntimeError('No nfs access, cannot determine run number.')
         if hutch_name is None:
             hutch_name = subprocess.check_output(get_hutch,
                                                  universal_newlines=True)
         hutch_name = hutch_name.lower().strip(' \n')
         if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi', 'mec'):
-            logger.error(('%s is not a valid hutch, '
-                          'cannot determine run number'), hutch_name)
-            return None
+            raise ValueError(('{} is not a valid hutch, cannot determine '
+                              'run number'.format(hutch_name)))
         get_run = scripts.format(hutch_name, 'get_lastRun')
         args = [get_run, '-i', hutch_name]
         if self.state in ('Open', 'Running') and self.config['record']:
