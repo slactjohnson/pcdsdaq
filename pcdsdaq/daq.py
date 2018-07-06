@@ -895,11 +895,12 @@ class Daq:
         """
         Determine the run number of the last run, or current run if running.
 
-        This requires you to be on an NFS-mounted host. If hutch is
-        unambiguous, it doesn't need to be passed in.
+        This requires you to be on an NFS-mounted host. If hutch can be
+        determined from the get_hutch_name script from engineering_tools, then
+        you don't need to pass in a hutch name.
 
         This is a method and not a property because all properties are
-        ran when you try to tab complete, and this isn't necessarily an
+        run when you try to tab complete, and this isn't necessarily an
         instant check. It can also display log messages, which would be
         annoying on tab complete.
 
