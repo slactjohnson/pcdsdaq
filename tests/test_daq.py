@@ -469,6 +469,11 @@ def test_run_number(daq, monkeypatch):
     daq.begin(record=True, events=1, wait=True, end_run=True)
     assert daq.run_number() == start_num + 1
 
+    # Get during a run to text other branch
+    daq.begin(record=True, events=1000)
+    assert daq.run_number() == start_num + 2
+    daq.end_run()
+
     # Make sure correct exceptions are raised
     with pytest.raises(ValueError):
         assert daq.run_number('not_a_hutch')
@@ -480,3 +485,8 @@ def test_run_number(daq, monkeypatch):
 
     with pytest.raises(RuntimeError):
         daq.run_number()
+
+    # We shouldn't have an exception in begin if run_number fails!
+    # Not important enough to hold up the show
+    daq.begin(events=100, record=True)
+    daq.end_run()
