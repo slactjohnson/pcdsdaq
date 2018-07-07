@@ -22,6 +22,11 @@ def nodaq(RE):
 
 
 @pytest.fixture(scope='function')
+def nosim():
+    set_sim_mode(False)
+
+
+@pytest.fixture(scope='function')
 def RE():
     RE = RunEngine({})
     RE.verbose = True

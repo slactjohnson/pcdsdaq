@@ -3,6 +3,7 @@ import threading
 import logging
 
 from pcdsdaq.daq import Daq
+from pcdsdaq.ext_scripts import hutch_name, get_run_number  # NOQA
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +40,13 @@ class Control:
                     begin=_all_states[3:5],
                     end=_all_states[2])
     )
+    _run_number = 0
 
     def __init__(self, *args, **kwargs):
         self._duration = None
         self._time_remaining = 0
         self._done_flag = threading.Event()
+        self._record = False
 
     def _do_transition(self, transition):
         logger.debug('Doing transition %s from state %s',
@@ -83,6 +86,7 @@ class Control:
                      record, key, events, l1t_events, l3t_events, duration,
                      controls, monitors, partition)
         if self._do_transition('configure'):
+            self._record = record
             dur = self._pick_duration(events, l1t_events, l3t_events, duration)
             if dur is None:
                 raise RuntimeError('configure requires events or duration')
@@ -102,6 +106,8 @@ class Control:
                 err = 'SimControl stops here because pydaq segfaults here'
                 raise RuntimeError(err)
             self._done_flag.clear()
+            if self._record:
+                Control._run_number += 1
             thr = threading.Thread(target=self._begin_thread, args=(dur,))
             thr.start()
 
@@ -173,3 +179,11 @@ class Control:
         if self._state != 'Running':
             raise RuntimeError('Not running!')
         self._done_flag.wait()
+
+
+def sim_hutch_name():
+    return 'tst'
+
+
+def sim_get_run_number(hutch=None, live=False):
+    return Control._run_number

@@ -5,13 +5,14 @@ import enum
 import functools
 import logging
 import os
-import subprocess
 import time
 import threading
 import warnings
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
+
+from . import ext_scripts
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -925,27 +926,19 @@ class Daq:
         ValueError:
             if an invalid hutch was passed
         """
-        scripts = '/reg/g/pcds/engineering_tools/{}/scripts/{}'
-        get_hutch = scripts.format('latest', 'get_hutch_name')
-        if not os.path.exists(get_hutch):
-            logger.debug('Path %s did not exist', get_hutch)
+        try:
+            if hutch_name is None:
+                hutch_name = ext_scripts.hutch_name()
+            if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
+                                  'mec', 'tst'):
+                raise ValueError(('{} is not a valid hutch, cannot determine '
+                                  'run number'.format(hutch_name)))
+            if self.state in ('Open', 'Running') and self.config['record']:
+                return ext_scripts.get_run_number(hutch=hutch_name, live=True)
+            else:
+                return ext_scripts.get_run_number(hutch=hutch_name, live=False)
+        except FileNotFoundError:
             raise RuntimeError('No nfs access, cannot determine run number.')
-        if hutch_name is None:
-            hutch_name = subprocess.check_output(get_hutch,
-                                                 universal_newlines=True)
-        hutch_name = hutch_name.lower().strip(' \n')
-        if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi', 'mec'):
-            raise ValueError(('{} is not a valid hutch, cannot determine '
-                              'run number'.format(hutch_name)))
-        get_run = scripts.format(hutch_name, 'get_lastRun')
-        args = [get_run, '-i', hutch_name]
-        if self.state in ('Open', 'Running') and self.config['record']:
-            run_number = subprocess.check_output(args + ['l'],
-                                                 universal_newlines=True)
-        else:
-            run_number = subprocess.check_output(args,
-                                                 universal_newlines=True)
-        return int(run_number)
 
     def __del__(self):
         try:

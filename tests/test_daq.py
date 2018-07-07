@@ -2,7 +2,6 @@ import logging
 import os
 import os.path
 import signal
-import subprocess
 import time
 from threading import Thread
 
@@ -13,6 +12,7 @@ from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
 import pcdsdaq.sim.pydaq as sim_pydaq
+import pcdsdaq.ext_scripts as ext
 from pcdsdaq import daq as daq_module
 from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
 
@@ -463,31 +463,20 @@ def test_begin_sigint(daq):
 
 
 def test_run_number(daq, monkeypatch):
-    def check_output(script, *args, **kwargs):
-        if 'get_hutch_name' in script:
-            return monkey_hutch + '\n'
-        else:
-            return str(monkey_run) + '\n'
+    logger.debug('test_run_number')
+    # Make sure simulated run count works and code is covered
+    start_num = daq.run_number()
+    daq.begin(record=True, events=1, wait=True, end_run=True)
+    assert daq.run_number() == start_num + 1
 
-    # Simulate not being on nfs
-    monkeypatch.setattr(os.path, 'exists', lambda x: False)
+    # Make sure correct exceptions are raised
+    with pytest.raises(ValueError):
+        assert daq.run_number('not_a_hutch')
+
+    def no_file(*args, **kwargs):
+        raise FileNotFoundError('test')
+
+    monkeypatch.setattr(ext, 'hutch_name', no_file)
+
     with pytest.raises(RuntimeError):
         daq.run_number()
-
-    # Check the success states
-    monkeypatch.setattr(os.path, 'exists', lambda x: True)
-    monkeypatch.setattr(subprocess, 'check_output', check_output)
-
-    monkey_hutch = 'xpp'
-    monkey_run = 4
-
-    assert daq.run_number() == 4
-    assert daq.run_number('xcs') == 4
-    monkey_run = 7
-    daq.begin(record=True)
-    assert daq.run_number() == 7
-    daq.end_run()
-
-    # Bad hutch name
-    with pytest.raises(ValueError):
-        daq.run_number('bad_hutch_name')
