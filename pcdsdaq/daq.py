@@ -12,6 +12,8 @@ from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
 
+from . import ext_scripts
+
 logger = logging.getLogger(__name__)
 pydaq = None
 
@@ -400,6 +402,14 @@ class Daq:
             if self.state in ('Configured', 'Open'):
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
+                if self.config['record']:
+                    try:
+                        prev_run = self.run_number()
+                        next_run = prev_run + 1
+                        logger.info('Beginning daq run %s', next_run)
+                    except (RuntimeError, ValueError):
+                        logger.debug('Error getting run number in kickoff',
+                                     exc_info=True)
                 logger.debug('daq.control.begin(%s)', begin_args)
                 control.begin(**begin_args)
                 # Cache these so we know what the most recent begin was told
@@ -884,6 +894,51 @@ class Daq:
         """
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
+
+    def run_number(self, hutch_name=None):
+        """
+        Determine the run number of the last run, or current run if running.
+
+        This requires you to be on an NFS-mounted host. If hutch can be
+        determined from the get_hutch_name script from engineering_tools, then
+        you don't need to pass in a hutch name.
+
+        This is a method and not a property because all properties are
+        run when you try to tab complete, and this isn't necessarily an
+        instant check. It can also display log messages, which would be
+        annoying on tab complete.
+
+        Parameters
+        ----------
+        hutch_name: ``str``, optional
+            The hutch to check the run number for. If omitted, we'll guess
+            the hutch based on your session details.
+
+        Returns
+        -------
+        run_number: ``int``
+            The current run number, or previous run if not recording.
+
+        Raises
+        ------
+        RuntimeError:
+            if we have no access to NFS
+        ValueError:
+            if an invalid hutch was passed
+        """
+        try:
+            if hutch_name is None:
+                hutch_name = ext_scripts.hutch_name()
+            if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
+                                  'mec', 'tst'):
+                raise ValueError(('{} is not a valid hutch, cannot determine '
+                                  'run number'.format(hutch_name)))
+            if self.state in ('Open', 'Running') and self.config['record']:
+                return ext_scripts.get_run_number(hutch=hutch_name, live=True)
+            else:
+                return ext_scripts.get_run_number(hutch=hutch_name, live=False)
+        except FileNotFoundError:
+            raise RuntimeError('No nfs access, cannot determine run number.')
 
     def __del__(self):
         try:

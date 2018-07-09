@@ -7,8 +7,8 @@ v2.0.0 (2018-05-27)
 Features
 --------
 - Allow ``ctrl+c`` during a `begin` call with ``wait=True`` to stop the run.
-- Add sourcable `pcdsdaq_lib_setup` script that will get `pydaq` and `pycdb`
-  ready for your python environment.
+- Add sourcable ``pcdsdaq_lib_setup`` script that will get ``pydaq`` and
+  ``pycdb`` ready for your python environment.
 - The `connect` method will provide more helpful error messages when it fails.
 - Allow the `Daq` class to be used as a ``bluesky`` readable device.
   Once staged, runs will end on run stop documents.

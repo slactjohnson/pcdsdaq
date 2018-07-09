@@ -7,6 +7,7 @@ from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.signal import Signal
 from ophyd.sim import motor, motor1, motor2, motor3, det1, det2
 
+import pcdsdaq.daq
 from pcdsdaq.scan_vars import ScanVars
 
 logger = logging.getLogger(__name__)
@@ -82,3 +83,12 @@ def test_scan_vars(RE, daq):
     # Last, let's force an otherwise uncaught error to cover the catch-all
     # try-except block to make sure the log message doesn't error
     scan_vars.start({'motors': 4})
+
+
+def test_scan_vars_no_daq(RE):
+    logger.debug('test_scan_vars_no_daq')
+
+    # If no daq has ever been loaded, we should cover an extra line
+    pcdsdaq.daq._daq_instance = None
+    scan_vars = ScanVars('TST', name='tst', RE=RE)
+    scan_vars.start({})

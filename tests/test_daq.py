@@ -1,5 +1,6 @@
 import logging
 import os
+import os.path
 import signal
 import time
 from threading import Thread
@@ -11,6 +12,7 @@ from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
 import pcdsdaq.sim.pydaq as sim_pydaq
+import pcdsdaq.ext_scripts as ext
 from pcdsdaq import daq as daq_module
 from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
 
@@ -458,3 +460,33 @@ def test_begin_sigint(daq):
     Thread(target=interrupt, args=()).start()
     daq.begin(duration=1, wait=True)
     assert time.time() - start < 0.5
+
+
+def test_run_number(daq, monkeypatch):
+    logger.debug('test_run_number')
+    # Make sure simulated run count works and code is covered
+    start_num = daq.run_number()
+    daq.begin(record=True, events=1, wait=True, end_run=True)
+    assert daq.run_number() == start_num + 1
+
+    # Get during a run to text other branch
+    daq.begin(record=True, events=1000)
+    assert daq.run_number() == start_num + 2
+    daq.end_run()
+
+    # Make sure correct exceptions are raised
+    with pytest.raises(ValueError):
+        assert daq.run_number('not_a_hutch')
+
+    def no_file(*args, **kwargs):
+        raise FileNotFoundError('test')
+
+    monkeypatch.setattr(ext, 'hutch_name', no_file)
+
+    with pytest.raises(RuntimeError):
+        daq.run_number()
+
+    # We shouldn't have an exception in begin if run_number fails!
+    # Not important enough to hold up the show
+    daq.begin(events=100, record=True)
+    daq.end_run()
