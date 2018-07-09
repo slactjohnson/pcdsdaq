@@ -8,6 +8,7 @@
 ./_sources/generated/pcdsdaq.preprocessors.daq_during_decorator.rst.txt
 ./_sources/generated/pcdsdaq.preprocessors.daq_during_wrapper.rst.txt
 ./_sources/index.rst.txt
+./_sources/misc.rst.txt
 ./_sources/plans_basic.rst.txt
 ./_sources/preprocessors_api.rst.txt
 ./_sources/releases.rst.txt
@@ -78,6 +79,7 @@
 ./generated/pcdsdaq.preprocessors.daq_during_wrapper.html
 ./genindex.html
 ./index.html
+./misc.html
 ./objects.inv
 ./plans_basic.html
 ./preprocessors_api.html

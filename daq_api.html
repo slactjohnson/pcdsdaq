@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 1.2.0+97.gb095ab5 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.0.0+12.ga1576e0 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                1.2.0+97.gb095ab5
+                2.0.0+12.ga1576e0
               </div>
             
           
@@ -101,6 +101,7 @@
 <p class="caption"><span class="caption-text">Auxiliary Features</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Sim Mode</span></p>
 <ul>
@@ -488,6 +489,41 @@ plan is resumed. This will call <a class="reference internal" href="#pcdsdaq.daq
 </dd></dl>
 
 <dl class="method">
+<dt id="pcdsdaq.daq.Daq.run_number">
+<code class="descname">run_number</code><span class="sig-paren">(</span><em>hutch_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.run_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the run number of the last run, or current run if running.</p>
+<p>This requires you to be on an NFS-mounted host. If hutch can be
+determined from the get_hutch_name script from engineering_tools, then
+you don’t need to pass in a hutch name.</p>
+<p>This is a method and not a property because all properties are
+run when you try to tab complete, and this isn’t necessarily an
+instant check. It can also display log messages, which would be
+annoying on tab complete.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>hutch_name</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, optional) – The hutch to check the run number for. If omitted, we’ll guess
+the hutch based on your session details.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>run_number</strong> – The current run number, or previous run if not recording.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">int</span></code></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li>RuntimeError: – if we have no access to NFS</li>
+<li>ValueError: – if an invalid hutch was passed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pcdsdaq.daq.Daq.stage">
 <code class="descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stage" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for preparing a device for action.</p>
@@ -639,7 +675,7 @@ stopped acquiring.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0+97.gb095ab5',
+            VERSION:'2.0.0+12.ga1576e0',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
