@@ -1,6 +1,13 @@
 Release History
 ###############
 
+v2.1.0 (2018-08-06)
+===================
+
+Features
+--------
+- Add `Daq.run_number` method to get the current run number.
+
 v2.0.0 (2018-05-27)
 ===================
 
