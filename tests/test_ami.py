@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 def test_ami_basic(ami):
     logger.debug('test_ami_basic')
     ami.trigger()
-    stats = ami.read()
-    assert ami.mean.name in stats
-    assert stats[ami.entries.name]['value'] > 0
+    stats = ami.get()
+    assert stats.entries > 0
 
 
 def test_ami_scan(ami, RE):
@@ -43,3 +42,10 @@ def test_ami_errors(ami):
     sim_pyami.connect_success = False
     with pytest.raises(Exception):
         AmiDet('NOCONN', name='noconn')
+
+
+def test_no_pyami():
+    logger.debug('test_no_pyami')
+    pcdsdaq.ami.pyami = None
+    with pytest.raises(ImportError):
+        AmiDet('NOPYAMI', name='nopyami')

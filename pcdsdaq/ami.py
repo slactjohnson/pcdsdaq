@@ -23,8 +23,8 @@ class AmiDet(Device):
     Detector that gets data from pyami
     """
     mean = Cpt(AttributeSignal, attr='pyami_mean', kind='hinted')
-    rms = Cpt(AttributeSignal, attr='pyami_rms', kind='normal')
-    err = Cpt(AttributeSignal, attr='pyami_err', kind='normal')
+    rms = Cpt(AttributeSignal, attr='pyami_rms', kind='omitted')
+    err = Cpt(AttributeSignal, attr='pyami_err', kind='omitted')
     entries = Cpt(AttributeSignal, attr='pyami_entries', kind='normal')
 
     def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
@@ -70,17 +70,22 @@ class AmiDet(Device):
             return Status(obj=self, done=True, success=True)
 
     def get(self, *args, **kwargs):
-        self._get_data()
+        self._get_data(del_entry=False)
         return super().get(*args, **kwargs)
 
-    def _get_data(self):
+    def read(self, *args, **kwargs):
+        self._get_data(del_entry=True)
+        return super().read(*args, **kwargs)
+
+    def _get_data(self, del_entry):
         if self._entry is not None:
             data = self._entry.get()
             self.pyami_mean = data['mean']
             self.pyami_rms = data['rms']
             self.pyami_err = data['err']
             self.pyami_entries = data['entries']
-            self._entry = None
+            if del_entry:
+                self._entry = None
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')
