@@ -1,7 +1,9 @@
 from bluesky import RunEngine
 from ophyd.sim import SynSignal, motor1
 
+import pcdsdaq.sim.pyami as sim_pyami
 import pcdsdaq.sim.pydaq as sim_pydaq
+from pcdsdaq.ami import AmiDet, set_pyami_proxy
 from pcdsdaq.daq import Daq
 from pcdsdaq.sim import set_sim_mode
 from pcdsdaq.sim.pydaq import SimNoDaq
@@ -19,6 +21,14 @@ def daq(RE):
 @pytest.fixture(scope='function')
 def nodaq(RE):
     return SimNoDaq(RE=RE)
+
+
+@pytest.fixture(scope='function')
+def ami():
+    set_sim_mode(True)
+    set_pyami_proxy('tstproxy')
+    sim_pyami.connect_success = True
+    return AmiDet('TST', name='test')
 
 
 @pytest.fixture(scope='function')

@@ -10,18 +10,18 @@ from ophyd.utils.errors import ReadOnlyError
 
 logger = logging.getLogger(__name__)
 pyami = None
+pyami_connected = False
+ami_proxy = None
 
 
 def set_pyami_proxy(proxy):
-    AmiDet.proxy = proxy
+    globals()['ami_proxy'] = proxy
 
 
 class AmiDet(Device):
     """
     Detector that gets data from pyami
     """
-    proxy = None
-
     mean = Cpt(AttributeSignal, attr='pyami_mean', kind='hinted')
     rms = Cpt(AttributeSignal, attr='pyami_rms', kind='normal')
     err = Cpt(AttributeSignal, attr='pyami_err', kind='normal')
@@ -29,33 +29,36 @@ class AmiDet(Device):
 
     def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
         if pyami is None:
+            globals()['pyami'] = import_module('pyami')
+        if not pyami_connected:
             self._connect_pyami()
         self._entry = None
         self.filter_string = filter_string
         self.min_duration = min_duration
-        self.pyami_mean = None
-        self.pyami_rms = None
-        self.pyami_err = None
-        self.pyami_entries = None
+        self.pyami_mean = 0.
+        self.pyami_rms = 0.
+        self.pyami_err = 0.
+        self.pyami_entries = 0
         super().__init__(prefix, name=name)
 
     def _connect_pyami(self):
-        globals()['pyami'] = import_module('pyami')
+        logger.debug('Initializing pyami')
         try:
-            if self.proxy is None:
+            if ami_proxy is None:
                 raise RuntimeError('Must configure proxy with set_pyami_proxy')
             else:
-                pyami.connect(self.proxy)
+                pyami.connect(ami_proxy)
+                globals()['pyami_connected'] = True
         except Exception:
-            globals()['pyami'] = None
+            globals()['pyami_connected'] = False
             raise
 
     def trigger(self):
         if self.filter_string:
-            self._entry = pyami.Entry(self.ami_name, 'Scalar',
+            self._entry = pyami.Entry(self.prefix, 'Scalar',
                                       self.filter_string)
         else:
-            self._entry = pyami.Entry(self.ami_name, 'Scalar')
+            self._entry = pyami.Entry(self.prefix, 'Scalar')
         if self.min_duration:
             def inner(duration, status):
                 time.sleep(duration)
