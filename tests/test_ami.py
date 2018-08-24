@@ -5,6 +5,7 @@ import pytest
 from bluesky.callbacks import collector
 from bluesky.plans import count
 
+import pcdsdaq.ami
 import pcdsdaq.sim.pyami as sim_pyami
 from pcdsdaq.ami import AmiDet, set_pyami_proxy
 
@@ -16,6 +17,7 @@ def test_ami_basic(ami):
     ami.trigger()
     stats = ami.read()
     assert ami.mean.name in stats
+    assert stats[ami.entries.name]['value'] > 0
 
 
 def test_ami_scan(ami, RE):
@@ -34,6 +36,7 @@ def test_ami_errors(ami):
     with pytest.raises(Exception):
         ami.put(4)
     set_pyami_proxy(None)
+    pcdsdaq.ami.pyami_connected = False
     with pytest.raises(Exception):
         AmiDet('NOPROXY', name='noproxy')
     set_pyami_proxy('tst')
