@@ -6,6 +6,9 @@ import numpy as np
 connect_success = True
 logger = logging.getLogger(__name__)
 
+set_l3t_count = 0
+clear_l3t_count = 0
+
 
 def connect(ami_str):
     logger.debug('simulated pyami connect')
@@ -13,6 +16,16 @@ def connect(ami_str):
         raise RuntimeError('simulated fail')
     else:
         Entry._connected = True
+
+
+def set_l3t(filter_string, l3t_file):
+    global set_l3t_count
+    set_l3t_count += 1
+
+
+def clear_l3t():
+    global clear_l3t_count
+    clear_l3t_count += 1
 
 
 class Entry:

@@ -7,15 +7,69 @@ from ophyd.device import Device, Component as Cpt
 from ophyd.signal import AttributeSignal
 from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
+from toolz.itertoolz import partition
 
 logger = logging.getLogger(__name__)
 pyami = None
 pyami_connected = False
 ami_proxy = None
+l3t_file = None
+
+
+def ensure_pyami():
+    if pyami is None:
+        logger.debug('importing pyami')
+        globals()['pyami'] = import_module('pyami')
+    if not pyami_connected:
+        logger.debug('initializing pyami')
+        try:
+            if ami_proxy is None:
+                raise RuntimeError('Must configure proxy with set_pyami_proxy')
+            else:
+                pyami.connect(ami_proxy)
+                globals()['pyami_connected'] = True
+        except Exception:
+            globals()['pyami_connected'] = False
+            raise
 
 
 def set_pyami_proxy(proxy):
     globals()['ami_proxy'] = proxy
+
+
+def set_l3t_file(l3t_file):
+    globals()['l3t_file'] = l3t_file
+
+
+def set_pyami_filter(*args, event_codes=None):
+    filter_strings = []
+    for det, lower, upper in partition(3, args):
+        filter_strings.append(create_filter(det.prefix, lower, upper))
+    if event_codes is not None:
+        for code in event_codes:
+            ami_name = 'DAQ:EVR:Evt{}'.format(code)
+            filter_strings.append(create_filter(ami_name, 0.1, 2))
+    if len(filter_strings) == 0:
+        pyami.clear_l3t()
+    else:
+        if l3t_file is None:
+            raise RuntimeError('Must configure l3t_file with set_l3t_file')
+        final_filter = concat_filter_strings(filter_strings)
+        pyami.set_l3t(final_filter, l3t_file)
+
+
+def create_filter(ami_name, lower, upper):
+    return '{}<{}<{}'.format(lower, ami_name, upper)
+
+
+def concat_filter_strings(filter_strings, operator='|'):
+    if len(filter_strings) == 0:
+        raise ValueError('filter_strings must have at least one element')
+    elif len(filter_strings) == 1:
+        return filter_strings[0]
+    else:
+        sep = ')' + operator + '('
+        return '(' + sep.join(filter_strings) + ')'
 
 
 class AmiDet(Device):
@@ -28,10 +82,7 @@ class AmiDet(Device):
     entries = Cpt(AttributeSignal, attr='pyami_entries', kind='normal')
 
     def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
-        if pyami is None:
-            globals()['pyami'] = import_module('pyami')
-        if not pyami_connected:
-            self._connect_pyami()
+        ensure_pyami()
         self._entry = None
         self.filter_string = filter_string
         self.min_duration = min_duration
@@ -40,18 +91,6 @@ class AmiDet(Device):
         self.pyami_err = 0.
         self.pyami_entries = 0
         super().__init__(prefix, name=name)
-
-    def _connect_pyami(self):
-        logger.debug('Initializing pyami')
-        try:
-            if ami_proxy is None:
-                raise RuntimeError('Must configure proxy with set_pyami_proxy')
-            else:
-                pyami.connect(ami_proxy)
-                globals()['pyami_connected'] = True
-        except Exception:
-            globals()['pyami_connected'] = False
-            raise
 
     def trigger(self):
         if self.filter_string:
