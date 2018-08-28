@@ -1,6 +1,7 @@
 #!/bin/bash
 # This script generates a fresh linker script to create links to the
-# pydaq.so and pycdb.so python modules. This is done because the modules
+# pydaq.so, pycdb.so, and pyami.so python modules.
+# This is done because the modules
 # must be renamed from pydaq.so.3, etc. to be importable.
 set -e
 DAQ_ROOT="/reg/g/pcds/dist/pds"
@@ -21,6 +22,13 @@ do
         echo "ln -s \"${DAQ_ROOT}/${hutch}/${suffix}\" \"${link_name}\"" >> "${LINKER}"
       fi
     done
+    ami_suffix="ami-current/build/ami/lib/${os}/pyami.so.3"
+    ami_link="${my_dir}/pyami.so"
+    if [ "${hutch}" = "current" ]; then
+      echo "ln -s \"${DAQ_ROOT}/${ami_suffix}\" \"${ami_link}\"" >> "${LINKER}"
+    else
+      echo "ln -s \"${DAQ_ROOT}/${hutch}/${ami_suffix}\" \"${ami_link}\"" >> "${LINKER}"
+    fi
   done
 done
 chmod a+x "${LINKER}"
