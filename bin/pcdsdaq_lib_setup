@@ -30,15 +30,15 @@ else
   pydaq_links="$(dirname ${pcdsdaq_init})/pydaq_links/links/${HUTCH}/${OS_DIR}"
   export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
 
-  # Add daq libraries
-  for dir in pdsapp pdsalg psalg pds pdsdata offlinedb
+  # Add ami libraries
+  for dir in ami gsl
   do
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${AMIREL}/${dir}/lib/${OS_DIR}-opt"
   done
 
-  # Add ami libraries
-  for dir in ami
+  # Add daq libraries
+  for dir in pdsapp psalg pds pdsdata offlinedb
   do
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${AMIREL}/${dir}/lib/${OS_DIR}"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}-opt"
   done
 fi
