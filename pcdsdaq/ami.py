@@ -152,7 +152,11 @@ def concat_filter_strings(filter_strings, operator='&'):
 
 class AmiDet(Device):
     """
-    Detector that gets data from pyami.
+    Detector that gets data from pyami scalars.
+
+    The data will be in the form of an accumulated mean, rms, err, and number
+    of entries used in the calculations. The raw data is not avaiable via
+    pyami.
 
     This only supports scalars. The array features are known to crash both the
     python session and active ami clients, so don't use them.

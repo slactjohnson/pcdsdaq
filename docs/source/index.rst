@@ -11,6 +11,14 @@
 
 .. toctree::
    :maxdepth: 1
+   :caption: Getting AMI Data
+   :hidden:
+
+   ami_basic.rst
+   ami_api.rst
+
+.. toctree::
+   :maxdepth: 1
    :caption: Bluesky Plans
    :hidden:
 
