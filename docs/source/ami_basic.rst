@@ -5,32 +5,19 @@ over time. This can be useful for keeping track of DAQ scans in the python
 layer.
 
 This module should be set up automatically in a hutch python session, but if
-you're running this on your own then you'll need to call `set_ami_proxy` and
+you're running this on your own then you'll need to call `set_pyami_proxy` and
 `set_l3t_file` before the class will work.
 
 Creating an AmiDet object
 -------------------------
-This code will set up an `AmiDet` object in simulated mode. Replace
+This code will set up an `AmiDet` object. Replace
 ``'AMI-NAME'`` with the name used in AMI to reference the data, and replace
 ``'ami_det'`` with the desired table label in the ``bluesky`` scans.
 
 .. code-block:: python
 
     from pcdsdaq.ami import AmiDet
-    from pcdsdaq.sim import set_sim_mode
 
-    set_sim_mode(True)
-    det = AmiDet('AMI-NAME', name='ami_det')
-
-
-.. ipython:: python
-    :suppress:
-
-    import time
-    from pcdsdaq.ami import AmiDet
-    from pcdsdaq.sim import set_sim_mode
-
-    set_sim_mode(True)
     det = AmiDet('AMI-NAME', name='ami_det')
 
 
@@ -41,24 +28,13 @@ scan. If used as configured above, they will collect data at each scan step
 while the daq is running. Below is an example scan, see the `plans_basic` page
 for general information about daq scans.
 
-.. ipython:: python
-    :suppress:
-
-    from bluesky import RunEngine
-    from pcdsdaq.daq import Daq
-    
-    RE = RunEngine({})
-    daq = Daq(RE=RE)
-
-
-.. ipython:: python
+.. code-block:: python
 
     from bluesky.plans import count
-    # Configure the daq for 120 events at each point
+
     daq.configure(events=120)
-    # Run the daq and read det 10 times
     RE(count([daq, det], 10))
-   
+
 
 Interactively
 -------------
