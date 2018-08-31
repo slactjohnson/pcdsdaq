@@ -13,6 +13,7 @@ from importlib import import_module
 from ophyd.status import Status, wait as status_wait
 
 from . import ext_scripts
+from .ami import set_pyami_filter
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -945,6 +946,11 @@ class Daq:
             self.disconnect()
         except Exception:
             pass
+
+    def set_filter(self, *args, event_codes=None, operator='&'):
+        return set_pyami_filter(*args, event_codes=event_codes,
+                                operator=operator)
+    set_filter.__doc__ = set_pyami_filter.__doc__
 
 
 class StateTransitionError(Exception):
