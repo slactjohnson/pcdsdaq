@@ -89,6 +89,12 @@ def test_set_pyami_filter_error(ami):
         set_pyami_filter(event_codes=[21])
 
 
+def test_set_pyami_filter_daq(daq, ami):
+    logger.debug('test_set_pyami_filter_daq')
+    daq.set_filter()
+    assert sim_pyami.clear_l3t_count == 1
+
+
 def test_concat_error():
     logger.debug('test_concat_error')
     with pytest.raises(Exception):
