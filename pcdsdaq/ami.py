@@ -4,7 +4,7 @@ from importlib import import_module
 from threading import Thread
 
 from ophyd.device import Device, Component as Cpt
-from ophyd.signal import AttributeSignal
+from ophyd.signal import Signal
 from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
 from toolz.itertoolz import partition
@@ -172,20 +172,16 @@ class AmiDet(Device):
         If provided, we'll wait this many seconds before declaring the
         acquisition as complete. Otherwise, we'll stop acquring on read.
     """
-    mean = Cpt(AttributeSignal, attr='pyami_mean', kind='hinted')
-    rms = Cpt(AttributeSignal, attr='pyami_rms', kind='omitted')
-    err = Cpt(AttributeSignal, attr='pyami_err', kind='omitted')
-    entries = Cpt(AttributeSignal, attr='pyami_entries', kind='normal')
+    mean = Cpt(Signal, kind='hinted', value=0.)
+    rms = Cpt(Signal, kind='omitted', value=0.)
+    err = Cpt(Signal, kind='omitted', value=0.)
+    entries = Cpt(Signal, kind='normal', value=0)
 
     def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
         ensure_pyami()
         self._entry = None
         self.filter_string = filter_string
         self.min_duration = min_duration
-        self.pyami_mean = 0.
-        self.pyami_rms = 0.
-        self.pyami_err = 0.
-        self.pyami_entries = 0
         super().__init__(prefix, name=name)
 
     def trigger(self):
@@ -195,6 +191,9 @@ class AmiDet(Device):
         If min_duration is zero, this will return a status already marked done
         and successful. Otherwise, this will return a status that will be
         marked done after min_duration seconds.
+
+        Internally this creates a new pyami.Entry object. These objects start
+        accumulating data immediatley.
         """
         if self.filter_string:
             self._entry = pyami.Entry(self.prefix, 'Scalar',
@@ -241,10 +240,10 @@ class AmiDet(Device):
         """
         if self._entry is not None:
             data = self._entry.get()
-            self.pyami_mean = data['mean']
-            self.pyami_rms = data['rms']
-            self.pyami_err = data['err']
-            self.pyami_entries = data['entries']
+            self.mean.put(data['mean'])
+            self.rms.put(data['rms'])
+            self.err.put(data['err'])
+            self.entries.put(data['entries'])
             if del_entry:
                 self._entry = None
 
