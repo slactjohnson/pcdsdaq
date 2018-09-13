@@ -31,7 +31,7 @@ else
   export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
 
   # Add ami libraries
-  for dir in ami gsl
+  for dir in ami gsl qt
   do
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${AMIREL}/${dir}/lib/${OS_DIR}-opt"
   done
