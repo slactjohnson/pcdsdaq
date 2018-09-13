@@ -154,7 +154,7 @@ class AmiDet(Device):
     """
     Detector that gets data from pyami scalars.
 
-    The data will be in the form of an accumulated mean, rms, err, and number
+    The data will be in the form of an accumulated mean, rms, and number
     of entries used in the calculations. The raw data is not avaiable via
     pyami.
 
@@ -178,7 +178,6 @@ class AmiDet(Device):
     """
     mean = Cpt(Signal, kind='hinted', value=0.)
     rms = Cpt(Signal, kind='omitted', value=0.)
-    err = Cpt(Signal, kind='omitted', value=0.)
     entries = Cpt(Signal, kind='normal', value=0)
 
     def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
@@ -246,7 +245,6 @@ class AmiDet(Device):
             data = self._entry.get()
             self.mean.put(data['mean'])
             self.rms.put(data['rms'])
-            self.err.put(data['err'])
             self.entries.put(data['entries'])
             if del_entry:
                 self._entry = None
