@@ -45,7 +45,6 @@ class Entry:
     def get(self):
         return dict(mean=np.mean(self._values),
                     rms=np.sqrt(np.mean(np.square(self._values))),
-                    err=0,
                     entries=len(self._values))
 
     def clear(self):
