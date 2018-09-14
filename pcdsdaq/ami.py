@@ -9,6 +9,8 @@ from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
 from toolz.itertoolz import partition
 
+from .ext_scripts import hutch_name, get_ami_proxy
+
 logger = logging.getLogger(__name__)
 pyami = None
 pyami_connected = False
@@ -16,28 +18,44 @@ ami_proxy = None
 l3t_file = None
 last_filter_string = None
 
+L3T_DEFAULT = '/reg/neh/operator/{}opr/l3t/amifil.l3t'
 
-def ensure_pyami():
+
+def auto_setup_pyami():
     """
-    Makes sure pyami is imported and connected
+    Does a best-guess at the ami configuration, if it has not yet been setup.
 
-    This requires set_pyami_proxy to be called first.
+    The steps are:
+
+    1. check hutch name
+    2. determine ami proxy and register it
+    3. setup detault l3t file
+    4. makes sure pyami is imported and connected to the ami proxy
 
     This will be called the first time pyami is needed. We don't import at the
     top of this file because we need to be able to import this file even if
     pyami isn't in the environment, which is semi-frequent.
     """
+    if None in (ami_proxy, l3t_file):
+        # This fails if not on nfs, so only do if 100% needed
+        hutch = hutch_name()
+
+    if ami_proxy is None:
+        proxy = get_ami_proxy(hutch)
+        set_pyami_proxy(proxy)
+
+    if l3t_file is None:
+        set_l3t_file(L3T_DEFAULT.format(hutch))
+
     if pyami is None:
         logger.debug('importing pyami')
         globals()['pyami'] = import_module('pyami')
+
     if not pyami_connected:
         logger.debug('initializing pyami')
         try:
-            if ami_proxy is None:
-                raise RuntimeError('Must configure proxy with set_pyami_proxy')
-            else:
-                pyami.connect(ami_proxy)
-                globals()['pyami_connected'] = True
+            pyami.connect(ami_proxy)
+            globals()['pyami_connected'] = True
         except Exception:
             globals()['pyami_connected'] = False
             raise
@@ -229,7 +247,7 @@ class AmiDet(Device):
     entries = Cpt(Signal, kind='normal', value=0)
 
     def __init__(self, prefix, *, name, filter_string=None, min_duration=0):
-        ensure_pyami()
+        auto_setup_pyami()
         self._entry = None
         self.filter_string = filter_string
         self.min_duration = min_duration
@@ -245,7 +263,7 @@ class AmiDet(Device):
         the pyami data. Setting the filter_string after stage is called will
         have no effect.
         """
-        if self.filter_string is None:
+        if self.filter_string is None and last_filter_string is not None:
             self._entry = pyami.Entry(self.prefix, 'Scalar',
                                       last_filter_string)
         elif self.filter_string:
