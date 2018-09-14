@@ -14,6 +14,7 @@ pyami = None
 pyami_connected = False
 ami_proxy = None
 l3t_file = None
+last_filter_string = None
 
 
 def ensure_pyami():
@@ -108,6 +109,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
             raise RuntimeError('Must configure l3t_file with set_l3t_file')
         final_filter = concat_filter_strings(filter_strings, operator=operator)
         pyami.set_l3t(final_filter, l3t_file)
+        globals()['last_filter_string'] = final_filter
 
 
 def create_filter(ami_name, lower, upper):
@@ -171,6 +173,9 @@ class AmiDet(Device):
 
     filter_str: ``str``, optional
         If provided, we'll filter the incoming data using this filter string.
+        If omitted or None, we'll use the last set_l3t string.
+        If False, but not None, we'll do no filtering at all. This includes the
+        empty string.
 
     min_duration: ``float``, optional
         If provided, we'll wait this many seconds before declaring the
@@ -180,7 +185,7 @@ class AmiDet(Device):
     rms = Cpt(Signal, kind='omitted', value=0.)
     entries = Cpt(Signal, kind='normal', value=0)
 
-    def __init__(self, prefix, *, name, filter_string=False, min_duration=0):
+    def __init__(self, prefix, *, name, filter_string=None, min_duration=0):
         ensure_pyami()
         self._entry = None
         self.filter_string = filter_string
@@ -198,7 +203,10 @@ class AmiDet(Device):
         Internally this creates a new pyami.Entry object. These objects start
         accumulating data immediatley.
         """
-        if self.filter_string:
+        if self.filter_string is None:
+            self._entry = pyami.Entry(self.prefix, 'Scalar',
+                                      last_filter_string)
+        elif self.filter_string:
             self._entry = pyami.Entry(self.prefix, 'Scalar',
                                       self.filter_string)
         else:
