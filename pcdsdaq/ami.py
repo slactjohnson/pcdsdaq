@@ -113,6 +113,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
         ``and`` the conditions together, so l3pass will only happen if all
         filters pass.
     """
+    auto_setup_pyami()
     filter_string = dets_filter(*args, event_codes=event_codes,
                                 operator=operator)
     if filter_string is None:
