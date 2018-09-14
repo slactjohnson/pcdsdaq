@@ -235,16 +235,15 @@ class AmiDet(Device):
         self.min_duration = min_duration
         super().__init__(prefix, name=name)
 
-    def trigger(self):
+    def stage(self):
         """
-        Called during a bluesky scan to start taking ami data.
+        Called early in a bluesky scan to initialize the pyami.Entry object.
 
-        If min_duration is zero, this will return a status already marked done
-        and successful. Otherwise, this will return a status that will be
-        marked done after min_duration seconds.
+        Note that pyami.Entry objects begin accumulating data immediately.
 
-        Internally this creates a new pyami.Entry object. These objects start
-        accumulating data immediatley.
+        This will be when the filter_string is used to determine how to filter
+        the pyami data. Setting the filter_string after stage is called will
+        have no effect.
         """
         if self.filter_string is None:
             self._entry = pyami.Entry(self.prefix, 'Scalar',
@@ -254,6 +253,35 @@ class AmiDet(Device):
                                       self.filter_string)
         else:
             self._entry = pyami.Entry(self.prefix, 'Scalar')
+        return super().stage()
+
+    def unstage(self):
+        """
+        Called late in a bluesky scan to remove the pyami.Entry object.
+        """
+        self._entry = None
+        return super().unstage()
+
+    def trigger(self):
+        """
+        Called during a bluesky scan to clear the accumulated pyami data.
+
+        This must be done because the pyami.Entry objects continually
+        accumulate data forever. You can stop it by deleting the objects
+        as in `unstage`, and you can clear it here to at least start from a
+        clean slate.
+
+        If min_duration is zero, this will return a status already marked done
+        and successful. Otherwise, this will return a status that will be
+        marked done after min_duration seconds.
+
+        Internally this creates a new pyami.Entry object. These objects start
+        accumulating data immediatley.
+        """
+        if self._entry is None:
+            raise RuntimeError('AmiDet %s(%s) was never staged!', self.name,
+                               self.prefix)
+        self._entry.clear()
         if self.min_duration:
             def inner(duration, status):
                 time.sleep(duration)
@@ -265,25 +293,14 @@ class AmiDet(Device):
             return Status(obj=self, done=True, success=True)
 
     def get(self, *args, **kwargs):
-        """
-        Can be called interactively to check the accumulated ami data.
-
-        This will not stop the accumulation of data.
-        """
-        self._get_data(del_entry=False)
+        self._get_data()
         return super().get(*args, **kwargs)
 
     def read(self, *args, **kwargs):
-        """
-        Called during a bluesky scan to get the accumulated ami data.
-
-        This will stop the accumulation of data. We aggresively reset the data
-        accumulation to avoid memory leaking.
-        """
-        self._get_data(del_entry=True)
+        self._get_data()
         return super().read(*args, **kwargs)
 
-    def _get_data(self, del_entry):
+    def _get_data(self):
         """
         Helper function that stuffs ami data into this device's signals.
 
@@ -297,8 +314,6 @@ class AmiDet(Device):
             self.mean.put(data['mean'])
             self.rms.put(data['rms'])
             self.entries.put(data['entries'])
-            if del_entry:
-                self._entry = None
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')
