@@ -106,7 +106,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
     else:
         if l3t_file is None:
             raise RuntimeError('Must configure l3t_file with set_l3t_file')
-        final_filter = concat_filter_strings(filter_strings)
+        final_filter = concat_filter_strings(filter_strings, operator=operator)
         pyami.set_l3t(final_filter, l3t_file)
 
 
