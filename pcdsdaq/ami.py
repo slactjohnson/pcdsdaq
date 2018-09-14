@@ -95,24 +95,67 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
         ``and`` the conditions together, so l3pass will only happen if all
         filters pass.
     """
+    filter_string = dets_filter(*args, event_codes=event_codes,
+                                operator=operator)
+    if filter_string is None:
+        pyami.clear_l3t()
+    elif l3t_file is None:
+        raise RuntimeError('Must configure l3t_file with set_l3t_file')
+    else:
+        pyami.set_l3t(filter_string, l3t_file)
+        globals()['last_filter_string'] = filter_string
+
+
+def dets_filter(*args, event_codes=None, operator='&'):
+    """
+    Return valid l3t/pyami filter strings in a useful format.
+
+    The function takes in arbitrary dets whose prefixes are the ami names,
+    along with low and highs. Event codes are handled as a special case, since
+    you always want high vs low.
+
+    Parameters
+    ----------
+    *args: (``AmiDet``, ``float``, ``float``) n times
+        A sequence of (detector, low, high), which create filters that make
+        sure the detector is between low and high.
+
+    event_codes: ``list``, optional
+        A list of event codes to include in the filter. l3pass will be when the
+        event code is present.
+
+    operator: ``str``, optional
+        The operator for combining the detector ranges and event codes. This
+        can either be ``|`` to ``or`` the conditions together, so l3pass will
+        happen if any filter passes, or it can be left at the default ``&`` to
+        ``and`` the conditions together, so l3pass will only happen if all
+        filters pass.
+
+    Returns
+    -------
+    filter_string: `str`
+        A valid filter string for `AmiDet` or for `pyami.set_l3t`
+    """
     filter_strings = []
     for det, lower, upper in partition(3, args):
-        filter_strings.append(create_filter(det.prefix, lower, upper))
+        if isinstance(det, str):
+            ami_name = det
+        elif isinstance(det, AmiDet):
+            ami_name = det.prefix
+        else:
+            raise TypeError('Must use AmiDet or string for filtering!')
+        filter_strings.append(basic_filter(ami_name, lower, upper))
     if event_codes is not None:
         for code in event_codes:
             ami_name = 'DAQ:EVR:Evt{}'.format(code)
-            filter_strings.append(create_filter(ami_name, 0.1, 2))
+            filter_strings.append(basic_filter(ami_name, 0.1, 2))
     if len(filter_strings) == 0:
-        pyami.clear_l3t()
+        return None
     else:
-        if l3t_file is None:
-            raise RuntimeError('Must configure l3t_file with set_l3t_file')
-        final_filter = concat_filter_strings(filter_strings, operator=operator)
-        pyami.set_l3t(final_filter, l3t_file)
-        globals()['last_filter_string'] = final_filter
+        return concat_filter_strings(filter_strings, operator=operator)
 
 
-def create_filter(ami_name, lower, upper):
+def basic_filter(ami_name, lower, upper):
     """
     Helper function for creating an ami filter string.
 
@@ -259,3 +302,36 @@ class AmiDet(Device):
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')
+
+    def set_det_filter(self, *args, event_codes=None, operator='&'):
+        """
+        Set the filter on this detector only.
+
+        This lets you override the l3t filter for a single AmiDet. Call with
+        no arguments to revert to the last l3t filter. Call with a simple
+        `False` to disable filtering on this detector. Call as you would to set
+        the l3t filter to setup a normal filtering override.
+
+        Parameters
+        ----------
+        *args: (``AmiDet``, ``float``, ``float``) n times
+            A sequence of (detector, low, high), which create filters that make
+            sure the detector is between low and high. If instead, the first
+            argument is `False`, we'll disable filtering on this detector.
+
+        event_codes: ``list``, optional
+            A list of event codes to include in the filter. l3pass will be when
+            the event code is present.
+
+        operator: ``str``, optional
+            The operator for combining the detector ranges and event codes.
+            This can either be ``|`` to ``or`` the conditions together, so
+            l3pass will happen if any filter passes, or it can be left at the
+            default ``&`` to ``and`` the conditions together, so l3pass will
+            only happen if all filters pass.
+        """
+        if len(args) == 1 and not args[0]:
+            self.filter_string = False
+        else:
+            self.filter_string = dets_filter(*args, event_codes=event_codes,
+                                             operator=operator)
