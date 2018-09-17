@@ -118,8 +118,6 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
                                 operator=operator)
     if filter_string is None:
         pyami.clear_l3t()
-    elif l3t_file is None:
-        raise RuntimeError('Must configure l3t_file with set_l3t_file')
     else:
         pyami.set_l3t(filter_string, l3t_file)
         globals()['last_filter_string'] = filter_string
