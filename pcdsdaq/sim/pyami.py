@@ -39,8 +39,7 @@ class Entry:
         if not Entry._connected:
             raise RuntimeError('simulated fail: did not call connect')
         self._filt = filter_string
-        self._count = random.randint(1, 100)
-        self._values = [random.random() for i in range(self._count)]
+        self.clear()
 
     def get(self):
         return dict(mean=np.mean(self._values),
@@ -48,5 +47,5 @@ class Entry:
                     entries=len(self._values))
 
     def clear(self):
-        logger.debug('Clearing test pyami queue for %s', self._ami_name)
-        self._values.clear()
+        self._count = random.randint(1, 100)
+        self._values = [random.random() for i in range(self._count)]

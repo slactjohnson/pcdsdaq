@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def test_ami_basic(ami):
     logger.debug('test_ami_basic')
+    ami.stage()
     ami.trigger()
     stats = ami.get()
     assert stats.entries > 0
