@@ -341,8 +341,8 @@ class AmiDet(Device):
 
         This lets you override the l3t filter for a single AmiDet. Call with
         no arguments to revert to the last l3t filter. Call with a simple
-        ``False`` to disable filtering on this detector. Call as you would to set
-        the l3t filter to setup a normal filtering override.
+        ``False`` to disable filtering on this detector. Call as you would to
+        set the l3t filter to setup a normal filtering override.
 
         Parameters
         ----------
