@@ -150,8 +150,8 @@ def dets_filter(*args, event_codes=None, operator='&'):
 
     Returns
     -------
-    filter_string: `str`
-        A valid filter string for `AmiDet` or for `pyami.set_l3t`
+    filter_string: ``str``
+        A valid filter string for `AmiDet` or for ``pyami.set_l3t``
     """
     filter_strings = []
     for det, lower, upper in partition(3, args):
@@ -341,7 +341,7 @@ class AmiDet(Device):
 
         This lets you override the l3t filter for a single AmiDet. Call with
         no arguments to revert to the last l3t filter. Call with a simple
-        `False` to disable filtering on this detector. Call as you would to set
+        ``False`` to disable filtering on this detector. Call as you would to set
         the l3t filter to setup a normal filtering override.
 
         Parameters
@@ -349,7 +349,7 @@ class AmiDet(Device):
         *args: (``AmiDet``, ``float``, ``float``) n times
             A sequence of (detector, low, high), which create filters that make
             sure the detector is between low and high. If instead, the first
-            argument is `False`, we'll disable filtering on this detector.
+            argument is ``False``, we'll disable filtering on this detector.
 
         event_codes: ``list``, optional
             A list of event codes to include in the filter. l3pass will be when

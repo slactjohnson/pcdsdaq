@@ -4,9 +4,9 @@ The `AmiDet` class can be used to read the mean and rms of an ami variable
 over time. This can be useful for keeping track of DAQ scans in the python
 layer.
 
-This module should be set up automatically in a hutch python session, but if
-you're running this on your own then you'll need to call `set_pyami_proxy` and
-`set_l3t_file` before the class will work.
+This module does a best-effort approach of setting itself up automatically, but
+if this isn't working for your setup you may need to call `set_pyami_proxy` and
+`set_l3t_file` before everything will work.
 
 Creating an AmiDet object
 -------------------------
@@ -33,20 +33,30 @@ for general information about daq scans.
     from bluesky.plans import count
 
     daq.configure(events=120)
-    RE(count([daq, det], 10))
+    RE(count([det, daq], 10))
+
+.. note::
+    I highly recommend you place any ami detectors BEFORE the daq object in the
+    dets list, to ensure they are ready before the daq starts running. Failing
+    to do this can result in missing some events.
 
 
 Interactively
 -------------
 You can also use `AmiDet` interactively, perhaps in a second session, to snoop
-on AMI information. Use the ``trigger`` method to start or restart data
-acquisition and the ``get`` method to check the accumulated statistics.
+on AMI information. You should use the same methods that the scan does to
+control the collection of data: ``stage`` will begin collecting data,
+``trigger`` will reset the data collection, and ``unstage`` will stop
+collecting data. You can use ``get`` or ``read`` to check the result depending
+on the level of detail you need.
 
 
 Advanced Options
 ----------------
 - Use the ``filter_string`` kwarg or set ``det.filter_string`` to filter the
-  incoming data for the `AmiDet`.
+  incoming data for the `AmiDet`. You can also use the `Daq.set_filter` method
+  to configure the l3t trigger and set the default filtering for `AmiDet`
+  instances.
 - Use the ``min_duration`` kwarg or set ``det.min_duration`` to a positive
   number to specify a minimum time spent measuring data at each point. This is
   not needed if you are running pydaq and pyami in the same scan, but it may be

@@ -9,9 +9,10 @@ AmiDet API
    :nosignatures:
    :toctree: generated
 
-   ensure_pyami
+   auto_setup_pyami
    set_pyami_proxy
    set_l3t_file
    set_pyami_filter
-   create_filter
+   dets_filter
+   basic_filter
    concat_filter_strings
