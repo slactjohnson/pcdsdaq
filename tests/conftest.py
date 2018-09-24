@@ -12,8 +12,17 @@ import pytest
 
 
 @pytest.fixture(scope='function')
-def daq(RE):
+def sim():
     set_sim_mode(True)
+
+
+@pytest.fixture(scope='function')
+def nosim():
+    set_sim_mode(False)
+
+
+@pytest.fixture(scope='function')
+def daq(RE, sim):
     sim_pydaq.conn_err = None
     return Daq(RE=RE, platform=0)
 
@@ -24,19 +33,13 @@ def nodaq(RE):
 
 
 @pytest.fixture(scope='function')
-def ami():
-    set_sim_mode(True)
+def ami_det(sim):
     set_pyami_proxy('tstproxy')
     set_l3t_file('tstfile')
     sim_pyami.connect_success = True
     sim_pyami.set_l3t_count = 0
     sim_pyami.clear_l3t_count = 0
     return AmiDet('TST', name='test')
-
-
-@pytest.fixture(scope='function')
-def nosim():
-    set_sim_mode(False)
 
 
 @pytest.fixture(scope='function')

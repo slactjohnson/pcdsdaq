@@ -1,3 +1,4 @@
+import importlib
 import logging
 
 import pytest
@@ -6,36 +7,38 @@ from bluesky.callbacks import collector
 from bluesky.plans import count
 
 import pcdsdaq.ami
+import pcdsdaq.ext_scripts as ext
 import pcdsdaq.sim.pyami as sim_pyami
-from pcdsdaq.ami import (AmiDet, set_pyami_proxy, set_l3t_file,
-                         set_pyami_filter, concat_filter_strings)
+from pcdsdaq.ami import (AmiDet, auto_setup_pyami, set_pyami_proxy,
+                         set_l3t_file, set_pyami_filter, dets_filter,
+                         basic_filter, concat_filter_strings)
 
 logger = logging.getLogger(__name__)
 
 
-def test_ami_basic(ami):
+def test_ami_basic(ami_det):
     logger.debug('test_ami_basic')
-    ami.stage()
-    ami.trigger()
-    stats = ami.get()
+    ami_det.stage()
+    ami_det.trigger()
+    stats = ami_det.get()
     assert stats.entries > 0
 
 
-def test_ami_scan(ami, RE):
+def test_ami_scan(ami_det, RE):
     logger.debug('test_ami_scan')
-    ami.min_duration = 1
-    ami.filter_string = '4<x<5'
+    ami_det.min_duration = 1
+    ami_det.filter_string = '4<x<5'
     mean_list = []
-    coll = collector(ami.mean.name, mean_list)
+    coll = collector(ami_det.mean.name, mean_list)
     num = 5
-    RE(count([ami], num=num), {'event': coll})
+    RE(count([ami_det], num=num), {'event': coll})
     assert len(mean_list) == num
 
 
-def test_ami_errors(ami):
+def test_ami_errors(ami_det):
     logger.debug('test_ami_errors')
     with pytest.raises(Exception):
-        ami.put(4)
+        ami_det.put(4)
     set_pyami_proxy(None)
     pcdsdaq.ami.pyami_connected = False
     with pytest.raises(Exception):
@@ -53,44 +56,44 @@ def test_no_pyami():
         AmiDet('NOPYAMI', name='nopyami')
 
 
-def test_set_pyami_filter_clear(ami):
+def test_set_pyami_filter_clear(ami_det):
     logger.debug('test_set_pyami_filter_clear')
     set_pyami_filter()
     assert sim_pyami.clear_l3t_count == 1
 
 
-def test_set_pyami_filter_one(ami):
+def test_set_pyami_filter_one(ami_det):
     logger.debug('test_set_pyami_filter_one')
-    set_pyami_filter(ami, 0, 1)
+    set_pyami_filter(ami_det, 0, 1)
     assert sim_pyami.set_l3t_count == 1
 
 
-def test_set_pyami_filter_two(ami):
+def test_set_pyami_filter_two(ami_det):
     logger.debug('test_set_pyami_filter_two')
-    set_pyami_filter(ami, 0, 1, ami, 2, 3)
+    set_pyami_filter(ami_det, 0, 1, ami_det, 2, 3)
     assert sim_pyami.set_l3t_count == 1
 
 
-def test_set_pyami_filter_evr(ami):
+def test_set_pyami_filter_evr(ami_det):
     logger.debug('test_set_pyami_filter_evr')
     set_pyami_filter(event_codes=[162, 163])
     assert sim_pyami.set_l3t_count == 1
 
 
-def test_set_pyami_filter_all(ami):
+def test_set_pyami_filter_all(ami_det):
     logger.debug('test_set_pyami_filter_all')
-    set_pyami_filter(ami, 0, 1, ami, 2, 3, event_codes=[162, 163])
+    set_pyami_filter(ami_det, 0, 1, ami_det, 2, 3, event_codes=[162, 163])
     assert sim_pyami.set_l3t_count == 1
 
 
-def test_set_pyami_filter_error(ami):
+def test_set_pyami_filter_error(ami_det):
     logger.debug('test_set_pyami_filter_error')
     set_l3t_file(None)
     with pytest.raises(Exception):
         set_pyami_filter(event_codes=[21])
 
 
-def test_set_pyami_filter_daq(daq, ami):
+def test_set_pyami_filter_daq(daq, ami_det):
     logger.debug('test_set_pyami_filter_daq')
     daq.set_filter()
     assert sim_pyami.clear_l3t_count == 1
@@ -100,3 +103,26 @@ def test_concat_error():
     logger.debug('test_concat_error')
     with pytest.raises(Exception):
         concat_filter_strings([])
+
+
+def test_auto_setup_pyami(sim, monkeypatch):
+    logger.debug('test_auto_setup_pyami')
+    pcdsdaq.ami._reset_globals()
+
+    def fake_hutch_name(*args, **kwargs):
+        return 'tst'
+
+    def fake_get_proxy(*args, **kwargs):
+        return 'tst-proxy'
+
+    def fake_import(module):
+        if module == 'pyami':
+            return sim_pyami
+        else:
+            return importlib.import_module(module)
+
+    monkeypatch.setattr(pcdsdaq.ami, 'hutch_name', fake_hutch_name)
+    monkeypatch.setattr(pcdsdaq.ami, 'get_ami_proxy', fake_get_proxy)
+    monkeypatch.setattr(pcdsdaq.ami, 'import_module', fake_import)
+
+    auto_setup_pyami()

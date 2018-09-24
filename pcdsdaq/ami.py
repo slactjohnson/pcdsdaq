@@ -12,13 +12,27 @@ from toolz.itertoolz import partition
 from .ext_scripts import hutch_name, get_ami_proxy
 
 logger = logging.getLogger(__name__)
+L3T_DEFAULT = '/reg/neh/operator/{}opr/l3t/amifil.l3t'
+
+# Set uninitialized globals for style-checker
 pyami = None
-pyami_connected = False
+pyami_connected = None
 ami_proxy = None
 l3t_file = None
 last_filter_string = None
 
-L3T_DEFAULT = '/reg/neh/operator/{}opr/l3t/amifil.l3t'
+
+# Define default starting values. Can also use to reset module.
+def _reset_globals():
+    defaults = dict(pyami=None,
+                    pyami_connected=False,
+                    ami_proxy=None,
+                    l3t_file=None,
+                    last_filter_string=None)
+    globals().update(defaults)
+
+
+_reset_globals()
 
 
 def auto_setup_pyami():
