@@ -215,8 +215,12 @@ class Daq:
         """
         logger.debug('Daq.wait()')
         if self.state == 'Running':
-            status = self._get_end_status()
-            status_wait(status, timeout=timeout)
+            if self._events or self._duration:
+                status = self._get_end_status()
+                status_wait(status, timeout=timeout)
+            else:
+                raise RuntimeError('Cannot wait, daq configured to run '
+                                   'forever.')
 
     def begin(self, events=None, duration=None, record=None, use_l3t=None,
               controls=None, wait=False, end_run=False):
@@ -329,7 +333,8 @@ class Daq:
         Returns a status object that will be marked done when the daq has
         stopped acquiring.
 
-        This will raise a RuntimeError if the daq is configured to run forever.
+        This will raise a RuntimeError if the daq was never configured for
+        events or duration.
 
         Returns
         -------
@@ -338,15 +343,21 @@ class Daq:
         """
         cfg = self.next_config
         if all(cfg[key] is None for key in ('events', 'duration')):
-            raise RuntimeError(('Cannot start daq in scan step, configured '
-                                'to run forever!'))
+            raise RuntimeError('Cannot start daq in scan step, did not '
+                               'configure events or duration.')
         self.begin()
         return self._get_end_status()
 
     def read(self):
         """
         Return data. There is no data implemented yet.
+
+        This also stops if running so you can use this device in a bluesky scan
+        and wait for "everything else" to be done, then stop the daq
+        afterwards.
         """
+        if self.state == 'Running':
+            self.stop()
         return {}
 
     def describe(self):
@@ -451,26 +462,34 @@ class Daq:
         Return a `Status` object that will be marked done when the DAQ has
         finished acquiring.
 
+        This will be marked as done immediately if the daq is configured to run
+        forever, because waiting for the end doesn't make sense in this case.
+
         Returns
         -------
         end_status: `Status`
         """
         logger.debug('Daq._get_end_status()')
 
-        def finish_thread(control, status):
-            try:
-                logger.debug('Daq.control.end()')
-                control.end()
-            except RuntimeError:
-                pass  # This means we aren't running, so no need to wait
-            self._reset_begin()
-            status._finished(success=True)
-            logger.debug('Marked acquisition as complete')
-        end_status = Status(obj=self)
-        watcher = threading.Thread(target=finish_thread,
-                                   args=(self._control, end_status))
-        watcher.start()
-        return end_status
+        if self._events or self._duration:
+            def finish_thread(control, status):
+                try:
+                    logger.debug('Daq.control.end()')
+                    control.end()
+                except RuntimeError:
+                    pass  # This means we aren't running, so no need to wait
+                self._reset_begin()
+                status._finished(success=True)
+                logger.debug('Marked acquisition as complete')
+            end_status = Status(obj=self)
+            watcher = threading.Thread(target=finish_thread,
+                                       args=(self._control, end_status))
+            watcher.start()
+            return end_status
+        else:
+            # Configured to run forever, say we're done so we can wait for just
+            # the other things in the scan
+            return Status(obj=self, done=True, success=True)
 
     def collect(self):
         """
