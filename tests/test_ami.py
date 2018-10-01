@@ -35,6 +35,31 @@ def test_ami_scan(ami_det, RE):
     assert len(mean_list) == num
 
 
+def test_ami_stage(ami_det):
+    logger.debug('test_ami_stage')
+    assert ami_det._entry is None
+    ami_det.stage()
+    assert ami_det._entry is not None
+    ami_det.unstage()
+    assert ami_det._entry is None
+    set_pyami_filter(ami_det, 0, 1)
+    ami_det.stage()
+    assert ami_det._entry is not None
+    ami_det.unstage()
+    assert ami_det._entry is None
+    ami_det.filter_string = '0<x<1'
+    ami_det.stage()
+    assert ami_det._entry is not None
+    ami_det.unstage()
+    assert ami_det._entry is None
+
+
+def test_ami_trigger_errors(ami_det):
+    logger.debug('test_ami_trigger_errors')
+    with pytest.raises(RuntimeError):
+        ami_det.trigger()
+
+
 def test_ami_errors(ami_det):
     logger.debug('test_ami_errors')
     with pytest.raises(Exception):
@@ -68,6 +93,18 @@ def test_set_pyami_filter_one(ami_det):
     assert sim_pyami.set_l3t_count == 1
 
 
+def test_pyami_filter_string(ami_det):
+    logger.debug('test_set_pyami_filter_string')
+    set_pyami_filter('DET:NAME', 0, 1)
+    assert sim_pyami.set_l3t_count == 1
+
+
+def test_pyami_filter_error(ami_det):
+    logger.debug('test_pyami_filter_error')
+    with pytest.raises(TypeError):
+        set_pyami_filter(None, 0, 1)
+
+
 def test_set_pyami_filter_two(ami_det):
     logger.debug('test_set_pyami_filter_two')
     set_pyami_filter(ami_det, 0, 1, ami_det, 2, 3)
@@ -97,6 +134,14 @@ def test_set_pyami_filter_daq(daq, ami_det):
     logger.debug('test_set_pyami_filter_daq')
     daq.set_filter()
     assert sim_pyami.clear_l3t_count == 1
+
+
+def test_set_det_filter(ami_det):
+    logger.debug('test_set_det_filter')
+    ami_det.set_det_filter('test', 0, 1)
+    assert ami_det.filter_string
+    ami_det.set_det_filter(False)
+    assert not ami_det.filter_string
 
 
 def test_concat_error():
