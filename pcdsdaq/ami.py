@@ -3,6 +3,7 @@ import time
 from importlib import import_module
 from threading import Thread
 
+import numpy as np
 from ophyd.device import Device, Component as Cpt
 from ophyd.signal import Signal
 from ophyd.status import Status
@@ -258,6 +259,7 @@ class AmiDet(Device):
     mean = Cpt(Signal, kind='hinted', value=0.)
     rms = Cpt(Signal, kind='omitted', value=0.)
     entries = Cpt(Signal, kind='normal', value=0)
+    err = Cpt(Signal, kind='normal', value=0.)
 
     def __init__(self, prefix, *, name, filter_string=None, min_duration=0):
         auto_setup_pyami()
@@ -345,6 +347,11 @@ class AmiDet(Device):
             self.mean.put(data['mean'])
             self.rms.put(data['rms'])
             self.entries.put(data['entries'])
+            # Calculate the standard error because old python did
+            if data['entries']:
+                self.err.put(data['rms']/np.sqrt(data['entries']))
+            else:
+                self.err.put(0)
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')

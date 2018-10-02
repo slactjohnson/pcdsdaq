@@ -42,9 +42,12 @@ class Entry:
         self.clear()
 
     def get(self):
-        return dict(mean=np.mean(self._values),
-                    rms=np.sqrt(np.mean(np.square(self._values))),
-                    entries=len(self._values))
+        if len(self._values):
+            return dict(mean=np.mean(self._values),
+                        rms=np.sqrt(np.mean(np.square(self._values))),
+                        entries=len(self._values))
+        else:
+            return dict(mean=0, rms=0, entries=0)
 
     def clear(self):
         self._count = random.randint(1, 100)

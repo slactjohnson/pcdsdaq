@@ -22,6 +22,9 @@ def test_ami_basic(ami_det):
     ami_det.trigger()
     stats = ami_det.get()
     assert stats.entries > 0
+    ami_det._entry._values = []
+    # Should not error with no values collected
+    stats = ami_det.get()
 
 
 def test_ami_scan(ami_det, RE):
