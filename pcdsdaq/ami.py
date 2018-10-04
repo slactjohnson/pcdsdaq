@@ -4,7 +4,7 @@ from importlib import import_module
 from threading import Thread
 
 import numpy as np
-from ophyd.device import Device, Component as Cpt
+from ophyd.device import Device, Component as Cpt, Staged
 from ophyd.signal import Signal
 from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
@@ -20,6 +20,7 @@ pyami = None
 pyami_connected = None
 ami_proxy = None
 l3t_file = None
+monitor_det = None
 last_filter_string = None
 
 
@@ -29,6 +30,7 @@ def _reset_globals():
                     pyami_connected=False,
                     ami_proxy=None,
                     l3t_file=None,
+                    monitor_det=None,
                     last_filter_string=None)
     globals().update(defaults)
 
@@ -100,6 +102,25 @@ def set_l3t_file(l3t_file):
     globals()['l3t_file'] = l3t_file
 
 
+def set_monitor_det(det):
+    """
+    Designate one `AmiDet` as the monitor.
+
+    The monitor det is the default normalization detector and the default
+    filtering detector when no detector is provided.
+
+    Parameters
+    ----------
+    det: `AmiDet` or `bool`
+        The detector to set as the monitor. Alternatively, pass in ``False`` to
+        disable the monitor det.
+    """
+    if det:
+        globals()['monitor_det'] = det
+    else:
+        globals()['monitor_det'] = None
+
+
 def set_pyami_filter(*args, event_codes=None, operator='&'):
     """
     Set up the l3t filters.
@@ -148,9 +169,11 @@ def dets_filter(*args, event_codes=None, operator='&'):
 
     Parameters
     ----------
-    *args: (``AmiDet``, ``float``, ``float``) n times
+    *args: (`AmiDet`, ``float``, ``float``) n times
         A sequence of (detector, low, high), which create filters that make
-        sure the detector is between low and high.
+        sure the detector is between low and high. You can omit the first
+        `AmiDet` as a shorthand for the current monitor, assuming a monitor has
+        been set with `set_monitor_det`.
 
     event_codes: ``list``, optional
         A list of event codes to include in the filter. l3pass will be when the
@@ -169,6 +192,13 @@ def dets_filter(*args, event_codes=None, operator='&'):
         A valid filter string for `AmiDet` or for ``pyami.set_l3t``
     """
     filter_strings = []
+    if len(args) % 3 == 2:
+        # One arg missing, add the monitor det as first arg
+        if monitor_det is None:
+            raise RuntimeError('Did not recieve args multiple of 3, but ',
+                               'monitor_det is not set. Aborting.')
+        else:
+            args = [monitor_det] + list(args)
     for det, lower, upper in partition(3, args):
         if isinstance(det, str):
             ami_name = det
@@ -255,17 +285,33 @@ class AmiDet(Device):
     min_duration: ``float``, optional
         If provided, we'll wait this many seconds before declaring the
         acquisition as complete. Otherwise, we'll stop acquring on read.
-    """
-    mean = Cpt(Signal, kind='hinted', value=0.)
-    rms = Cpt(Signal, kind='omitted', value=0.)
-    entries = Cpt(Signal, kind='normal', value=0)
-    err = Cpt(Signal, kind='normal', value=0.)
 
-    def __init__(self, prefix, *, name, filter_string=None, min_duration=0):
+    normalize: ``bool`` or ``AmiDet``, optional
+        Determines the normalization behavior of this detector. The default is
+        ``True``, which means normalize to the current ``monitor_det``. See
+        `set_monitor_det`. ``False`` means do not normalize. You can also pass
+        in any other detector to normalize against something that is not the
+        ``monitor_det``.
+    """
+    mean = Cpt(Signal, value=0., kind='hinted')
+    err = Cpt(Signal, value=0., kind='hinted')
+    entries = Cpt(Signal, value=0, kind='hinted')
+    mean_raw = Cpt(Signal, value=0., kind='normal')
+    err_raw = Cpt(Signal, value=0., kind='normal')
+    mean_mon = Cpt(Signal, value=0., kind='normal')
+    err_mon = Cpt(Signal, value=0., kind='normal')
+    entries_mon = Cpt(Signal, value=0., kind='normal')
+    mon_prefix = Cpt(Signal, value='', kind='normal')
+    rms = Cpt(Signal, value=0., kind='omitted')
+
+    def __init__(self, prefix, *, name, filter_string=None, min_duration=0,
+                 normalize=True):
         auto_setup_pyami()
         self._entry = None
+        self._monitor = None
         self.filter_string = filter_string
         self.min_duration = min_duration
+        self.normalize = normalize
         super().__init__(prefix, name=name)
 
     def stage(self):
@@ -277,6 +323,9 @@ class AmiDet(Device):
         This will be when the filter_string is used to determine how to filter
         the pyami data. Setting the filter_string after stage is called will
         have no effect.
+
+        Internally this creates a new pyami.Entry object. These objects start
+        accumulating data immediately.
         """
         if self.filter_string is None and last_filter_string is not None:
             self._entry = pyami.Entry(self.prefix, 'Scalar',
@@ -286,14 +335,26 @@ class AmiDet(Device):
                                       self.filter_string)
         else:
             self._entry = pyami.Entry(self.prefix, 'Scalar')
+        if self.normalize:
+            if isinstance(self.normalize, AmiDet):
+                self._monitor = self.normalize
+            else:
+                self._monitor = monitor_det
+            self.mon_prefix.put(self._monitor.prefix)
         return super().stage()
 
     def unstage(self):
         """
-        Called late in a bluesky scan to remove the pyami.Entry object.
+        Called late in a bluesky scan to remove the pyami.Entry object and the
+        monitor.
         """
         self._entry = None
-        return super().unstage()
+        if self._monitor is not None:
+            self._monitor.unstage()
+        unstaged = super().unstage() + [self._monitor]
+        self._monitor = None
+        self.mon_prefix.put('')
+        return unstaged
 
     def trigger(self):
         """
@@ -308,12 +369,19 @@ class AmiDet(Device):
         and successful. Otherwise, this will return a status that will be
         marked done after min_duration seconds.
 
-        Internally this creates a new pyami.Entry object. These objects start
-        accumulating data immediatley.
+        If there is a normalization detector in use and it has not been staged,
+        it will be staged during the first trigger in a scan.
         """
         if self._entry is None:
             raise RuntimeError('AmiDet %s(%s) was never staged!', self.name,
                                self.prefix)
+        if self._monitor is not None and self._monitor is not self:
+            if self._monitor._staged != Staged.yes:
+                self._monitor.unstage()
+                self._monitor.stage()
+            monitor_status = self._monitor.trigger()
+        else:
+            monitor_status = None
         self._entry.clear()
         if self.min_duration:
             def inner(duration, status):
@@ -321,9 +389,12 @@ class AmiDet(Device):
                 status._finished()
             status = Status(obj=self)
             Thread(target=inner, args=(self.min_duration, status)).start()
+        else:
+            status = Status(obj=self, done=True, success=True)
+        if monitor_status is None:
             return status
         else:
-            return Status(obj=self, done=True, success=True)
+            return status & monitor_status
 
     def get(self, *args, **kwargs):
         self._get_data()
@@ -344,14 +415,41 @@ class AmiDet(Device):
         """
         if self._entry is not None:
             data = self._entry.get()
-            self.mean.put(data['mean'])
+            self.mean_raw.put(data['mean'])
             self.rms.put(data['rms'])
             self.entries.put(data['entries'])
             # Calculate the standard error because old python did
             if data['entries']:
-                self.err.put(data['rms']/np.sqrt(data['entries']))
+                data['err'] = data['rms']/np.sqrt(data['entries'])
             else:
-                self.err.put(0)
+                data['err'] = 0
+            self.err_raw.put(data['err'])
+
+        def adj_error(det_mean, det_err, mon_mean, mon_err):
+            return det_err/mon_mean + mon_err * (det_mean/mon_mean)**2
+
+        if self._monitor is None:
+            self.mean.put(data['mean'])
+            self.err.put(data['err'])
+            self.mean_mon.put(0)
+            self.err_mon.put(0)
+            self.entries_mon.put(0)
+        elif self._monitor is self:
+            self.mean.put(1)
+            self.err.put(adj_error(data['mean'], data['err'],
+                                   data['mean'], data['err']))
+            self.mean_mon.put(data['mean'])
+            self.err_mon.put(data['err'])
+            self.entries_mon.put(data['entries'])
+        else:
+            mon_data = self._monitor.get()
+            self.mean.put(data['mean']/mon_data['mean_raw'])
+            self.err.put(adj_error(data['mean'], data['err'],
+                                   mon_data['mean_raw'],
+                                   mon_data['err_raw']))
+            self.mean_mon.put(mon_data['mean_raw'])
+            self.err_mon.put(mon_data['err_raw'])
+            self.entries_mon.put(mon_data['entries'])
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')
