@@ -340,7 +340,8 @@ class AmiDet(Device):
                 self._monitor = self.normalize
             else:
                 self._monitor = monitor_det
-            self.mon_prefix.put(self._monitor.prefix)
+            if self._monitor is not None:
+                self.mon_prefix.put(self._monitor.prefix)
         return super().stage()
 
     def unstage(self):
