@@ -10,8 +10,8 @@ import pcdsdaq.ami
 import pcdsdaq.ext_scripts as ext
 import pcdsdaq.sim.pyami as sim_pyami
 from pcdsdaq.ami import (AmiDet, auto_setup_pyami, set_pyami_proxy,
-                         set_l3t_file, set_pyami_filter, dets_filter,
-                         basic_filter, concat_filter_strings)
+                         set_l3t_file, set_monitor_det, set_pyami_filter,
+                         dets_filter, basic_filter, concat_filter_strings)
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,28 @@ def test_ami_scan(ami_det, RE):
     num = 5
     RE(count([ami_det], num=num), {'event': coll})
     assert len(mean_list) == num
+
+
+def test_normalize_scan(ami_det, ami_det_2, RE):
+    logger.debug('test_normalize_scan')
+    ami_det.min_duration = 1
+    ami_det.normalize = ami_det_2
+    set_monitor_det(ami_det_2)
+    RE(count([ami_det, ami_det_2], num=5))
+    RE(count([ami_det], num=5))
+    RE(count([ami_det_2], num=5))
+
+
+def test_normalize_error(ami_det, ami_det_2):
+    logger.debug('test_normalize_error')
+    set_monitor_det(ami_det_2)
+    ami_det_2.stage()
+    ami_det_2._entry._values = []
+    with pytest.raises(RuntimeError):
+        ami_det.get()
+    ami_det.stage()
+    ami_det.get()
+    assert ami_det.mean_mon.get() == 0
 
 
 def test_ami_stage(ami_det):
@@ -82,6 +104,14 @@ def test_no_pyami():
     pcdsdaq.ami.pyami = None
     with pytest.raises(ImportError):
         AmiDet('NOPYAMI', name='nopyami')
+
+
+def test_set_monitor_det(ami_det):
+    logger.debug('test_set_monitor_det')
+    set_monitor_det(ami_det)
+    assert pcdsdaq.ami.monitor_det is ami_det
+    set_monitor_det(False)
+    assert pcdsdaq.ami.monitor_det is None
 
 
 def test_set_pyami_filter_clear(ami_det):
@@ -137,6 +167,20 @@ def test_set_pyami_filter_daq(daq, ami_det):
     logger.debug('test_set_pyami_filter_daq')
     daq.set_filter()
     assert sim_pyami.clear_l3t_count == 1
+
+
+def test_set_monitor_daq(daq, ami_det):
+    logger.debug('test_set_monitor_daq')
+    daq.set_monitor(ami_det)
+    assert pcdsdaq.ami.monitor_det == ami_det
+
+
+def test_dets_filter_default_arg(ami_det):
+    logger.debug('test_dets_filter_default_arg')
+    with pytest.raises(RuntimeError):
+        dets_filter(0, 1)
+    set_monitor_det(ami_det)
+    assert ami_det.prefix in dets_filter(0, 1)
 
 
 def test_set_det_filter(ami_det):
