@@ -350,9 +350,11 @@ class AmiDet(Device):
         monitor.
         """
         self._entry = None
-        if self._monitor is not None:
+        if self._monitor is not None and self._monitor is not self:
             self._monitor.unstage()
-        unstaged = super().unstage() + [self._monitor]
+            unstaged = super().unstage() + [self._monitor]
+        else:
+            unstaged = super().unstage()
         self._monitor = None
         self.mon_prefix.put('')
         return unstaged
@@ -414,17 +416,19 @@ class AmiDet(Device):
         del_entry: ``bool``
             If ``True``, we'll clear the accumulated data after getting it.
         """
-        if self._entry is not None:
-            data = self._entry.get()
-            self.mean_raw.put(data['mean'])
-            self.rms.put(data['rms'])
-            self.entries.put(data['entries'])
-            # Calculate the standard error because old python did
-            if data['entries']:
-                data['err'] = data['rms']/np.sqrt(data['entries'])
-            else:
-                data['err'] = 0
-            self.err_raw.put(data['err'])
+        if self._entry is None:
+            raise RuntimeError('Must stage AmiDet to begin accumulating data')
+
+        data = self._entry.get()
+        self.mean_raw.put(data['mean'])
+        self.rms.put(data['rms'])
+        self.entries.put(data['entries'])
+        # Calculate the standard error because old python did
+        if data['entries']:
+            data['err'] = data['rms']/np.sqrt(data['entries'])
+        else:
+            data['err'] = 0
+        self.err_raw.put(data['err'])
 
         def adj_error(det_mean, det_err, mon_mean, mon_err):
             return det_err/mon_mean + mon_err * (det_mean/mon_mean)**2
@@ -437,20 +441,27 @@ class AmiDet(Device):
             self.entries_mon.put(0)
         elif self._monitor is self:
             self.mean.put(1)
-            self.err.put(adj_error(data['mean'], data['err'],
-                                   data['mean'], data['err']))
+            if data['mean'] == 0:
+                self.err.put(np.nan)
+            else:
+                self.err.put(adj_error(data['mean'], data['err'],
+                                       data['mean'], data['err']))
             self.mean_mon.put(data['mean'])
             self.err_mon.put(data['err'])
             self.entries_mon.put(data['entries'])
         else:
             mon_data = self._monitor.get()
-            self.mean.put(data['mean']/mon_data['mean_raw'])
-            self.err.put(adj_error(data['mean'], data['err'],
-                                   mon_data['mean_raw'],
-                                   mon_data['err_raw']))
-            self.mean_mon.put(mon_data['mean_raw'])
-            self.err_mon.put(mon_data['err_raw'])
-            self.entries_mon.put(mon_data['entries'])
+            if mon_data.mean_raw == 0:
+                self.mean.put(np.nan)
+                self.err.put(np.nan)
+            else:
+                self.mean.put(data['mean']/mon_data.mean_raw)
+                self.err.put(adj_error(data['mean'], data['err'],
+                                       mon_data.mean_raw,
+                                       mon_data.err_raw))
+            self.mean_mon.put(mon_data.mean_raw)
+            self.err_mon.put(mon_data.err_raw)
+            self.entries_mon.put(mon_data.entries)
 
     def put(self, *args, **kwargs):
         raise ReadOnlyError('AmiDet is read-only')
