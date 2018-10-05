@@ -24,10 +24,15 @@ def set_sim_mode(sim_mode):
     """
     if sim_mode:
         ami.pyami = pyami
+        if ami.ami_proxy is None:
+            ami.set_pyami_proxy('tstproxy')
+            ami.set_l3t_file('tstfile')
         daq.pydaq = pydaq
         ext.hutch_name = pydaq.sim_hutch_name
         ext.get_run_number = pydaq.sim_get_run_number
     else:
+        if ami.ami_proxy == 'tstproxy':
+            ami._reset_globals()
         try:
             real_pyami = import_module('pyami')
             ami.pyami = real_pyami

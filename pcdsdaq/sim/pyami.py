@@ -44,7 +44,7 @@ class Entry:
     def get(self):
         if len(self._values):
             return dict(mean=np.mean(self._values),
-                        rms=np.sqrt(np.mean(np.square(self._values))),
+                        rms=np.std(self._values),
                         entries=len(self._values))
         else:
             return dict(mean=0, rms=0, entries=0)

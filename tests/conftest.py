@@ -3,7 +3,7 @@ from ophyd.sim import SynSignal, motor1
 
 import pcdsdaq.sim.pyami as sim_pyami
 import pcdsdaq.sim.pydaq as sim_pydaq
-from pcdsdaq.ami import AmiDet, set_pyami_proxy, set_l3t_file
+from pcdsdaq.ami import (AmiDet, _reset_globals as ami_reset_globals)
 from pcdsdaq.daq import Daq
 from pcdsdaq.sim import set_sim_mode
 from pcdsdaq.sim.pydaq import SimNoDaq
@@ -12,12 +12,17 @@ import pytest
 
 
 @pytest.fixture(scope='function')
-def sim():
+def reset():
+    ami_reset_globals()
+
+
+@pytest.fixture(scope='function')
+def sim(reset):
     set_sim_mode(True)
 
 
 @pytest.fixture(scope='function')
-def nosim():
+def nosim(reset):
     set_sim_mode(False)
 
 
@@ -34,12 +39,15 @@ def nodaq(RE):
 
 @pytest.fixture(scope='function')
 def ami_det(sim):
-    set_pyami_proxy('tstproxy')
-    set_l3t_file('tstfile')
     sim_pyami.connect_success = True
     sim_pyami.set_l3t_count = 0
     sim_pyami.clear_l3t_count = 0
     return AmiDet('TST', name='test')
+
+
+@pytest.fixture(scope='function')
+def ami_det_2():
+    return AmiDet('TST2', name='test2')
 
 
 @pytest.fixture(scope='function')
