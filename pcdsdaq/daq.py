@@ -274,6 +274,9 @@ class Daq:
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
             status_wait(begin_status, timeout=BEGIN_TIMEOUT)
+            # In some daq configurations the begin status returns very early,
+            # so we allow the user to configure an emperically derived extra
+            # sleep.
             time.sleep(self.config['begin_sleep'])
             if wait:
                 self.wait()

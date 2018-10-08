@@ -157,3 +157,10 @@ Advanced Options
 - ``controls=[motor1, motor2...]``: This will post the name of each motor and
                     the current position to the daq data stream. This is
                     handled automatically with some of the ``bluesky`` tools.
+- ``begin_sleep=0.25``: This configuration argument will set the empirically
+                    derived sleep time needed after a call to ``begin`` that
+                    ensures the daq is actually ready. If a valid argument for
+                    ``time.sleep``, this will wait to end a ``begin`` call
+                    until the configured sleep time elapses. This may be
+                    useful if you have other devices that rely on a run to
+                    actually start before doing some action.
