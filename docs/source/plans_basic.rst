@@ -13,6 +13,7 @@ Creating a Daq object with the RunEngine
 ----------------------------------------
 The `Daq` needs to register a ``RunEngine`` instance for this to work. This
 must be the same ``RunEngine`` that will be running all of the plans.
+This will be done automatically for you in a ``hutch-python`` session.
 
 .. code-block:: python
 
@@ -43,7 +44,7 @@ must be the same ``RunEngine`` that will be running all of the plans.
 
    The ``daq`` object must be staged if it's going to be used in a plan. This
    is done automatically in `daq_during_wrapper`, `daq_during_decorator`, and
-   most built-ins like ``count`` and ``scan``.
+   in most built-in plans like ``count`` and ``scan``.
 
 
 Calib Cycles
@@ -73,6 +74,28 @@ step.
 .. ipython:: python
 
     RE(scan([daq], motor1, 0, 10, 11))
+
+
+Running with the Sequencer
+--------------------------
+If the daq or the sequencer is configured to run forever, and the other is
+configured for a fixed duration or number of events, you can use a normal
+daq/sequencer procedure. Each of these devices will wait for the other to
+complete when used in a scan in this way.
+
+If the daq is configured to run forever, and the event sequencer has a fixed
+run, then we will be executing an event sequencer-controlled plan. At each scan
+step, we will start the daq, start the sequencer, wait for the sequencer, and
+stop the daq.
+
+If the sequencer is configured to run forever and the daq has a fixed run, then
+we will be executing a daq-controlled plan. At each scan step, we will start
+the daq, start the sequencer, wait for the daq, and let the sequencer go until
+restarting at the next scan step.
+
+.. code-block:: python
+
+    RE(scan([daq, sequencer], motor, 0, 10, 11))
 
 
 Running for an Entire Plan Duration
