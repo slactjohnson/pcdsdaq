@@ -132,7 +132,6 @@ def test_record(daq):
     daq.begin()
     assert not daq.config['record']
     assert not daq.record
-    daq.end_run()
 
 
 @pytest.mark.timeout(10)
@@ -275,7 +274,6 @@ def test_wait_run(daq):
     daq.wait()
     short_time = time.time() - t3
     assert short_time < 1
-    daq.end_run()
 
 
 @pytest.mark.timeout(3)
@@ -291,7 +289,6 @@ def test_configured_run(daq, sig):
     daq.wait()
     just_over_1 = time.time() - t0
     assert 1 < just_over_1 < 1.2
-    daq.end_run()
 
 
 @pytest.mark.timeout(3)
@@ -383,7 +380,6 @@ def test_restore_state(daq, RE):
     assert daq.state == 'Running'
     RE(count([daq]))
     assert daq.state == 'Running'
-    daq.end_run()
 
 
 def test_bad_stuff(daq, RE):
@@ -412,8 +408,6 @@ def test_bad_stuff(daq, RE):
 
     with pytest.raises(StateTransitionError):
         daq.begin(record=True)
-
-    daq.end_run()  # Prevent thread stalling
 
 
 @pytest.mark.timeout(3)
@@ -489,4 +483,33 @@ def test_run_number(daq, monkeypatch):
     # We shouldn't have an exception in begin if run_number fails!
     # Not important enough to hold up the show
     daq.begin(events=100, record=True)
-    daq.end_run()
+
+
+def test_infinite_trigger_status(daq):
+    logger.debug('test_infinite_trigger_status')
+    daq.configure(events=0)
+    status = daq.trigger()
+    assert status.done
+    assert status.success
+
+
+def test_wait_error(daq):
+    logger.debug('test_wait_error')
+    daq.begin_infinite()
+    with pytest.raises(RuntimeError):
+        daq.wait()
+
+
+def test_read_stops(daq):
+    logger.debug('test_read_stops')
+    daq.begin_infinite()
+    assert daq.state == 'Running'
+    daq.read()
+    assert daq.state == 'Open'
+
+
+def test_complete_no_error(daq):
+    logger.debug('test_complete_no_error')
+    # complete shouldn't error if we call it when the daq isn't running
+    daq.configure(events=120)
+    daq.complete()

@@ -13,7 +13,13 @@ import pytest
 def daq(RE):
     set_sim_mode(True)
     sim_pydaq.conn_err = None
-    return Daq(RE=RE, platform=0)
+    daq = Daq(RE=RE, platform=0)
+    yield daq
+    try:
+        # Sim daq can freeze pytest's exit if we don't end the run
+        daq.end_run()
+    except Exception:
+        pass
 
 
 @pytest.fixture(scope='function')
