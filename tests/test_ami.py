@@ -7,11 +7,10 @@ from bluesky.callbacks import collector
 from bluesky.plans import count
 
 import pcdsdaq.ami
-import pcdsdaq.ext_scripts as ext
 import pcdsdaq.sim.pyami as sim_pyami
 from pcdsdaq.ami import (AmiDet, auto_setup_pyami, set_pyami_proxy,
                          set_l3t_file, set_monitor_det, set_pyami_filter,
-                         dets_filter, basic_filter, concat_filter_strings)
+                         dets_filter, concat_filter_strings)
 
 logger = logging.getLogger(__name__)
 
@@ -181,6 +180,11 @@ def test_dets_filter_default_arg(ami_det):
         dets_filter(0, 1)
     set_monitor_det(ami_det)
     assert ami_det.prefix in dets_filter(0, 1)
+
+
+def test_dets_filter_no_kick(ami_det):
+    logger.debug('test_dets_filter_no_kick')
+    dets_filter('name', 0, 1, or_bykik=False)
 
 
 def test_set_det_filter(ami_det):

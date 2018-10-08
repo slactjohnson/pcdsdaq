@@ -159,13 +159,20 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
         globals()['last_filter_string'] = filter_string
 
 
-def dets_filter(*args, event_codes=None, operator='&'):
+def dets_filter(*args, event_codes=None, operator='&', or_bykik=True):
     """
     Return valid l3t/pyami filter strings in a useful format.
 
     The function takes in arbitrary dets whose prefixes are the ami names,
     along with low and highs. Event codes are handled as a special case, since
     you always want high vs low.
+
+    .. note::
+        By default this will treat bykik at an l3t pass! This is so you don't
+        lose your off shots when the l3t trigger is in veto mode. You can
+        disable this with ``or_bykik=False``, but this will remain the default
+        behavior for backwards compatibility and to prevent someone from losing
+        shots that they wanted in the data.
 
     Parameters
     ----------
@@ -185,6 +192,11 @@ def dets_filter(*args, event_codes=None, operator='&'):
         happen if any filter passes, or it can be left at the default ``&`` to
         ``and`` the conditions together, so l3pass will only happen if all
         filters pass.
+
+    or_bykik: ``bool``, optional
+        True by default, appends an ``or`` condition that marks l3t pass when
+        we see the bykik event code. This makes sure the off shots make it into
+        the data if we're in l3t veto mode.
 
     Returns
     -------
@@ -209,12 +221,16 @@ def dets_filter(*args, event_codes=None, operator='&'):
         filter_strings.append(basic_filter(ami_name, lower, upper))
     if event_codes is not None:
         for code in event_codes:
-            ami_name = 'DAQ:EVR:Evt{}'.format(code)
-            filter_strings.append(basic_filter(ami_name, 0.1, 2))
+            filter_strings.append(evr_filter(code))
     if len(filter_strings) == 0:
         return None
     else:
-        return concat_filter_strings(filter_strings, operator=operator)
+        base = concat_filter_strings(filter_strings, operator=operator)
+        if or_bykik:
+            bykik = evr_filter(162)
+            return concat_filter_strings([base, bykik], operator='|')
+        else:
+            return base
 
 
 def basic_filter(ami_name, lower, upper):
@@ -231,8 +247,29 @@ def basic_filter(ami_name, lower, upper):
 
     upper: ``float``
         The upper bound for the value to pass
+
+    Returns
+    -------
+    filter_string: ``str``
     """
     return '{}<{}<{}'.format(lower, ami_name, upper)
+
+
+def evr_filter(event_code):
+    """
+    Helper function that creates a filter for a certain event code.
+
+    Parameters
+    ----------
+    event_code: ``int``
+        The event code to create a filter for
+
+    Returns
+    -------
+    filter_string: ``str``
+    """
+    evr_base = 'DAQ:EVR:Evt{}'
+    return basic_filter(evr_base.format(event_code), 0.1, 2)
 
 
 def concat_filter_strings(filter_strings, operator='&'):
