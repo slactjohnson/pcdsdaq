@@ -62,3 +62,8 @@ Advanced Options
   not needed if you are running pydaq and pyami in the same scan, but it may be
   useful if you are free-running the daq and need to control acquisition times
   in your scan.
+- Use the ``normalize`` kwarg or set ``det.normalize`` to control normalization
+  behavior (default: ``True``). If ``True``, we'll normalize with the detector
+  chosen with `Daq.set_monitor` (if applicable), if a specific detector
+  then we'll normalize with that detector, and if ``False`` then we'll skip
+  normalization altogether.

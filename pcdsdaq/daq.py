@@ -947,9 +947,9 @@ class Daq:
         except Exception:
             pass
 
-    def set_filter(self, *args, event_codes=None, operator='&'):
+    def set_filter(self, *args, event_codes=None, operator='&', or_bykik=True):
         return set_pyami_filter(*args, event_codes=event_codes,
-                                operator=operator)
+                                operator=operator, or_bykik=or_bykik)
     set_filter.__doc__ = set_pyami_filter.__doc__
 
     def set_monitor(self, det):

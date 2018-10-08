@@ -111,7 +111,7 @@ def set_monitor_det(det):
 
     Parameters
     ----------
-    det: `AmiDet` or `bool`
+    det: `AmiDet` or ``bool``
         The detector to set as the monitor. Alternatively, pass in ``False`` to
         disable the monitor det.
     """
@@ -121,7 +121,7 @@ def set_monitor_det(det):
         globals()['monitor_det'] = None
 
 
-def set_pyami_filter(*args, event_codes=None, operator='&'):
+def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=True):
     """
     Set up the l3t filters.
 
@@ -132,11 +132,20 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
     Event codes are handled as a special case, since you always want high vs
     low.
 
+    .. note::
+        By default this will treat bykik at an l3t pass! This is so you don't
+        lose your off shots when the l3t trigger is in veto mode. You can
+        disable this with ``or_bykik=False``, but this will remain the default
+        behavior for backwards compatibility and to prevent someone from losing
+        shots that they wanted in the data.
+
     Parameters
     ----------
-    *args: (``AmiDet``, ``float``, ``float``) n times
+    *args: (`AmiDet`, ``float``, ``float``) n times
         A sequence of (detector, low, high), which create filters that make
-        sure the detector is between low and high.
+        sure the detector is between low and high. You can omit the first
+        `AmiDet` as a shorthand for the current monitor, assuming a monitor has
+        been set with `Daq.set_monitor` or `set_monitor_det`.
 
     event_codes: ``list``, optional
         A list of event codes to include in the filter. l3pass will be when the
@@ -148,10 +157,15 @@ def set_pyami_filter(*args, event_codes=None, operator='&'):
         happen if any filter passes, or it can be left at the default ``&`` to
         ``and`` the conditions together, so l3pass will only happen if all
         filters pass.
+
+    or_bykik: ``bool``, optional
+        True by default, appends an ``or`` condition that marks l3t pass when
+        we see the bykik event code. This makes sure the off shots make it into
+        the data if we're in l3t veto mode.
     """
     auto_setup_pyami()
     filter_string = dets_filter(*args, event_codes=event_codes,
-                                operator=operator)
+                                operator=operator, or_bykik=or_bykik)
     if filter_string is None:
         pyami.clear_l3t()
     else:
@@ -180,7 +194,7 @@ def dets_filter(*args, event_codes=None, operator='&', or_bykik=True):
         A sequence of (detector, low, high), which create filters that make
         sure the detector is between low and high. You can omit the first
         `AmiDet` as a shorthand for the current monitor, assuming a monitor has
-        been set with `set_monitor_det`.
+        been set with `Daq.set_monitor` or `set_monitor_det`.
 
     event_codes: ``list``, optional
         A list of event codes to include in the filter. l3pass will be when the
