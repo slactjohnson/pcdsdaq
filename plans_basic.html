@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.1.0+43.gcb89dfe documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.1.0+47.gae32b55 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+43.gcb89dfe
+                2.1.0+47.gae32b55
               </div>
             
           
@@ -98,6 +98,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Using the DAQ with Bluesky</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object-with-the-runengine">Creating a Daq object with the RunEngine</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#calib-cycles">Calib Cycles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-with-the-sequencer">Running with the Sequencer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-for-an-entire-plan-duration">Running for an Entire Plan Duration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#after-the-plan">After the Plan</a></li>
 </ul>
@@ -192,7 +193,8 @@ the internals.</p>
 <div class="section" id="creating-a-daq-object-with-the-runengine">
 <h2>Creating a Daq object with the RunEngine<a class="headerlink" href="#creating-a-daq-object-with-the-runengine" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> needs to register a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance for this to work. This
-must be the same <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> that will be running all of the plans.</p>
+must be the same <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> that will be running all of the plans.
+This will be done automatically for you in a <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> session.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky</span> <span class="kn">import</span> <span class="n">RunEngine</span>
 <span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
 <span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
@@ -206,7 +208,7 @@ must be the same <code class="docutils literal notranslate"><span class="pre">Ru
 <p class="first admonition-title">Note</p>
 <p class="last">The <code class="docutils literal notranslate"><span class="pre">daq</span></code> object must be staged if it’s going to be used in a plan. This
 is done automatically in <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a>, <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, and
-most built-ins like <code class="docutils literal notranslate"><span class="pre">count</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code>.</p>
+in most built-in plans like <code class="docutils literal notranslate"><span class="pre">count</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code>.</p>
 </div>
 </div>
 <div class="section" id="calib-cycles">
@@ -223,7 +225,25 @@ step.</p>
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">(&#39;d65e485d-b3c2-4547-8ba6-09e909155cc1&#39;,)</span>
+<span class="gh">Out[1]: </span><span class="go">(&#39;eb460d0c-594d-4a7d-bd15-12f233ead39e&#39;,)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-with-the-sequencer">
+<h2>Running with the Sequencer<a class="headerlink" href="#running-with-the-sequencer" title="Permalink to this headline">¶</a></h2>
+<p>If the daq or the sequencer is configured to run forever, and the other is
+configured for a fixed duration or number of events, you can use a normal
+daq/sequencer procedure. Each of these devices will wait for the other to
+complete when used in a scan in this way.</p>
+<p>If the daq is configured to run forever, and the event sequencer has a fixed
+run, then we will be executing an event sequencer-controlled plan. At each scan
+step, we will start the daq, start the sequencer, wait for the sequencer, and
+stop the daq.</p>
+<p>If the sequencer is configured to run forever and the daq has a fixed run, then
+we will be executing a daq-controlled plan. At each scan step, we will start
+the daq, start the sequencer, wait for the daq, and let the sequencer go until
+restarting at the next scan step.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">,</span> <span class="n">sequencer</span><span class="p">],</span> <span class="n">motor</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -306,7 +326,7 @@ to running, and if you start from a configured state we’ll stay connected.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+43.gcb89dfe',
+            VERSION:'2.1.0+47.gae32b55',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
