@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pcdsdaq.daq.register_daq &mdash; pcdsdaq 2.1.0+43.gcb89dfe documentation</title>
+  <title>pcdsdaq.ami.set_monitor_det &mdash; pcdsdaq 2.1.0+43.gcb89dfe documentation</title>
   
 
   
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pcdsdaq.daq.check_connect" href="pcdsdaq.daq.check_connect.html" />
-    <link rel="prev" title="pcdsdaq.daq.get_daq" href="pcdsdaq.daq.get_daq.html" /> 
+    <link rel="next" title="pcdsdaq.ami.set_pyami_filter" href="pcdsdaq.ami.set_pyami_filter.html" />
+    <link rel="prev" title="pcdsdaq.ami.set_l3t_file" href="pcdsdaq.ami.set_l3t_file.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -83,20 +83,26 @@
             
             
               <p class="caption"><span class="caption-text">Running the DAQ</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../daq_basic.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../daq_config.html">Configuration</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../daq_api.html">Daq API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.daq.get_daq.html">pcdsdaq.daq.get_daq</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">pcdsdaq.daq.register_daq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.daq.check_connect.html">pcdsdaq.daq.check_connect</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../daq_api.html">Daq API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Getting AMI Data</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../ami_basic.html">Basic Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ami_api.html">AmiDet API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../ami_api.html">AmiDet API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.auto_setup_pyami.html">pcdsdaq.ami.auto_setup_pyami</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.set_pyami_proxy.html">pcdsdaq.ami.set_pyami_proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.set_l3t_file.html">pcdsdaq.ami.set_l3t_file</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pcdsdaq.ami.set_monitor_det</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.set_pyami_filter.html">pcdsdaq.ami.set_pyami_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.dets_filter.html">pcdsdaq.ami.dets_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.basic_filter.html">pcdsdaq.ami.basic_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.evr_filter.html">pcdsdaq.ami.evr_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pcdsdaq.ami.concat_filter_strings.html">pcdsdaq.ami.concat_filter_strings</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul>
@@ -161,15 +167,15 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../daq_api.html">Daq API</a> &raquo;</li>
+          <li><a href="../ami_api.html">AmiDet API</a> &raquo;</li>
         
-      <li>pcdsdaq.daq.register_daq</li>
+      <li>pcdsdaq.ami.set_monitor_det</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/generated/pcdsdaq.daq.register_daq.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/pcdsdaq.ami.set_monitor_det.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -182,18 +188,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pcdsdaq-daq-register-daq">
-<h1>pcdsdaq.daq.register_daq<a class="headerlink" href="#pcdsdaq-daq-register-daq" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pcdsdaq-ami-set-monitor-det">
+<h1>pcdsdaq.ami.set_monitor_det<a class="headerlink" href="#pcdsdaq-ami-set-monitor-det" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="pcdsdaq.daq.register_daq">
-<code class="descclassname">pcdsdaq.daq.</code><code class="descname">register_daq</code><span class="sig-paren">(</span><em>daq</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.register_daq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called by <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> at the end of <code class="docutils literal notranslate"><span class="pre">__init__</span></code> to save our one daq instance as
-the real <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>. There will always only be one <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>.</p>
+<dt id="pcdsdaq.ami.set_monitor_det">
+<code class="descclassname">pcdsdaq.ami.</code><code class="descname">set_monitor_det</code><span class="sig-paren">(</span><em>det</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.set_monitor_det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate one <a class="reference internal" href="../ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> as the monitor.</p>
+<p>The monitor det is the default normalization detector and the default
+filtering detector when no detector is provided.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>daq</strong> (<a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>det</strong> (<a class="reference internal" href="../ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> or <code class="docutils literal notranslate"><span class="pre">bool</span></code>) – The detector to set as the monitor. Alternatively, pass in <code class="docutils literal notranslate"><span class="pre">False</span></code> to
+disable the monitor det.</td>
 </tr>
 </tbody>
 </table>
@@ -209,10 +217,10 @@ the real <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" ti
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pcdsdaq.daq.check_connect.html" class="btn btn-neutral float-right" title="pcdsdaq.daq.check_connect" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="pcdsdaq.ami.set_pyami_filter.html" class="btn btn-neutral float-right" title="pcdsdaq.ami.set_pyami_filter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="pcdsdaq.daq.get_daq.html" class="btn btn-neutral" title="pcdsdaq.daq.get_daq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="pcdsdaq.ami.set_l3t_file.html" class="btn btn-neutral" title="pcdsdaq.ami.set_l3t_file" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

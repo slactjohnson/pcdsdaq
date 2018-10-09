@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.1.0+3.g9a3adb5 documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.1.0+43.gcb89dfe documentation</title>
   
 
   
@@ -29,7 +29,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Preprocessors API" href="preprocessors_api.html" />
-    <link rel="prev" title="pcdsdaq.daq.check_connect" href="generated/pcdsdaq.daq.check_connect.html" /> 
+    <link rel="prev" title="pcdsdaq.ami.concat_filter_strings" href="generated/pcdsdaq.ami.concat_filter_strings.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+3.g9a3adb5
+                2.1.0+43.gcb89dfe
               </div>
             
           
@@ -87,6 +87,11 @@
 <li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul class="current">
@@ -218,7 +223,7 @@ step.</p>
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">(&#39;270485f5-5550-4208-863f-e8cc0f38b96a&#39;,)</span>
+<span class="gh">Out[1]: </span><span class="go">(&#39;d65e485d-b3c2-4547-8ba6-09e909155cc1&#39;,)</span>
 </pre></div>
 </div>
 </div>
@@ -270,7 +275,7 @@ to running, and if you start from a configured state we’ll stay connected.</p>
         <a href="preprocessors_api.html" class="btn btn-neutral float-right" title="Preprocessors API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="generated/pcdsdaq.daq.check_connect.html" class="btn btn-neutral" title="pcdsdaq.daq.check_connect" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="generated/pcdsdaq.ami.concat_filter_strings.html" class="btn btn-neutral" title="pcdsdaq.ami.concat_filter_strings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -301,7 +306,7 @@ to running, and if you start from a configured state we’ll stay connected.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+3.g9a3adb5',
+            VERSION:'2.1.0+43.gcb89dfe',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -312,6 +317,7 @@ to running, and if you start from a configured state we’ll stay connected.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 2.1.0+3.g9a3adb5 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.1.0+43.gcb89dfe documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+3.g9a3adb5
+                2.1.0+43.gcb89dfe
               </div>
             
           
@@ -92,6 +92,11 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.daq.check_connect.html">pcdsdaq.daq.check_connect</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Bluesky Plans</span></p>
 <ul>
@@ -524,6 +529,66 @@ the hutch based on your session details.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pcdsdaq.daq.Daq.set_filter">
+<code class="descname">set_filter</code><span class="sig-paren">(</span><em>*args</em>, <em>event_codes=None</em>, <em>operator='&amp;'</em>, <em>or_bykik=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the l3t filters.</p>
+<p>These connect through pyami to call set_l3t or clear_l3t. The function
+takes in arbitrary dets whose prefixes are the ami names, along with low
+and highs.</p>
+<p>Event codes are handled as a special case, since you always want high vs
+low.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default this will treat bykik at an l3t pass! This is so you don’t
+lose your off shots when the l3t trigger is in veto mode. You can
+disable this with <code class="docutils literal notranslate"><span class="pre">or_bykik=False</span></code>, but this will remain the default
+behavior for backwards compatibility and to prevent someone from losing
+shots that they wanted in the data.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*args</strong> ((<a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a>, <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>) n times) – A sequence of (detector, low, high), which create filters that make
+sure the detector is between low and high. You can omit the first
+<a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> as a shorthand for the current monitor, assuming a monitor has
+been set with <a class="reference internal" href="#pcdsdaq.daq.Daq.set_monitor" title="pcdsdaq.daq.Daq.set_monitor"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.set_monitor</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.ami.set_monitor_det.html#pcdsdaq.ami.set_monitor_det" title="pcdsdaq.ami.set_monitor_det"><code class="xref any py py-func docutils literal notranslate"><span class="pre">set_monitor_det</span></code></a>.</li>
+<li><strong>event_codes</strong> (<code class="docutils literal notranslate"><span class="pre">list</span></code>, optional) – A list of event codes to include in the filter. l3pass will be when the
+event code is present.</li>
+<li><strong>operator</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, optional) – The operator for combining the detector ranges and event codes. This
+can either be <code class="docutils literal notranslate"><span class="pre">|</span></code> to <code class="docutils literal notranslate"><span class="pre">or</span></code> the conditions together, so l3pass will
+happen if any filter passes, or it can be left at the default <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> to
+<code class="docutils literal notranslate"><span class="pre">and</span></code> the conditions together, so l3pass will only happen if all
+filters pass.</li>
+<li><strong>or_bykik</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – True by default, appends an <code class="docutils literal notranslate"><span class="pre">or</span></code> condition that marks l3t pass when
+we see the bykik event code. This makes sure the off shots make it into
+the data if we’re in l3t veto mode.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.daq.Daq.set_monitor">
+<code class="descname">set_monitor</code><span class="sig-paren">(</span><em>det</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designate one <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> as the monitor.</p>
+<p>The monitor det is the default normalization detector and the default
+filtering detector when no detector is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>det</strong> (<a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> or <code class="docutils literal notranslate"><span class="pre">bool</span></code>) – The detector to set as the monitor. Alternatively, pass in <code class="docutils literal notranslate"><span class="pre">False</span></code> to
+disable the monitor det.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pcdsdaq.daq.Daq.stage">
 <code class="descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stage" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for preparing a device for action.</p>
@@ -547,14 +612,25 @@ new run during the scan.</p>
 <dl class="attribute">
 <dt id="pcdsdaq.daq.Daq.state">
 <code class="descname">state</code><a class="headerlink" href="#pcdsdaq.daq.Daq.state" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>State as reported by the daq. Can be any of the following</em> –</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">Disconnected</span></code>: No active session in python</li>
-<li><code class="docutils literal notranslate"><span class="pre">Connected</span></code>:    Active session in python</li>
-<li><code class="docutils literal notranslate"><span class="pre">Configured</span></code>:   Connected, and the daq has been configured</li>
-<li><code class="docutils literal notranslate"><span class="pre">Open</span></code>:         We are in the middle of a run</li>
-<li><code class="docutils literal notranslate"><span class="pre">Running</span></code>:      We are collecting data in a run</li>
+<dd><p>No active session in python
+- <code class="docutils literal notranslate"><span class="pre">Connected</span></code>:    Active session in python
+- <code class="docutils literal notranslate"><span class="pre">Configured</span></code>:   Connected, and the daq has been configured
+- <code class="docutils literal notranslate"><span class="pre">Open</span></code>:         We are in the middle of a run
+- <code class="docutils literal notranslate"><span class="pre">Running</span></code>:      We are collecting data in a run</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><p class="first">State as reported by the daq. Can be any of the following</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><ul class="first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">Disconnected</span></code></li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -675,7 +751,7 @@ stopped acquiring.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+3.g9a3adb5',
+            VERSION:'2.1.0+43.gcb89dfe',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -686,6 +762,7 @@ stopped acquiring.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
