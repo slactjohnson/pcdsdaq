@@ -29,7 +29,13 @@ def nosim(reset):
 @pytest.fixture(scope='function')
 def daq(RE, sim):
     sim_pydaq.conn_err = None
-    return Daq(RE=RE, platform=0)
+    daq = Daq(RE=RE, platform=0)
+    yield daq
+    try:
+        # Sim daq can freeze pytest's exit if we don't end the run
+        daq.end_run()
+    except Exception:
+        pass
 
 
 @pytest.fixture(scope='function')
