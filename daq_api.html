@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 2.1.0+47.gae32b55 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.1.0+50.gbe1c1b7 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+47.gae32b55
+                2.1.0+50.gbe1c1b7
               </div>
             
           
@@ -302,7 +302,7 @@ config.</li>
 
 <dl class="method">
 <dt id="pcdsdaq.daq.Daq.configure">
-<code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>begin_sleep=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <p>This is the method that directly interfaces with the daq. If you simply
 want to get a configuration ready for later, use <a class="reference internal" href="#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
@@ -329,6 +329,9 @@ stream as variables. We will check <code class="docutils literal notranslate"><s
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
 values each time begin is called. To provide a list, all devices
 must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
+<li><strong>begin_sleep</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The amount of time to wait after the DAQ returns begin is done.
+This is a hack because the DAQ often says that a begin transition
+is done without actually being done, so it needs a short delay.</li>
 </ul>
 </td>
 </tr>
@@ -445,7 +448,7 @@ interrupted. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq
 
 <dl class="method">
 <dt id="pcdsdaq.daq.Daq.preconfig">
-<code class="descname">preconfig</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>show_queued_cfg=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Permalink to this definition">¶</a></dt>
+<code class="descname">preconfig</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>begin_sleep=None</em>, <em>show_queued_cfg=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue configuration parameters for next call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
 <p>These will be overridden by arguments passed directly to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.
 These will be cleared after each call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
@@ -755,7 +758,7 @@ events or duration.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+47.gae32b55',
+            VERSION:'2.1.0+50.gbe1c1b7',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

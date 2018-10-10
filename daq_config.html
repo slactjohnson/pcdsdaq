@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; pcdsdaq 2.1.0+47.gae32b55 documentation</title>
+  <title>Configuration &mdash; pcdsdaq 2.1.0+50.gbe1c1b7 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+47.gae32b55
+                2.1.0+50.gbe1c1b7
               </div>
             
           
@@ -187,7 +187,8 @@ Shown here is the default config:</p>
 <span class="go"> &#39;duration&#39;: None,</span>
 <span class="go"> &#39;use_l3t&#39;: False,</span>
 <span class="go"> &#39;record&#39;: False,</span>
-<span class="go"> &#39;controls&#39;: None}</span>
+<span class="go"> &#39;controls&#39;: None,</span>
+<span class="go"> &#39;begin_sleep&#39;: 0}</span>
 </pre></div>
 </div>
 <p>You can also print this information nicely using <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a>.</p>
@@ -204,7 +205,7 @@ For example, calling <code class="docutils literal notranslate"><span class="pre
 no-arguments behavior of <code class="docutils literal notranslate"><span class="pre">daq.begin()</span></code> to run the daq for 3 seconds.</p>
 <dl class="method">
 <dt>
-<code class="descclassname">Daq.</code><code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em><span class="sig-paren">)</span></dt>
+<code class="descclassname">Daq.</code><code class="descname">configure</code><span class="sig-paren">(</span><em>events=None</em>, <em>duration=None</em>, <em>record=None</em>, <em>use_l3t=None</em>, <em>controls=None</em>, <em>begin_sleep=None</em><span class="sig-paren">)</span></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <p>This is the method that directly interfaces with the daq. If you simply
 want to get a configuration ready for later, use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
@@ -231,6 +232,9 @@ stream as variables. We will check <code class="docutils literal notranslate"><s
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
 values each time begin is called. To provide a list, all devices
 must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</li>
+<li><strong>begin_sleep</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The amount of time to wait after the DAQ returns begin is done.
+This is a hack because the DAQ often says that a begin transition
+is done without actually being done, so it needs a short delay.</li>
 </ul>
 </td>
 </tr>
@@ -290,7 +294,7 @@ at which they were configured, as specified by <code class="docutils literal not
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+47.gae32b55',
+            VERSION:'2.1.0+50.gbe1c1b7',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; pcdsdaq 2.1.0+47.gae32b55 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 2.1.0+50.gbe1c1b7 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                2.1.0+47.gae32b55
+                2.1.0+50.gbe1c1b7
               </div>
             
           
@@ -258,7 +258,7 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gp">In [6]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [7]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0568420886993408</span>
+<span class="go">1.0570387840270996</span>
 
 <span class="gp">In [8]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="go">                   Out[8]: &#39;Open&#39;</span>
@@ -288,7 +288,7 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [15]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [16]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.009442090988159</span>
+<span class="go">2.009535789489746</span>
 
 <span class="gp">In [17]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="go">                  Out[17]: &#39;Open&#39;</span>
@@ -312,10 +312,10 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gp">In [22]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="gp">In [23]: </span><span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.505936861038208</span>
+<span class="go">1.5062386989593506</span>
 
 <span class="gp">In [24]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
-<span class="go">                  Out[24]: &#39;Open&#39;</span>
+<span class="go">                   Out[24]: &#39;Open&#39;</span>
 
 <span class="gp">In [25]: </span><span class="n">daq</span><span class="o">.</span><span class="n">end_run</span><span class="p">()</span>
 
@@ -376,6 +376,16 @@ You can undo this by simply setting:</p>
 handled automatically with some of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> tools.</dd>
 </dl>
 </li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">begin_sleep=0.25</span></code>: This configuration argument will set the empirically</dt>
+<dd>derived sleep time needed after a call to <code class="docutils literal notranslate"><span class="pre">begin</span></code> that
+ensures the daq is actually ready. If a valid argument for
+<code class="docutils literal notranslate"><span class="pre">time.sleep</span></code>, this will wait to end a <code class="docutils literal notranslate"><span class="pre">begin</span></code> call
+until the configured sleep time elapses. This may be
+useful if you have other devices that rely on a run to
+actually start before doing some action.</dd>
+</dl>
+</li>
 </ul>
 </div>
 </div>
@@ -422,7 +432,7 @@ handled automatically with some of the <code class="docutils literal notranslate
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'2.1.0+47.gae32b55',
+            VERSION:'2.1.0+50.gbe1c1b7',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
