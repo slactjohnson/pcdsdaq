@@ -1,6 +1,24 @@
 Release History
 ###############
 
+v2.2.0 (2018-10-12)
+===================
+
+Features
+--------
+- Add `AmiDet` interface for interacting with ``pyami``
+- Clean up and update ``pcdsdaq_lib_setup`` to work with ``pyami``
+- Allow daq to be configured to run "forever, until everything else is done
+  triggering" by setting ``events=0``
+- Add configurable sleep time to account for the difference between the daq
+  process claiming to be ready and actually being ready
+  (``daq.configure(begin_sleep=0.5)``)
+
+Bugfixes
+--------
+- Fix issue where package update would break the conda environment
+
+
 v2.1.0 (2018-08-06)
 ===================
 
