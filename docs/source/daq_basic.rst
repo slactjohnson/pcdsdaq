@@ -164,3 +164,9 @@ Advanced Options
                     until the configured sleep time elapses. This may be
                     useful if you have other devices that rely on a run to
                     actually start before doing some action.
+- ``stop_sleep=0.5``: This configuration arguments is the same as
+                    ``begin_sleep``, but for the ``stop`` call. This is useful
+                    for very rapid scans that progress too quickly for the daq
+                    transitions to keep up. If you have a slow scan, feel free
+                    to zero this out: the default is ``1`` to prevent scan
+                    crashes with fast scans using default settings.
