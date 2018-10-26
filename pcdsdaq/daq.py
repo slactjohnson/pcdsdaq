@@ -204,7 +204,7 @@ class Daq:
             self._control.disconnect()
         del self._control
         self._control = None
-        self._desired_config = {}
+        self._desired_config = self._config or {}
         self._config = None
         logger.info('DAQ is disconnected.')
 
