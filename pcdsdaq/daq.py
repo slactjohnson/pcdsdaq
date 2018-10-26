@@ -96,6 +96,7 @@ class Daq:
         self._config_ts = {}
         self._update_config_ts()
         self._pre_run_state = None
+        self._last_stop = 0
         register_daq(self)
 
     # Convenience properties
@@ -279,7 +280,7 @@ class Daq:
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
-            status_wait(begin_status, timeout=BEGIN_TIMEOUT)
+            status_wait(begin_status, timeout=self._begin_timeout)
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
             # sleep.
@@ -298,6 +299,10 @@ class Daq:
                 self.preconfig(record=old_record, show_queued_cfg=False)
             except NameError:
                 pass
+
+    @property
+    def _begin_timeout(self):
+        return BEGIN_TIMEOUT + self.config['stop_sleep']
 
     def begin_infinite(self, record=None, use_l3t=None, controls=None):
         """
@@ -321,7 +326,7 @@ class Daq:
         logger.debug('Daq.stop()')
         self._control.stop()
         self._reset_begin()
-        time.sleep(self.config['stop_sleep'])
+        self._last_stop = time.time()
 
     @check_connect
     def end_run(self):
@@ -406,12 +411,13 @@ class Daq:
                 raise StateTransitionError(err)
 
         def start_thread(control, status, events, duration, use_l3t, controls):
-            tmo = BEGIN_TIMEOUT
+            tmo = self._begin_timeout
             dt = 0.1
             logger.debug('Make sure daq is ready to begin')
             # Stop and start if we already started
-            if self.state == 'Running':
+            if self.state in ('Open', 'Running'):
                 self.stop()
+                self.wait()
             # It can take up to 0.4s after a previous begin to be ready
             while tmo > 0:
                 if self.state in ('Configured', 'Open'):
@@ -430,6 +436,10 @@ class Daq:
                         logger.debug('Error getting run number in kickoff',
                                      exc_info=True)
                 logger.debug('daq.control.begin(%s)', begin_args)
+                dt = time.time() - self._last_stop
+                tmo = self.config['stop_sleep'] - dt
+                if tmo > 0:
+                    time.sleep(tmo)
                 control.begin(**begin_args)
                 # Cache these so we know what the most recent begin was told
                 self._begin = dict(events=events, duration=duration,
@@ -486,6 +496,7 @@ class Daq:
                     control.end()
                 except RuntimeError:
                     pass  # This means we aren't running, so no need to wait
+                self._last_stop = time.time()
                 self._reset_begin()
                 status._finished(success=True)
                 logger.debug('Marked acquisition as complete')
