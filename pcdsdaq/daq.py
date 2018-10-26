@@ -418,7 +418,6 @@ class Daq:
             # Stop and start if we already started
             if self.state in ('Open', 'Running'):
                 self.stop()
-                self.wait()
             # It can take up to 0.4s after a previous begin to be ready
             while tmo > 0:
                 if self.state in ('Configured', 'Open'):
