@@ -20,6 +20,8 @@ pydaq = None
 
 # Wait up to this many seconds for daq to be ready for a begin call
 BEGIN_TIMEOUT = 2
+# Do not allow begins within this many seconds of a stop
+BEGIN_THROTTLE = 1
 
 
 def check_connect(f):
@@ -73,8 +75,7 @@ class Daq:
                           use_l3t=False,
                           record=False,
                           controls=None,
-                          begin_sleep=0,
-                          stop_sleep=1)
+                          begin_sleep=0)
     name = 'daq'
     parent = None
 
@@ -302,7 +303,7 @@ class Daq:
 
     @property
     def _begin_timeout(self):
-        return BEGIN_TIMEOUT + self.config['stop_sleep']
+        return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
     def begin_infinite(self, record=None, use_l3t=None, controls=None):
         """
@@ -437,7 +438,7 @@ class Daq:
                                      exc_info=True)
                 logger.debug('daq.control.begin(%s)', begin_args)
                 dt = time.time() - self._last_stop
-                tmo = self.config['stop_sleep'] - dt
+                tmo = BEGIN_THROTTLE - dt
                 if tmo > 0:
                     time.sleep(tmo)
                 control.begin(**begin_args)
@@ -532,8 +533,7 @@ class Daq:
         return {}
 
     def preconfig(self, events=None, duration=None, record=None, use_l3t=None,
-                  controls=None, begin_sleep=None, stop_sleep=None,
-                  show_queued_cfg=True):
+                  controls=None, begin_sleep=None, show_queued_cfg=True):
         """
         Queue configuration parameters for next call to `configure`.
 
@@ -553,10 +553,8 @@ class Daq:
             self._desired_config['events'] = None
             self._desired_config['duration'] = duration
 
-        for arg, name in zip((record, use_l3t, controls, begin_sleep,
-                              stop_sleep),
-                             ('record', 'use_l3t', 'controls', 'begin_sleep',
-                              'stop_sleep')):
+        for arg, name in zip((record, use_l3t, controls, begin_sleep),
+                             ('record', 'use_l3t', 'controls', 'begin_sleep')):
             if arg is not None:
                 self._desired_config[name] = arg
 
@@ -565,8 +563,7 @@ class Daq:
 
     @check_connect
     def configure(self, events=None, duration=None, record=None,
-                  use_l3t=None, controls=None, begin_sleep=None,
-                  stop_sleep=None):
+                  use_l3t=None, controls=None, begin_sleep=None):
         """
         Changes the daq's configuration for the next run.
 
@@ -608,11 +605,6 @@ class Daq:
             This is a hack because the DAQ often says that a begin transition
             is done without actually being done, so it needs a short delay.
 
-        stop_sleep: ``int``, optional
-            The amount of time to wait after the DAQ returns stop is done.
-            This is a hack because the DAQ often says that a stop transition
-            is done without actually being done, so it needs a short delay.
-
         Returns
         -------
         old, new: ``tuple`` of ``dict``
@@ -621,10 +613,8 @@ class Daq:
             at which they were configured, as specified by ``bluesky``.
         """
         logger.debug('Daq.configure(events=%s, duration=%s, record=%s, '
-                     'use_l3t=%s, controls=%s, begin_sleep=%s, '
-                     'stop_sleep=%s)',
-                     events, duration, record, use_l3t, controls, begin_sleep,
-                     stop_sleep)
+                     'use_l3t=%s, controls=%s, begin_sleep=%s)',
+                     events, duration, record, use_l3t, controls, begin_sleep)
         state = self.state
         if state not in ('Connected', 'Configured'):
             err = 'Cannot configure from state {}!'.format(state)
@@ -635,8 +625,7 @@ class Daq:
 
         self.preconfig(events=events, duration=duration, record=record,
                        use_l3t=use_l3t, controls=controls,
-                       begin_sleep=begin_sleep, stop_sleep=stop_sleep,
-                       show_queued_cfg=False)
+                       begin_sleep=begin_sleep, show_queued_cfg=False)
         config = self.next_config
 
         events = config['events']
@@ -645,14 +634,11 @@ class Daq:
         use_l3t = config['use_l3t']
         controls = config['controls']
         begin_sleep = config['begin_sleep']
-        stop_sleep = config['stop_sleep']
 
         logger.debug('Updated with queued config, now we have: '
                      'events=%s, duration=%s, record=%s, '
-                     'use_l3t=%s, controls=%s, begin_sleep=%s, '
-                     'stop_sleep=%s',
-                     events, duration, record, use_l3t, controls, begin_sleep,
-                     stop_sleep)
+                     'use_l3t=%s, controls=%s, begin_sleep=%s',
+                     events, duration, record, use_l3t, controls, begin_sleep)
 
         config_args = self._config_args(record, use_l3t, controls)
         try:
@@ -663,8 +649,7 @@ class Daq:
             # this is different than the arguments that pydaq.Control expects
             self._config = dict(events=events, duration=duration,
                                 record=record, use_l3t=use_l3t,
-                                controls=controls, begin_sleep=begin_sleep,
-                                stop_sleep=stop_sleep)
+                                controls=controls, begin_sleep=begin_sleep)
             self._update_config_ts()
             self.config_info(header='Daq configured:')
         except Exception as exc:
@@ -860,9 +845,6 @@ class Daq:
                                   dtype='array',
                                   shape=controls_shape),
                     begin_sleep=dict(source='daq_begin_sleep',
-                                     dtype='number',
-                                     shape=None),
-                    stop_sleep=dict(source='daq_stop_sleep',
                                      dtype='number',
                                      shape=None),
                     )
