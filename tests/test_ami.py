@@ -88,14 +88,6 @@ def test_ami_errors(ami_det):
     logger.debug('test_ami_errors')
     with pytest.raises(Exception):
         ami_det.put(4)
-    set_pyami_proxy(None)
-    pcdsdaq.ami.pyami_connected = False
-    with pytest.raises(Exception):
-        AmiDet('NOPROXY', name='noproxy')
-    set_pyami_proxy('tst')
-    sim_pyami.connect_success = False
-    with pytest.raises(Exception):
-        AmiDet('NOCONN', name='noconn')
 
 
 def test_no_pyami():
@@ -153,13 +145,6 @@ def test_set_pyami_filter_all(ami_det):
     logger.debug('test_set_pyami_filter_all')
     set_pyami_filter(ami_det, 0, 1, ami_det, 2, 3, event_codes=[162, 163])
     assert sim_pyami.set_l3t_count == 1
-
-
-def test_set_pyami_filter_error(ami_det):
-    logger.debug('test_set_pyami_filter_error')
-    set_l3t_file(None)
-    with pytest.raises(Exception):
-        set_pyami_filter(event_codes=[21])
 
 
 def test_set_pyami_filter_daq(daq, ami_det):
