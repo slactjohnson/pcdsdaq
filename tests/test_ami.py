@@ -8,8 +8,8 @@ from bluesky.plans import count
 
 import pcdsdaq.ami
 import pcdsdaq.sim.pyami as sim_pyami
-from pcdsdaq.ami import (AmiDet, auto_setup_pyami, set_pyami_proxy,
-                         set_l3t_file, set_monitor_det, set_pyami_filter,
+from pcdsdaq.ami import (AmiDet, auto_setup_pyami,
+                         set_monitor_det, set_pyami_filter,
                          dets_filter, concat_filter_strings)
 
 logger = logging.getLogger(__name__)
@@ -207,3 +207,10 @@ def test_auto_setup_pyami(sim, monkeypatch):
     monkeypatch.setattr(pcdsdaq.ami, 'import_module', fake_import)
 
     auto_setup_pyami()
+
+    # Now make sure we error if things are bad
+    pcdsdaq.ami._reset_globals()
+    sim_pyami.connect_success = False
+
+    with pytest.raises(RuntimeError):
+        auto_setup_pyami()
