@@ -513,3 +513,12 @@ def test_complete_no_error(daq):
     # complete shouldn't error if we call it when the daq isn't running
     daq.configure(events=120)
     daq.complete()
+
+
+def test_begin_throttle(daq):
+    logger.debug('test_begin_throttle')
+    daq_module.BEGIN_THROTTLE = 1
+    start = time.time()
+    daq.stop()
+    daq.begin(duration=1)
+    assert 1 < time.time() - start < 3
