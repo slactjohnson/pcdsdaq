@@ -7,7 +7,6 @@ import logging
 import os
 import time
 import threading
-import warnings
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
@@ -79,14 +78,10 @@ class Daq:
     name = 'daq'
     parent = None
 
-    def __init__(self, platform=None, RE=None):
+    def __init__(self, RE=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
-        if platform is not None:
-            warnings.warn(('platform argument for daq class is deprecated '
-                           'and will be removed in a future release'),
-                          DeprecationWarning)
         self._control = None
         self._config = None
         self._desired_config = {}
