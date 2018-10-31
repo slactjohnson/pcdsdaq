@@ -7,7 +7,6 @@ import logging
 import os
 import time
 import threading
-import warnings
 from importlib import import_module
 
 from ophyd.status import Status, wait as status_wait
@@ -20,6 +19,8 @@ pydaq = None
 
 # Wait up to this many seconds for daq to be ready for a begin call
 BEGIN_TIMEOUT = 2
+# Do not allow begins within this many seconds of a stop
+BEGIN_THROTTLE = 1
 
 
 def check_connect(f):
@@ -77,14 +78,10 @@ class Daq:
     name = 'daq'
     parent = None
 
-    def __init__(self, platform=None, RE=None):
+    def __init__(self, RE=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
-        if platform is not None:
-            warnings.warn(('platform argument for daq class is deprecated '
-                           'and will be removed in a future release'),
-                          DeprecationWarning)
         self._control = None
         self._config = None
         self._desired_config = {}
@@ -95,6 +92,7 @@ class Daq:
         self._config_ts = {}
         self._update_config_ts()
         self._pre_run_state = None
+        self._last_stop = 0
         register_daq(self)
 
     # Convenience properties
@@ -201,7 +199,7 @@ class Daq:
             self._control.disconnect()
         del self._control
         self._control = None
-        self._desired_config = self._config
+        self._desired_config = self._config or {}
         self._config = None
         logger.info('DAQ is disconnected.')
 
@@ -278,7 +276,7 @@ class Daq:
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
-            status_wait(begin_status, timeout=BEGIN_TIMEOUT)
+            status_wait(begin_status, timeout=self._begin_timeout)
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
             # sleep.
@@ -297,6 +295,10 @@ class Daq:
                 self.preconfig(record=old_record, show_queued_cfg=False)
             except NameError:
                 pass
+
+    @property
+    def _begin_timeout(self):
+        return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
     def begin_infinite(self, record=None, use_l3t=None, controls=None):
         """
@@ -320,6 +322,7 @@ class Daq:
         logger.debug('Daq.stop()')
         self._control.stop()
         self._reset_begin()
+        self._last_stop = time.time()
 
     @check_connect
     def end_run(self):
@@ -404,11 +407,11 @@ class Daq:
                 raise StateTransitionError(err)
 
         def start_thread(control, status, events, duration, use_l3t, controls):
-            tmo = BEGIN_TIMEOUT
+            tmo = self._begin_timeout
             dt = 0.1
             logger.debug('Make sure daq is ready to begin')
             # Stop and start if we already started
-            if self.state == 'Running':
+            if self.state in ('Open', 'Running'):
                 self.stop()
             # It can take up to 0.4s after a previous begin to be ready
             while tmo > 0:
@@ -428,6 +431,10 @@ class Daq:
                         logger.debug('Error getting run number in kickoff',
                                      exc_info=True)
                 logger.debug('daq.control.begin(%s)', begin_args)
+                dt = time.time() - self._last_stop
+                tmo = BEGIN_THROTTLE - dt
+                if tmo > 0:
+                    time.sleep(tmo)
                 control.begin(**begin_args)
                 # Cache these so we know what the most recent begin was told
                 self._begin = dict(events=events, duration=duration,
@@ -484,6 +491,7 @@ class Daq:
                     control.end()
                 except RuntimeError:
                     pass  # This means we aren't running, so no need to wait
+                self._last_stop = time.time()
                 self._reset_begin()
                 status._finished(success=True)
                 logger.debug('Marked acquisition as complete')
@@ -598,8 +606,8 @@ class Daq:
             are verbose, containing all configuration values and the timestamps
             at which they were configured, as specified by ``bluesky``.
         """
-        logger.debug(('Daq.configure(events=%s, duration=%s, record=%s, '
-                      'use_l3t=%s, controls=%s, begin_sleep=%s)'),
+        logger.debug('Daq.configure(events=%s, duration=%s, record=%s, '
+                     'use_l3t=%s, controls=%s, begin_sleep=%s)',
                      events, duration, record, use_l3t, controls, begin_sleep)
         state = self.state
         if state not in ('Connected', 'Configured'):
@@ -621,9 +629,9 @@ class Daq:
         controls = config['controls']
         begin_sleep = config['begin_sleep']
 
-        logger.debug(('Updated with queued config, now we have: '
-                      'events=%s, duration=%s, record=%s, '
-                      'use_l3t=%s, controls=%s, begin_sleep=%s'),
+        logger.debug('Updated with queued config, now we have: '
+                     'events=%s, duration=%s, record=%s, '
+                     'use_l3t=%s, controls=%s, begin_sleep=%s',
                      events, duration, record, use_l3t, controls, begin_sleep)
 
         config_args = self._config_args(record, use_l3t, controls)

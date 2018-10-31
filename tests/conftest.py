@@ -1,6 +1,7 @@
 from bluesky import RunEngine
 from ophyd.sim import SynSignal, motor1
 
+import pcdsdaq.daq as daq_module
 import pcdsdaq.sim.pyami as sim_pyami
 import pcdsdaq.sim.pydaq as sim_pydaq
 from pcdsdaq.ami import (AmiDet, _reset_globals as ami_reset_globals)
@@ -29,7 +30,8 @@ def nosim(reset):
 @pytest.fixture(scope='function')
 def daq(RE, sim):
     sim_pydaq.conn_err = None
-    daq = Daq(RE=RE, platform=0)
+    daq_module.BEGIN_THROTTLE = 0
+    daq = Daq(RE=RE)
     yield daq
     try:
         # Sim daq can freeze pytest's exit if we don't end the run
