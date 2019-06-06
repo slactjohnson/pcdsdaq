@@ -822,25 +822,25 @@ class Daq:
         try:
             controls_shape = [len(self.config['controls']), 2]
         except (TypeError, RuntimeError, AttributeError):
-            controls_shape = None
+            controls_shape = []
         return dict(events=dict(source='daq_events_in_run',
                                 dtype='number',
-                                shape=None),
+                                shape=[]),
                     duration=dict(source='daq_run_duration',
                                   dtype='number',
-                                  shape=None),
+                                  shape=[]),
                     use_l3t=dict(source='daq_use_l3trigger',
                                  dtype='number',
-                                 shape=None),
+                                 shape=[]),
                     record=dict(source='daq_record_run',
                                 dtype='number',
-                                shape=None),
+                                shape=[]),
                     controls=dict(source='daq_control_vars',
                                   dtype='array',
                                   shape=controls_shape),
                     begin_sleep=dict(source='daq_begin_sleep',
                                      dtype='number',
-                                     shape=None),
+                                     shape=[]),
                     )
 
     def stage(self):
