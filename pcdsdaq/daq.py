@@ -321,9 +321,9 @@ class Daq:
         """
         logger.debug('Daq.stop()')
         self._control.stop()
-        logger.debug('called _control.stop()')
+
         self._reset_begin()
-        logger.debug('called _reset_begin()')
+
         self._last_stop = time.time()
 
     @check_connect
