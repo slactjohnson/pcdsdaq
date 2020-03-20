@@ -321,7 +321,9 @@ class Daq:
         """
         logger.debug('Daq.stop()')
         self._control.stop()
+        logger.debug('called _control.stop()')
         self._reset_begin()
+        logger.debug('called _reset_begin()')
         self._last_stop = time.time()
 
     @check_connect
@@ -610,9 +612,6 @@ class Daq:
                      'use_l3t=%s, controls=%s, begin_sleep=%s)',
                      events, duration, record, use_l3t, controls, begin_sleep)
         state = self.state
-        if state not in ('Connected', 'Configured'):
-            err = 'Cannot configure from state {}!'.format(state)
-            raise StateTransitionError(err)
 
         self._check_duration(duration)
         old = self.read_configuration()
@@ -633,12 +632,16 @@ class Daq:
                      'events=%s, duration=%s, record=%s, '
                      'use_l3t=%s, controls=%s, begin_sleep=%s',
                      events, duration, record, use_l3t, controls, begin_sleep)
-
         config_args = self._config_args(record, use_l3t, controls)
         try:
-            logger.debug('Daq.control.configure(%s)',
-                         config_args)
-            self._control.configure(**config_args)
+            if (old['record']['value'] != record or
+                old['use_l3t']['value'] != use_l3t or
+                old['controls']['value'] != controls):
+                if state not in ('Connected', 'Configured'):
+                    err = 'Cannot configure from state {}!'.format(state)
+                    raise StateTransitionError(err)
+                self._control.configure(**config_args)
+            logger.debug('Daq.control.configure(%s)', config_args)
             # self._config should reflect exactly the arguments to configure,
             # this is different than the arguments that pydaq.Control expects
             self._config = dict(events=events, duration=duration,
