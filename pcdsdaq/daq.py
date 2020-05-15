@@ -406,16 +406,16 @@ class Daq:
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
-        if self.config['record']:
+        if self.state == 'Configured' and self.config['record']:
             try:
                 prev_run = self.run_number()
                 next_run = prev_run + 1
             except (RuntimeError, ValueError):
                 logger.debug('Error getting run number in kickoff',
                              exc_info=True)
+                next_run = None
         else:
             next_run = None
-
 
         def start_thread(control, status, events, duration, use_l3t, controls,
                          run_number):
@@ -451,7 +451,6 @@ class Daq:
             else:
                 logger.debug('Marking kickoff as failed')
                 status._finished(success=False)
-
 
         begin_status = Status(obj=self)
         watcher = threading.Thread(target=start_thread,
