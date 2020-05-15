@@ -406,7 +406,19 @@ class Daq:
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
-        def start_thread(control, status, events, duration, use_l3t, controls):
+        if self.config['record']:
+            try:
+                prev_run = self.run_number()
+                next_run = prev_run + 1
+            except (RuntimeError, ValueError):
+                logger.debug('Error getting run number in kickoff',
+                             exc_info=True)
+        else:
+            next_run = None
+
+
+        def start_thread(control, status, events, duration, use_l3t, controls,
+                         run_number):
             tmo = self._begin_timeout
             dt = 0.1
             logger.debug('Make sure daq is ready to begin')
@@ -422,14 +434,9 @@ class Daq:
             if self.state in ('Configured', 'Open'):
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
-                if self.config['record']:
-                    try:
-                        prev_run = self.run_number()
-                        next_run = prev_run + 1
-                        logger.info('Beginning daq run %s', next_run)
-                    except (RuntimeError, ValueError):
-                        logger.debug('Error getting run number in kickoff',
-                                     exc_info=True)
+                if run_number is not None:
+                    logger.info('Beginning daq run %s', run_number)
+
                 logger.debug('daq.control.begin(%s)', begin_args)
                 dt = time.time() - self._last_stop
                 tmo = BEGIN_THROTTLE - dt
@@ -445,10 +452,12 @@ class Daq:
                 logger.debug('Marking kickoff as failed')
                 status._finished(success=False)
 
+
         begin_status = Status(obj=self)
         watcher = threading.Thread(target=start_thread,
                                    args=(self._control, begin_status, events,
-                                         duration, use_l3t, controls))
+                                         duration, use_l3t, controls,
+                                         next_run))
         watcher.start()
         return begin_status
 
