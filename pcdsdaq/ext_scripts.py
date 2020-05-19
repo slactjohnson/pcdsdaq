@@ -27,13 +27,13 @@ def call_script(args, timeout=None, ignore_return_code=False):
         raise
 
 
-def hutch_name():
+def hutch_name(timeout=5):
     script = SCRIPTS.format('latest', 'get_hutch_name')
-    name = call_script(script)
+    name = call_script(script, timeout=timeout)
     return name.lower().strip(' \n')
 
 
-def get_run_number(hutch=None, live=False):
+def get_run_number(hutch=None, live=False, timeout=5):
     latest = hutch or 'latest'
     script = SCRIPTS.format(latest, 'get_lastRun')
     args = [script]
@@ -41,11 +41,11 @@ def get_run_number(hutch=None, live=False):
         args += ['-i', hutch]
     if live:
         args += ['-l']
-    run_number = call_script(args)
+    run_number = call_script(args, timeout=timeout)
     return int(run_number)
 
 
-def get_ami_proxy(hutch):
+def get_ami_proxy(hutch, timeout=2):
     # This is mostly copied from old hutch python verbatim
     # I don't have useful explanations for what these regular expressions
     # are used for
@@ -56,7 +56,7 @@ def get_ami_proxy(hutch):
     cnf = CNF.format(hutch)
     procmgr = TOOLS.format('procmgr', 'procmgr')
     output = call_script([procmgr, 'status', cnf, 'ami_proxy'],
-                         timeout=2,
+                         timeout=timeout,
                          ignore_return_code=True)
     for line in output.split('\n'):
         ip_match = ip_re.match(line)
