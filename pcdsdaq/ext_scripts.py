@@ -27,17 +27,13 @@ def call_script(args, timeout=None, ignore_return_code=False):
         raise
 
 
-def hutch_name(timeout=None):
-    if timeout is None:
-        timeout = 5
+def hutch_name(timeout=5):
     script = SCRIPTS.format('latest', 'get_hutch_name')
     name = call_script(script, timeout=timeout)
     return name.lower().strip(' \n')
 
 
-def get_run_number(hutch=None, live=False, timeout=None):
-    if timeout is None:
-        timeout = 5
+def get_run_number(hutch=None, live=False, timeout=5):
     latest = hutch or 'latest'
     script = SCRIPTS.format(latest, 'get_lastRun')
     args = [script]
@@ -49,12 +45,10 @@ def get_run_number(hutch=None, live=False, timeout=None):
     return int(run_number)
 
 
-def get_ami_proxy(hutch, timeout=None):
+def get_ami_proxy(hutch, timeout=2):
     # This is mostly copied from old hutch python verbatim
     # I don't have useful explanations for what these regular expressions
     # are used for
-    if timeout is None:
-        timeout = 2
     domain_re = re.compile('.pcdsn$')
     ip_re = re.compile(r'^(?:[\d\.]{7,15}|[\w-]+)\s+ami_proxy'
                        r'\s+.*?\s+-I\s+(?P<ip>\d+\.\d+\.\d+\.\d+)\s+')
