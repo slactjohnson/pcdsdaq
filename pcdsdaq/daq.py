@@ -447,10 +447,10 @@ class Daq:
                 self._begin = dict(events=events, duration=duration,
                                    use_l3t=use_l3t, controls=controls)
                 logger.debug('Marking kickoff as complete')
-                status._finished(success=True)
+                status.set_finished()
             else:
                 logger.debug('Marking kickoff as failed')
-                status._finished(success=False)
+                status.set_exception(RuntimeError('Daq begin failed!'))
 
         begin_status = Status(obj=self)
         watcher = threading.Thread(target=start_thread,
@@ -501,7 +501,7 @@ class Daq:
                     pass  # This means we aren't running, so no need to wait
                 self._last_stop = time.time()
                 self._reset_begin()
-                status._finished(success=True)
+                status.set_finished()
                 logger.debug('Marked acquisition as complete')
             end_status = Status(obj=self)
             watcher = threading.Thread(target=finish_thread,
@@ -511,7 +511,9 @@ class Daq:
         else:
             # Configured to run forever, say we're done so we can wait for just
             # the other things in the scan
-            return Status(obj=self, done=True, success=True)
+            status = Status(obj=self)
+            status.set_finished()
+            return status
 
     def collect(self):
         """
@@ -756,7 +758,7 @@ class Daq:
             try:
                 val = device.position
             except AttributeError:
-                val = device.value
+                val = device.get()
             ctrl_arg.append((name, val))
         return ctrl_arg
 
