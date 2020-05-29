@@ -489,6 +489,7 @@ def test_infinite_trigger_status(daq):
     logger.debug('test_infinite_trigger_status')
     daq.configure(events=0)
     status = daq.trigger()
+    status.wait(timeout=1)
     assert status.done
     assert status.success
 

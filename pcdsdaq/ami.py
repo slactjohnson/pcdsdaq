@@ -440,11 +440,12 @@ class AmiDet(Device):
         if self.min_duration:
             def inner(duration, status):
                 time.sleep(duration)
-                status._finished()
+                status.set_finished()
             status = Status(obj=self)
             Thread(target=inner, args=(self.min_duration, status)).start()
         else:
-            status = Status(obj=self, done=True, success=True)
+            status = Status(obj=self)
+            status.set_finished()
         if monitor_status is None:
             return status
         else:
