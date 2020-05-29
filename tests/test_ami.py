@@ -26,6 +26,7 @@ def test_ami_basic(ami_det):
     stats = ami_det.get()
 
 
+@pytest.mark.timeout(5)
 def test_ami_scan(ami_det, RE):
     logger.debug('test_ami_scan')
     ami_det.min_duration = 1
