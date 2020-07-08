@@ -50,8 +50,7 @@ def get_ami_proxy(hutch, timeout=2):
     # I don't have useful explanations for what these regular expressions
     # are used for
     domain_re = re.compile('.pcdsn$')
-    ip_re = re.compile(r'^(?:[\d\.]{7,15}|[\w-]+)\s+ami_proxy'
-                       r'\s+.*?\s+-I\s+(?P<ip>\d+\.\d+\.\d+\.\d+)\s+')
+    ip_re = re.compile(r'ami_proxy.*-s\s+(?P<ip>\d+\.\d+\.\d+\.\d+)')
     hutch = hutch.lower()
     cnf = CNF.format(hutch)
     procmgr = TOOLS.format('procmgr', 'procmgr')
