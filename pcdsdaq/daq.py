@@ -93,6 +93,7 @@ class Daq:
         self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
+        self._check_run_number_has_failed = False
         register_daq(self)
 
     # Convenience properties
@@ -406,14 +407,19 @@ class Daq:
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
-        if self.state == 'Configured' and self.config['record']:
+        check_run_number = all((self.state == 'Configured',
+                                self.config['record'],
+                                not self._check_run_number_has_failed))
+        if check_run_number:
             try:
                 prev_run = self.run_number()
                 next_run = prev_run + 1
-            except (RuntimeError, ValueError):
+            except Exception:
                 logger.debug('Error getting run number in kickoff',
                              exc_info=True)
                 next_run = None
+                # Only try this once if it fails to prevent repeated timeouts
+                self._check_run_number_has_failed = True
         else:
             next_run = None
 
@@ -977,6 +983,8 @@ class Daq:
             if we have no access to NFS
         ValueError:
             if an invalid hutch was passed
+        subprocess.TimeoutExpired:
+            if the get run number script fails
         """
         try:
             if hutch_name is None:

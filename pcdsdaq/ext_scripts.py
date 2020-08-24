@@ -27,13 +27,31 @@ def call_script(args, timeout=None, ignore_return_code=False):
         raise
 
 
-def hutch_name(timeout=5):
+cache = {}
+
+
+def cache_script(args, timeout=None):
+    key = ' '.join(args)
+    try:
+        return cache[key]
+    except KeyError:
+        output = call_script(args, timeout=timeout)
+        cache[key] = output
+        return output
+
+
+def clear_script_cache():
+    global cache
+    cache = {}
+
+
+def hutch_name(timeout=10):
     script = SCRIPTS.format('latest', 'get_hutch_name')
-    name = call_script(script, timeout=timeout)
+    name = cache_script(script, timeout=timeout)
     return name.lower().strip(' \n')
 
 
-def get_run_number(hutch=None, live=False, timeout=5):
+def get_run_number(hutch=None, live=False, timeout=1):
     latest = hutch or 'latest'
     script = SCRIPTS.format(latest, 'get_lastRun')
     args = [script]
@@ -45,7 +63,7 @@ def get_run_number(hutch=None, live=False, timeout=5):
     return int(run_number)
 
 
-def get_ami_proxy(hutch, timeout=3):
+def get_ami_proxy(hutch, timeout=10):
     """
     Match the output text from procmgr ami status.
 
@@ -62,9 +80,9 @@ def get_ami_proxy(hutch, timeout=3):
     hutch = hutch.lower()
     cnf = CNF.format(hutch)
     procmgr = TOOLS.format('procmgr', 'procmgr')
-    output = call_script([procmgr, 'status', cnf, 'ami_proxy'],
-                         timeout=timeout,
-                         ignore_return_code=True)
+    output = cache_script([procmgr, 'status', cnf, 'ami_proxy'],
+                          timeout=timeout,
+                          ignore_return_code=True)
     for line in output.split('\n'):
         proxy_match = proxy_re.search(line)
         if proxy_match:
