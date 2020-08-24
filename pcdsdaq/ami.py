@@ -121,7 +121,7 @@ def set_monitor_det(det):
         globals()['monitor_det'] = None
 
 
-def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=True):
+def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=False):
     """
     Set up the l3t filters.
 
@@ -159,7 +159,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=True):
         filters pass.
 
     or_bykik: ``bool``, optional
-        True by default, appends an ``or`` condition that marks l3t pass when
+        False by default, appends an ``or`` condition that marks l3t pass when
         we see the bykik event code. This makes sure the off shots make it into
         the data if we're in l3t veto mode.
     """

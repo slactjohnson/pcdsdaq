@@ -30,12 +30,13 @@ def call_script(args, timeout=None, ignore_return_code=False):
 cache = {}
 
 
-def cache_script(args, timeout=None):
+def cache_script(args, timeout=None, ignore_return_code=False):
     key = ' '.join(args)
     try:
         return cache[key]
     except KeyError:
-        output = call_script(args, timeout=timeout)
+        output = call_script(args, timeout=timeout,
+                             ignore_return_code=ignore_return_code)
         cache[key] = output
         return output
 
