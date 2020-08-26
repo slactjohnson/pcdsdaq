@@ -93,6 +93,7 @@ class Daq:
         self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
+        self._check_run_number_has_failed = False
         register_daq(self)
 
     # Convenience properties
@@ -406,14 +407,19 @@ class Daq:
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
-        if self.state == 'Configured' and self.config['record']:
+        check_run_number = all((self.state == 'Configured',
+                                self.config['record'],
+                                not self._check_run_number_has_failed))
+        if check_run_number:
             try:
                 prev_run = self.run_number()
                 next_run = prev_run + 1
-            except (RuntimeError, ValueError):
+            except Exception:
                 logger.debug('Error getting run number in kickoff',
                              exc_info=True)
                 next_run = None
+                # Only try this once if it fails to prevent repeated timeouts
+                self._check_run_number_has_failed = True
         else:
             next_run = None
 
@@ -977,6 +983,8 @@ class Daq:
             if we have no access to NFS
         ValueError:
             if an invalid hutch was passed
+        subprocess.TimeoutExpired:
+            if the get run number script fails
         """
         try:
             if hutch_name is None:
@@ -998,10 +1006,50 @@ class Daq:
         except Exception:
             pass
 
-    def set_filter(self, *args, event_codes=None, operator='&', or_bykik=True):
+    def set_filter(self, *args, event_codes=None, operator='&',
+                   or_bykik=False):
+        """
+        Set up the l3t filters.
+
+        These connect through pyami to call set_l3t or clear_l3t. The function
+        takes in arbitrary dets whose prefixes are the ami names, along with
+        low and highs.
+
+        Event codes are handled as a special case, since you always want high
+        vs low.
+
+        .. note::
+            If or_bykik is True, this will treat bykik at an l3t pass! This is
+            so you don't lose your off shots when the l3t trigger is in veto
+            mode.
+
+        Parameters
+        ----------
+        *args: (`AmiDet`, ``float``, ``float``) n times
+            A sequence of (detector, low, high), which create filters that make
+            sure the detector is between low and high. You can omit the first
+            `AmiDet` as a shorthand for the current monitor, assuming a monitor
+            has been set with `Daq.set_monitor` or `set_monitor_det`.
+
+        event_codes: ``list``, optional
+            A list of event codes to include in the filter. l3pass will be when
+            the event code is present.
+
+        operator: ``str``, optional
+            The operator for combining the detector ranges and event codes.
+            This can either be ``|`` to ``or`` the conditions together, so
+            l3pass will happen if any filter passes, or it can be left at
+            the default ``&`` to ``and`` the conditions together, so l3pass
+            will only happen if all filters pass.
+
+        or_bykik: ``bool``, optional
+            False by default, appends an ``or`` condition that marks l3t pass
+            when we see the bykik event code. This makes sure the off shots
+            make it into the data if we're in l3t veto mode.
+        """
+
         return set_pyami_filter(*args, event_codes=event_codes,
                                 operator=operator, or_bykik=or_bykik)
-    set_filter.__doc__ = set_pyami_filter.__doc__
 
     def set_monitor(self, det):
         return set_monitor_det(det)
