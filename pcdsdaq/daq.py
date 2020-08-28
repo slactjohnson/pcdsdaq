@@ -767,7 +767,7 @@ class Daq:
                 val = device.get()
             try:
                 val = val[0]
-            except IndexError:
+            except Exception:
                 pass
             ctrl_arg.append((name, val))
         return ctrl_arg
