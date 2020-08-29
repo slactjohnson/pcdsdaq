@@ -1,3 +1,4 @@
+import numbers
 import time
 import threading
 import logging
@@ -92,6 +93,14 @@ class Control:
                 raise RuntimeError('configure requires events or duration')
             else:
                 self._duration = dur
+            if controls is not None:
+                for name, value in controls:
+                    if not isinstance(name, str):
+                        raise RuntimeError('Expected a string name, got '
+                                           f'{name}')
+                    if not isinstance(value, numbers.Number):
+                        raise RuntimeError('Expected a numeric position, got '
+                                           f'{value}')
 
     def begin(self, *, events=None, l1t_events=None, l3t_events=None,
               duration=None, controls=None, monitors=None):

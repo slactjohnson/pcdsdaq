@@ -765,6 +765,10 @@ class Daq:
                 val = device.position
             except AttributeError:
                 val = device.get()
+            try:
+                val = val[0]
+            except Exception:
+                pass
             ctrl_arg.append((name, val))
         return ctrl_arg
 
