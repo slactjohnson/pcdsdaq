@@ -22,6 +22,10 @@ BEGIN_TIMEOUT = 2
 # Do not allow begins within this many seconds of a stop
 BEGIN_THROTTLE = 1
 
+# Not-None sentinal for default value when None has a special meaning
+# Indicates that the last configured value should be used
+config_val = object()
+
 
 def check_connect(f):
     """
@@ -72,7 +76,7 @@ class Daq:
     default_config = dict(events=None,
                           duration=None,
                           use_l3t=False,
-                          record=False,
+                          record=None,
                           controls=None,
                           begin_sleep=0)
     name = 'daq'
@@ -223,8 +227,9 @@ class Daq:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
 
-    def begin(self, events=None, duration=None, record=None, use_l3t=None,
-              controls=None, wait=False, end_run=False):
+    def begin(self, events=config_val, duration=config_val, record=config_val,
+              use_l3t=config_val, controls=config_val, wait=False,
+              end_run=False):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -272,12 +277,12 @@ class Daq:
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
         try:
-            if record is not None and record != self.record:
+            if record is not config_val and record != self.record:
                 old_record = self.record
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
-            status_wait(begin_status, timeout=self._begin_timeout)
+            begin_status.wait(timeout=self._begin_timeout)
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
             # sleep.
@@ -301,7 +306,8 @@ class Daq:
     def _begin_timeout(self):
         return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
-    def begin_infinite(self, record=None, use_l3t=None, controls=None):
+    def begin_infinite(self, record=config_val, use_l3t=config_val,
+                       controls=config_val):
         """
         Start the daq to run forever in the background.
         """
@@ -378,7 +384,8 @@ class Daq:
 
     # Flyer interface
     @check_connect
-    def kickoff(self, events=None, duration=None, use_l3t=None, controls=None):
+    def kickoff(self, events=config_val, duration=config_val,
+                use_l3t=config_val, controls=config_val):
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -498,7 +505,12 @@ class Daq:
         """
         logger.debug('Daq._get_end_status()')
 
-        if self._events or self._duration:
+        events = self._events
+        duration = self._duration
+        if events or duration:
+            logger.debug('Getting end status for events=%s, duration=%s',
+                         events, duration)
+
             def finish_thread(control, status):
                 try:
                     logger.debug('Daq.control.end()')
@@ -517,6 +529,8 @@ class Daq:
         else:
             # Configured to run forever, say we're done so we can wait for just
             # the other things in the scan
+            logger.debug('Returning finished status for infinite run with '
+                         'events=%s, duration=%s', events, duration)
             status = Status(obj=self)
             status.set_finished()
             return status
@@ -542,8 +556,9 @@ class Daq:
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def preconfig(self, events=None, duration=None, record=None, use_l3t=None,
-                  controls=None, begin_sleep=None, show_queued_cfg=True):
+    def preconfig(self, events=config_val, duration=config_val,
+                  record=config_val, use_l3t=config_val, controls=config_val,
+                  begin_sleep=config_val, show_queued_cfg=True):
         """
         Queue configuration parameters for next call to `configure`.
 
@@ -556,26 +571,30 @@ class Daq:
         assuming the logger has been configured.
         """
         # Only one of (events, duration) should be preconfigured.
-        if events is not None:
+        if events is not config_val:
             self._desired_config['events'] = events
             self._desired_config['duration'] = None
-        elif duration is not None:
+        elif duration is not config_val:
             self._desired_config['events'] = None
             self._desired_config['duration'] = duration
 
         for arg, name in zip((record, use_l3t, controls, begin_sleep),
                              ('record', 'use_l3t', 'controls', 'begin_sleep')):
-            if arg is not None:
+            if arg is not config_val:
                 self._desired_config[name] = arg
 
         if show_queued_cfg:
             self.config_info(self.next_config, 'Queued config:')
 
     @check_connect
-    def configure(self, events=None, duration=None, record=None,
-                  use_l3t=None, controls=None, begin_sleep=None):
+    def configure(self, events=config_val, duration=config_val,
+                  record=config_val, use_l3t=config_val, controls=config_val,
+                  begin_sleep=config_val):
         """
         Changes the daq's configuration for the next run.
+
+        All arguments omitted from the method call will default to the last
+        configured value in the python session.
 
         This is the method that directly interfaces with the daq. If you simply
         want to get a configuration ready for later, use `preconfig`.
@@ -586,34 +605,42 @@ class Daq:
             If provided, the daq will run for this many events before
             stopping, unless we override in `begin`.
             If not provided, we'll use the ``duration`` argument instead.
+            Defaults to its last configured value, or ``None`` on the first
+            configure.
 
         duration: ``int``, optional
             If provided, the daq will run for this many seconds before
             stopping, unless we override in `begin`.
             If not provided, and ``events`` was also not provided, an empty
-            call like ``begin()`` will run indefinitely.
+            call like ``begin()`` will run indefinitely. You can also achieve
+            this behavior by passing events=None and/or duration=None, Defaults
+            to its last configured value, or ``None`` on the first configure.
 
         record: ``bool``, optional
-            If ``True``, we'll record the data. Otherwise, we'll run without
-            recording. Defaults to ``False``, or the last set value for
-            ``record``.
+            If ``True``, we'll record the data. If ``False``, we'll run without
+            recording. If ``None``, we'll use the option selected in the DAQ
+            GUI. Defaults to the its last configured value, or ``None`` on the
+            first configure.
 
         use_l3t: ``bool``, optional
             If ``True``, an ``events`` argument to begin will be reinterpreted
             to only count events that pass the level 3 trigger. Defaults to
-            its last configured value, or ``False``.
+            its last configured value, or ``False`` on the first configure.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
             stream as variables. We will check ``device.position`` and
             ``device.value`` for quantities to use and we will update these
             values each time begin is called. To provide a list, all devices
-            must have a ``name`` attribute.
+            must have a ``name`` attribute. Defaults to its last configured
+            value, or no controls values on the first configure.
 
         begin_sleep: ``int``, optional
             The amount of time to wait after the DAQ returns begin is done.
             This is a hack because the DAQ often says that a begin transition
             is done without actually being done, so it needs a short delay.
+            Defaults to its last configured value, or 0 on the first
+            configure.
 
         Returns
         -------
@@ -735,7 +762,8 @@ class Daq:
         logger.debug('Daq._config_args(%s, %s, %s)',
                      record, use_l3t, controls)
         config_args = {}
-        config_args['record'] = record
+        if record is not None:
+            config_args['record'] = bool(record)
         if use_l3t:
             config_args['l3t_events'] = 0
         else:
@@ -784,32 +812,35 @@ class Daq:
         logger.debug('Daq._begin_args(%s, %s, %s, %s)',
                      events, duration, use_l3t, controls)
         begin_args = {}
-        if events is None and duration is None:
+        # Handle default args for events and duration
+        if events is config_val and duration is config_val:
+            # If both are omitted, use last configured values
             events = self.config['events']
             duration = self.config['duration']
-        if events is not None:
+        if events not in (None, config_val):
+            # We either passed the events arg, or loaded from config
             if use_l3t is None and self.configured:
                 use_l3t = self.config['use_l3t']
             if use_l3t:
                 begin_args['l3t_events'] = events
             else:
                 begin_args['events'] = events
-        elif duration is not None:
+        elif duration not in (None, config_val):
+            # We either passed the duration arg, or loaded from config
             secs = int(duration)
             nsec = int((duration - secs) * 1e9)
             begin_args['duration'] = [secs, nsec]
         else:
+            # We passed None somewhere/everywhere
             begin_args['events'] = 0  # Run until manual stop
-        if controls is None:
-            ctrl_dict = self.config['controls']
-            if ctrl_dict is not None:
-                begin_args['controls'] = self._ctrl_arg(ctrl_dict)
-        else:
+        if controls is config_val:
+            controls = self.config['controls']
+        if controls is not None:
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
     def _check_duration(self, duration):
-        if duration is not None and duration < 1:
+        if duration not in (None, config_val) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
                    'very short runs.')
@@ -887,7 +918,7 @@ class Daq:
 
     def _re_manage_runs(self, name, doc):
         """
-        Callback for the RunEngine to manage run start and stop.
+        Callback for the RunEngine to manage run stop.
         """
         if name == 'stop':
             self.end_run()
@@ -940,7 +971,10 @@ class Daq:
         For the current `begin` cycle, how many ``events`` we told the daq to
         run for.
         """
-        return self._begin['events'] or self.config['events']
+        events = self._begin['events']
+        if events is config_val:
+            events = self.config['events']
+        return events
 
     @property
     def _duration(self):
@@ -948,7 +982,10 @@ class Daq:
         For the current `begin` cycle, how long we told the daq to run for in
         seconds.
         """
-        return self._begin['duration'] or self.config['duration']
+        duration = self._begin['duration']
+        if duration is config_val:
+            duration = self.config['duration']
+        return duration
 
     def _reset_begin(self):
         """
