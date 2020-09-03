@@ -24,7 +24,7 @@ BEGIN_THROTTLE = 1
 
 # Not-None sentinal for default value when None has a special meaning
 # Indicates that the last configured value should be used
-config_val = object()
+_CONFIG_VAL = object()
 
 
 def check_connect(f):
@@ -227,9 +227,9 @@ class Daq:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
 
-    def begin(self, events=config_val, duration=config_val, record=config_val,
-              use_l3t=config_val, controls=config_val, wait=False,
-              end_run=False):
+    def begin(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+              record=_CONFIG_VAL, use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL,
+              wait=False, end_run=False):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -277,7 +277,7 @@ class Daq:
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
         try:
-            if record is not config_val and record != self.record:
+            if record is not _CONFIG_VAL and record != self.record:
                 old_record = self.record
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
@@ -306,8 +306,8 @@ class Daq:
     def _begin_timeout(self):
         return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
-    def begin_infinite(self, record=config_val, use_l3t=config_val,
-                       controls=config_val):
+    def begin_infinite(self, record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                       controls=_CONFIG_VAL):
         """
         Start the daq to run forever in the background.
         """
@@ -384,8 +384,8 @@ class Daq:
 
     # Flyer interface
     @check_connect
-    def kickoff(self, events=config_val, duration=config_val,
-                use_l3t=config_val, controls=config_val):
+    def kickoff(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL):
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -556,9 +556,10 @@ class Daq:
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def preconfig(self, events=config_val, duration=config_val,
-                  record=config_val, use_l3t=config_val, controls=config_val,
-                  begin_sleep=config_val, show_queued_cfg=True):
+    def preconfig(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL,
+                  show_queued_cfg=True):
         """
         Queue configuration parameters for next call to `configure`.
 
@@ -571,25 +572,25 @@ class Daq:
         assuming the logger has been configured.
         """
         # Only one of (events, duration) should be preconfigured.
-        if events is not config_val:
+        if events is not _CONFIG_VAL:
             self._desired_config['events'] = events
             self._desired_config['duration'] = None
-        elif duration is not config_val:
+        elif duration is not _CONFIG_VAL:
             self._desired_config['events'] = None
             self._desired_config['duration'] = duration
 
         for arg, name in zip((record, use_l3t, controls, begin_sleep),
                              ('record', 'use_l3t', 'controls', 'begin_sleep')):
-            if arg is not config_val:
+            if arg is not _CONFIG_VAL:
                 self._desired_config[name] = arg
 
         if show_queued_cfg:
             self.config_info(self.next_config, 'Queued config:')
 
     @check_connect
-    def configure(self, events=config_val, duration=config_val,
-                  record=config_val, use_l3t=config_val, controls=config_val,
-                  begin_sleep=config_val):
+    def configure(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL):
         """
         Changes the daq's configuration for the next run.
 
@@ -813,11 +814,11 @@ class Daq:
                      events, duration, use_l3t, controls)
         begin_args = {}
         # Handle default args for events and duration
-        if events is config_val and duration is config_val:
+        if events is _CONFIG_VAL and duration is _CONFIG_VAL:
             # If both are omitted, use last configured values
             events = self.config['events']
             duration = self.config['duration']
-        if events not in (None, config_val):
+        if events not in (None, _CONFIG_VAL):
             # We either passed the events arg, or loaded from config
             if use_l3t is None and self.configured:
                 use_l3t = self.config['use_l3t']
@@ -825,7 +826,7 @@ class Daq:
                 begin_args['l3t_events'] = events
             else:
                 begin_args['events'] = events
-        elif duration not in (None, config_val):
+        elif duration not in (None, _CONFIG_VAL):
             # We either passed the duration arg, or loaded from config
             secs = int(duration)
             nsec = int((duration - secs) * 1e9)
@@ -833,14 +834,14 @@ class Daq:
         else:
             # We passed None somewhere/everywhere
             begin_args['events'] = 0  # Run until manual stop
-        if controls is config_val:
+        if controls is _CONFIG_VAL:
             controls = self.config['controls']
         if controls is not None:
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
     def _check_duration(self, duration):
-        if duration not in (None, config_val) and duration < 1:
+        if duration not in (None, _CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
                    'very short runs.')
@@ -972,7 +973,7 @@ class Daq:
         run for.
         """
         events = self._begin['events']
-        if events is config_val:
+        if events is _CONFIG_VAL:
             events = self.config['events']
         return events
 
@@ -983,7 +984,7 @@ class Daq:
         seconds.
         """
         duration = self._begin['duration']
-        if duration is config_val:
+        if duration is _CONFIG_VAL:
             duration = self.config['duration']
         return duration
 
