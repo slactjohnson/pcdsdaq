@@ -820,7 +820,7 @@ class Daq:
             duration = self.config['duration']
         if events not in (None, _CONFIG_VAL):
             # We either passed the events arg, or loaded from config
-            if use_l3t is None and self.configured:
+            if use_l3t in (None, _CONFIG_VAL) and self.configured:
                 use_l3t = self.config['use_l3t']
             if use_l3t:
                 begin_args['l3t_events'] = events
