@@ -230,9 +230,9 @@ class Daq:
                 try:
                     status.wait(timeout=timeout)
                 except (StatusTimeoutError, WaitTimeoutError):
-                    msg = ('Timeout after %s seconds waiting for daq to finish '
-                           'acquiring.')
-                    raise DaqTimeoutError(msg, timeout) from None
+                    msg = (f'Timeout after {timeout} seconds waiting for daq '
+                           'to finish acquiring.')
+                    raise DaqTimeoutError(msg) from None
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
@@ -295,8 +295,9 @@ class Daq:
             try:
                 begin_status.wait(timeout=self._begin_timeout)
             except (StatusTimeoutError, WaitTimeoutError):
-                msg = 'Timeout after %s seconds waiting for daq to begin.'
-                raise DaqTimeoutError(msg, self._begin_timeout) from None
+                msg = (f'Timeout after {self._begin_timeout} seconds waiting '
+                       'for daq to begin.')
+                raise DaqTimeoutError(msg) from None
 
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
