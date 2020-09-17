@@ -10,6 +10,7 @@ import threading
 from importlib import import_module
 
 from ophyd.status import Status
+from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from . import ext_scripts
 from .ami import set_pyami_filter, set_monitor_det
@@ -46,6 +47,10 @@ def check_connect(f):
             logger.error(err)
             raise RuntimeError(err)
     return wrapper
+
+
+class DaqTimeoutError(Exception):
+    pass
 
 
 class Daq:
@@ -222,7 +227,12 @@ class Daq:
         if self.state == 'Running':
             if self._events or self._duration:
                 status = self._get_end_status()
-                status.wait(timeout=timeout)
+                try:
+                    status.wait(timeout=timeout)
+                except (StatusTimeoutError, WaitTimeoutError):
+                    msg = ('Timeout after %s seconds waiting for daq to finish '
+                           'acquiring.')
+                    raise DaqTimeoutError(msg, timeout) from None
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
@@ -282,7 +292,12 @@ class Daq:
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
-            begin_status.wait(timeout=self._begin_timeout)
+            try:
+                begin_status.wait(timeout=self._begin_timeout)
+            except (StatusTimeoutError, WaitTimeoutError):
+                msg = 'Timeout after %s seconds waiting for daq to begin.'
+                raise DaqTimeoutError(msg, self._begin_timeout) from None
+
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
             # sleep.
