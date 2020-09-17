@@ -48,6 +48,7 @@ class Control:
         self._time_remaining = 0
         self._done_flag = threading.Event()
         self._record = False
+        self._begin_delay = 0
 
     def _do_transition(self, transition):
         logger.debug('Doing transition %s from state %s',
@@ -117,6 +118,10 @@ class Control:
             self._done_flag.clear()
             if self._record:
                 Control._run_number += 1
+            if self._begin_delay:
+                delay = self._begin_delay
+                self._begin_delay = 0
+                time.sleep(delay)
             thr = threading.Thread(target=self._begin_thread, args=(dur,))
             thr.start()
 
