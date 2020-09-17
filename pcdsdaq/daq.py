@@ -9,7 +9,7 @@ import time
 import threading
 from importlib import import_module
 
-from ophyd.status import Status, wait as status_wait
+from ophyd.status import Status
 
 from . import ext_scripts
 from .ami import set_pyami_filter, set_monitor_det
@@ -222,7 +222,7 @@ class Daq:
         if self.state == 'Running':
             if self._events or self._duration:
                 status = self._get_end_status()
-                status_wait(status, timeout=timeout)
+                status.wait(timeout=timeout)
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
