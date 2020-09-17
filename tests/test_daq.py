@@ -14,7 +14,7 @@ from ophyd.status import wait as status_wait
 import pcdsdaq.sim.pydaq as sim_pydaq
 import pcdsdaq.ext_scripts as ext
 from pcdsdaq import daq as daq_module
-from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError
+from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError, DaqTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -523,3 +523,17 @@ def test_begin_throttle(daq):
     daq.stop()
     daq.begin(duration=1)
     assert 1 < time.time() - start < 3
+
+
+def test_timeouts(daq, monkeypatch):
+    logger.debug('test_timeouts')
+    daq.begin(duration=1)
+    with pytest.raises(DaqTimeoutError):
+        daq.wait(timeout=0.1)
+    daq.stop()
+    with pytest.raises(DaqTimeoutError):
+        monkeypatch.setattr(daq_module, 'BEGIN_TIMEOUT', 0.1)
+        daq._control._begin_delay = 3
+        daq.begin(duration=1)
+    daq.stop()
+
