@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 pydaq = None
 
 # Wait up to this many seconds for daq to be ready for a begin call
-BEGIN_TIMEOUT = 2
+BEGIN_TIMEOUT = 15
 # Do not allow begins within this many seconds of a stop
 BEGIN_THROTTLE = 1
 
