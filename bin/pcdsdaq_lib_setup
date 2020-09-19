@@ -3,7 +3,6 @@
 # export HUTCH=<hutchname-lowercase> before sourcing
 # This is not guaranteed to be conflict-free with your python env
 # This works by expanding your PYTHONPATH and LD_LIBRARY_PATH
-set -e
 
 if [ -z "${HUTCH}" ]; then
   # Default to daq latest

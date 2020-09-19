@@ -1,6 +1,51 @@
 Release History
 ###############
 
+v2.2.7 (2020-09-17)
+===================
+
+- Change bykik code to False by default in set_filter as per Silke's instructions
+- Give up on the run_number getter on the first failure per session, it is merely cosmetic and should not slow down the scan.
+- Decrease the get run number timeout to 1s.
+- Copy the good docstring for set_filter over to the daq method
+- Increase timeouts for get_hutch and get_ami_proxy, then cache the result. The result does not change.
+- Allow controls arg to accept pseudopositioners
+- Allow "tri-state" configuration args (True, False, None), and allow the Daq class to know whether the user has passed in `None` versus not passed in anything at all
+- Allow `record=None` to mean "Use the record option selected in the DAQ GUI"
+- Increase the begin timeout to 15s
+- Add more pointed error messages to the wait timeouts
+
+
+v2.2.6 (2020-08-19)
+===================
+
+Fix issue with ami proxy script changes, making the library compatible with both the old and the new output.
+
+
+v2.2.5 (2020-29-05)
+===================
+
+Compatibility for ophyd=1.5.0
+
+
+v2.2.4 (2020-05-21)
+===================
+
+Fix issue with the begin timeout where the clock started ticking too early.
+
+
+v2.2.3 (2020-3-21)
+==================
+
+Fix issue with pcdsdaq_lib_setup that broke hutch environments.
+
+
+v2.2.2 (2020-1-22)
+==================
+
+Fix issue where daq would fail to load for det and tst hutches.
+
+
 v2.2.1 (2019-6-6)
 =================
 

@@ -9,7 +9,8 @@ import time
 import threading
 from importlib import import_module
 
-from ophyd.status import Status, wait as status_wait
+from ophyd.status import Status
+from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from . import ext_scripts
 from .ami import set_pyami_filter, set_monitor_det
@@ -18,9 +19,13 @@ logger = logging.getLogger(__name__)
 pydaq = None
 
 # Wait up to this many seconds for daq to be ready for a begin call
-BEGIN_TIMEOUT = 2
+BEGIN_TIMEOUT = 15
 # Do not allow begins within this many seconds of a stop
 BEGIN_THROTTLE = 1
+
+# Not-None sentinal for default value when None has a special meaning
+# Indicates that the last configured value should be used
+_CONFIG_VAL = object()
 
 
 def check_connect(f):
@@ -42,6 +47,10 @@ def check_connect(f):
             logger.error(err)
             raise RuntimeError(err)
     return wrapper
+
+
+class DaqTimeoutError(Exception):
+    pass
 
 
 class Daq:
@@ -72,7 +81,7 @@ class Daq:
     default_config = dict(events=None,
                           duration=None,
                           use_l3t=False,
-                          record=False,
+                          record=None,
                           controls=None,
                           begin_sleep=0)
     name = 'daq'
@@ -93,6 +102,7 @@ class Daq:
         self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
+        self._check_run_number_has_failed = False
         register_daq(self)
 
     # Convenience properties
@@ -217,13 +227,19 @@ class Daq:
         if self.state == 'Running':
             if self._events or self._duration:
                 status = self._get_end_status()
-                status_wait(status, timeout=timeout)
+                try:
+                    status.wait(timeout=timeout)
+                except (StatusTimeoutError, WaitTimeoutError):
+                    msg = (f'Timeout after {timeout} seconds waiting for daq '
+                           'to finish acquiring.')
+                    raise DaqTimeoutError(msg) from None
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
 
-    def begin(self, events=None, duration=None, record=None, use_l3t=None,
-              controls=None, wait=False, end_run=False):
+    def begin(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+              record=_CONFIG_VAL, use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL,
+              wait=False, end_run=False):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -271,12 +287,18 @@ class Daq:
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
         try:
-            if record is not None and record != self.record:
+            if record is not _CONFIG_VAL and record != self.record:
                 old_record = self.record
                 self.preconfig(record=record, show_queued_cfg=False)
             begin_status = self.kickoff(events=events, duration=duration,
                                         use_l3t=use_l3t, controls=controls)
-            status_wait(begin_status, timeout=self._begin_timeout)
+            try:
+                begin_status.wait(timeout=self._begin_timeout)
+            except (StatusTimeoutError, WaitTimeoutError):
+                msg = (f'Timeout after {self._begin_timeout} seconds waiting '
+                       'for daq to begin.')
+                raise DaqTimeoutError(msg) from None
+
             # In some daq configurations the begin status returns very early,
             # so we allow the user to configure an emperically derived extra
             # sleep.
@@ -300,7 +322,8 @@ class Daq:
     def _begin_timeout(self):
         return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
-    def begin_infinite(self, record=None, use_l3t=None, controls=None):
+    def begin_infinite(self, record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                       controls=_CONFIG_VAL):
         """
         Start the daq to run forever in the background.
         """
@@ -377,7 +400,8 @@ class Daq:
 
     # Flyer interface
     @check_connect
-    def kickoff(self, events=None, duration=None, use_l3t=None, controls=None):
+    def kickoff(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL):
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -406,7 +430,24 @@ class Daq:
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
-        def start_thread(control, status, events, duration, use_l3t, controls):
+        check_run_number = all((self.state == 'Configured',
+                                self.config['record'],
+                                not self._check_run_number_has_failed))
+        if check_run_number:
+            try:
+                prev_run = self.run_number()
+                next_run = prev_run + 1
+            except Exception:
+                logger.debug('Error getting run number in kickoff',
+                             exc_info=True)
+                next_run = None
+                # Only try this once if it fails to prevent repeated timeouts
+                self._check_run_number_has_failed = True
+        else:
+            next_run = None
+
+        def start_thread(control, status, events, duration, use_l3t, controls,
+                         run_number):
             tmo = self._begin_timeout
             dt = 0.1
             logger.debug('Make sure daq is ready to begin')
@@ -422,14 +463,9 @@ class Daq:
             if self.state in ('Configured', 'Open'):
                 begin_args = self._begin_args(events, duration, use_l3t,
                                               controls)
-                if self.config['record']:
-                    try:
-                        prev_run = self.run_number()
-                        next_run = prev_run + 1
-                        logger.info('Beginning daq run %s', next_run)
-                    except (RuntimeError, ValueError):
-                        logger.debug('Error getting run number in kickoff',
-                                     exc_info=True)
+                if run_number is not None:
+                    logger.info('Beginning daq run %s', run_number)
+
                 logger.debug('daq.control.begin(%s)', begin_args)
                 dt = time.time() - self._last_stop
                 tmo = BEGIN_THROTTLE - dt
@@ -440,15 +476,16 @@ class Daq:
                 self._begin = dict(events=events, duration=duration,
                                    use_l3t=use_l3t, controls=controls)
                 logger.debug('Marking kickoff as complete')
-                status._finished(success=True)
+                status.set_finished()
             else:
                 logger.debug('Marking kickoff as failed')
-                status._finished(success=False)
+                status.set_exception(RuntimeError('Daq begin failed!'))
 
         begin_status = Status(obj=self)
         watcher = threading.Thread(target=start_thread,
                                    args=(self._control, begin_status, events,
-                                         duration, use_l3t, controls))
+                                         duration, use_l3t, controls,
+                                         next_run))
         watcher.start()
         return begin_status
 
@@ -484,7 +521,12 @@ class Daq:
         """
         logger.debug('Daq._get_end_status()')
 
-        if self._events or self._duration:
+        events = self._events
+        duration = self._duration
+        if events or duration:
+            logger.debug('Getting end status for events=%s, duration=%s',
+                         events, duration)
+
             def finish_thread(control, status):
                 try:
                     logger.debug('Daq.control.end()')
@@ -493,7 +535,7 @@ class Daq:
                     pass  # This means we aren't running, so no need to wait
                 self._last_stop = time.time()
                 self._reset_begin()
-                status._finished(success=True)
+                status.set_finished()
                 logger.debug('Marked acquisition as complete')
             end_status = Status(obj=self)
             watcher = threading.Thread(target=finish_thread,
@@ -503,7 +545,11 @@ class Daq:
         else:
             # Configured to run forever, say we're done so we can wait for just
             # the other things in the scan
-            return Status(obj=self, done=True, success=True)
+            logger.debug('Returning finished status for infinite run with '
+                         'events=%s, duration=%s', events, duration)
+            status = Status(obj=self)
+            status.set_finished()
+            return status
 
     def collect(self):
         """
@@ -526,8 +572,10 @@ class Daq:
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def preconfig(self, events=None, duration=None, record=None, use_l3t=None,
-                  controls=None, begin_sleep=None, show_queued_cfg=True):
+    def preconfig(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL,
+                  show_queued_cfg=True):
         """
         Queue configuration parameters for next call to `configure`.
 
@@ -540,26 +588,30 @@ class Daq:
         assuming the logger has been configured.
         """
         # Only one of (events, duration) should be preconfigured.
-        if events is not None:
+        if events is not _CONFIG_VAL:
             self._desired_config['events'] = events
             self._desired_config['duration'] = None
-        elif duration is not None:
+        elif duration is not _CONFIG_VAL:
             self._desired_config['events'] = None
             self._desired_config['duration'] = duration
 
         for arg, name in zip((record, use_l3t, controls, begin_sleep),
                              ('record', 'use_l3t', 'controls', 'begin_sleep')):
-            if arg is not None:
+            if arg is not _CONFIG_VAL:
                 self._desired_config[name] = arg
 
         if show_queued_cfg:
             self.config_info(self.next_config, 'Queued config:')
 
     @check_connect
-    def configure(self, events=None, duration=None, record=None,
-                  use_l3t=None, controls=None, begin_sleep=None):
+    def configure(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
+                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
+                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL):
         """
         Changes the daq's configuration for the next run.
+
+        All arguments omitted from the method call will default to the last
+        configured value in the python session.
 
         This is the method that directly interfaces with the daq. If you simply
         want to get a configuration ready for later, use `preconfig`.
@@ -570,34 +622,42 @@ class Daq:
             If provided, the daq will run for this many events before
             stopping, unless we override in `begin`.
             If not provided, we'll use the ``duration`` argument instead.
+            Defaults to its last configured value, or ``None`` on the first
+            configure.
 
         duration: ``int``, optional
             If provided, the daq will run for this many seconds before
             stopping, unless we override in `begin`.
             If not provided, and ``events`` was also not provided, an empty
-            call like ``begin()`` will run indefinitely.
+            call like ``begin()`` will run indefinitely. You can also achieve
+            this behavior by passing events=None and/or duration=None, Defaults
+            to its last configured value, or ``None`` on the first configure.
 
         record: ``bool``, optional
-            If ``True``, we'll record the data. Otherwise, we'll run without
-            recording. Defaults to ``False``, or the last set value for
-            ``record``.
+            If ``True``, we'll record the data. If ``False``, we'll run without
+            recording. If ``None``, we'll use the option selected in the DAQ
+            GUI. Defaults to the its last configured value, or ``None`` on the
+            first configure.
 
         use_l3t: ``bool``, optional
             If ``True``, an ``events`` argument to begin will be reinterpreted
             to only count events that pass the level 3 trigger. Defaults to
-            its last configured value, or ``False``.
+            its last configured value, or ``False`` on the first configure.
 
         controls: ``dict{name: device}`` or ``list[device...]``, optional
             If provided, values from these will make it into the DAQ data
             stream as variables. We will check ``device.position`` and
             ``device.value`` for quantities to use and we will update these
             values each time begin is called. To provide a list, all devices
-            must have a ``name`` attribute.
+            must have a ``name`` attribute. Defaults to its last configured
+            value, or no controls values on the first configure.
 
         begin_sleep: ``int``, optional
             The amount of time to wait after the DAQ returns begin is done.
             This is a hack because the DAQ often says that a begin transition
             is done without actually being done, so it needs a short delay.
+            Defaults to its last configured value, or 0 on the first
+            configure.
 
         Returns
         -------
@@ -719,7 +779,8 @@ class Daq:
         logger.debug('Daq._config_args(%s, %s, %s)',
                      record, use_l3t, controls)
         config_args = {}
-        config_args['record'] = record
+        if record is not None:
+            config_args['record'] = bool(record)
         if use_l3t:
             config_args['l3t_events'] = 0
         else:
@@ -748,7 +809,11 @@ class Daq:
             try:
                 val = device.position
             except AttributeError:
-                val = device.value
+                val = device.get()
+            try:
+                val = val[0]
+            except Exception:
+                pass
             ctrl_arg.append((name, val))
         return ctrl_arg
 
@@ -764,32 +829,35 @@ class Daq:
         logger.debug('Daq._begin_args(%s, %s, %s, %s)',
                      events, duration, use_l3t, controls)
         begin_args = {}
-        if events is None and duration is None:
+        # Handle default args for events and duration
+        if events is _CONFIG_VAL and duration is _CONFIG_VAL:
+            # If both are omitted, use last configured values
             events = self.config['events']
             duration = self.config['duration']
-        if events is not None:
-            if use_l3t is None and self.configured:
+        if events not in (None, _CONFIG_VAL):
+            # We either passed the events arg, or loaded from config
+            if use_l3t in (None, _CONFIG_VAL) and self.configured:
                 use_l3t = self.config['use_l3t']
             if use_l3t:
                 begin_args['l3t_events'] = events
             else:
                 begin_args['events'] = events
-        elif duration is not None:
+        elif duration not in (None, _CONFIG_VAL):
+            # We either passed the duration arg, or loaded from config
             secs = int(duration)
             nsec = int((duration - secs) * 1e9)
             begin_args['duration'] = [secs, nsec]
         else:
+            # We passed None somewhere/everywhere
             begin_args['events'] = 0  # Run until manual stop
-        if controls is None:
-            ctrl_dict = self.config['controls']
-            if ctrl_dict is not None:
-                begin_args['controls'] = self._ctrl_arg(ctrl_dict)
-        else:
+        if controls is _CONFIG_VAL:
+            controls = self.config['controls']
+        if controls is not None:
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
     def _check_duration(self, duration):
-        if duration is not None and duration < 1:
+        if duration not in (None, _CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
                    'very short runs.')
@@ -867,7 +935,7 @@ class Daq:
 
     def _re_manage_runs(self, name, doc):
         """
-        Callback for the RunEngine to manage run start and stop.
+        Callback for the RunEngine to manage run stop.
         """
         if name == 'stop':
             self.end_run()
@@ -920,7 +988,10 @@ class Daq:
         For the current `begin` cycle, how many ``events`` we told the daq to
         run for.
         """
-        return self._begin['events'] or self.config['events']
+        events = self._begin['events']
+        if events is _CONFIG_VAL:
+            events = self.config['events']
+        return events
 
     @property
     def _duration(self):
@@ -928,7 +999,10 @@ class Daq:
         For the current `begin` cycle, how long we told the daq to run for in
         seconds.
         """
-        return self._begin['duration'] or self.config['duration']
+        duration = self._begin['duration']
+        if duration is _CONFIG_VAL:
+            duration = self.config['duration']
+        return duration
 
     def _reset_begin(self):
         """
@@ -967,6 +1041,8 @@ class Daq:
             if we have no access to NFS
         ValueError:
             if an invalid hutch was passed
+        subprocess.TimeoutExpired:
+            if the get run number script fails
         """
         try:
             if hutch_name is None:
@@ -988,10 +1064,50 @@ class Daq:
         except Exception:
             pass
 
-    def set_filter(self, *args, event_codes=None, operator='&', or_bykik=True):
+    def set_filter(self, *args, event_codes=None, operator='&',
+                   or_bykik=False):
+        """
+        Set up the l3t filters.
+
+        These connect through pyami to call set_l3t or clear_l3t. The function
+        takes in arbitrary dets whose prefixes are the ami names, along with
+        low and highs.
+
+        Event codes are handled as a special case, since you always want high
+        vs low.
+
+        .. note::
+            If or_bykik is True, this will treat bykik at an l3t pass! This is
+            so you don't lose your off shots when the l3t trigger is in veto
+            mode.
+
+        Parameters
+        ----------
+        *args: (`AmiDet`, ``float``, ``float``) n times
+            A sequence of (detector, low, high), which create filters that make
+            sure the detector is between low and high. You can omit the first
+            `AmiDet` as a shorthand for the current monitor, assuming a monitor
+            has been set with `Daq.set_monitor` or `set_monitor_det`.
+
+        event_codes: ``list``, optional
+            A list of event codes to include in the filter. l3pass will be when
+            the event code is present.
+
+        operator: ``str``, optional
+            The operator for combining the detector ranges and event codes.
+            This can either be ``|`` to ``or`` the conditions together, so
+            l3pass will happen if any filter passes, or it can be left at
+            the default ``&`` to ``and`` the conditions together, so l3pass
+            will only happen if all filters pass.
+
+        or_bykik: ``bool``, optional
+            False by default, appends an ``or`` condition that marks l3t pass
+            when we see the bykik event code. This makes sure the off shots
+            make it into the data if we're in l3t veto mode.
+        """
+
         return set_pyami_filter(*args, event_codes=event_codes,
                                 operator=operator, or_bykik=or_bykik)
-    set_filter.__doc__ = set_pyami_filter.__doc__
 
     def set_monitor(self, det):
         return set_monitor_det(det)

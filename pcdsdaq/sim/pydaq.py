@@ -1,3 +1,4 @@
+import numbers
 import time
 import threading
 import logging
@@ -47,6 +48,7 @@ class Control:
         self._time_remaining = 0
         self._done_flag = threading.Event()
         self._record = False
+        self._begin_delay = 0
 
     def _do_transition(self, transition):
         logger.debug('Doing transition %s from state %s',
@@ -92,6 +94,14 @@ class Control:
                 raise RuntimeError('configure requires events or duration')
             else:
                 self._duration = dur
+            if controls is not None:
+                for name, value in controls:
+                    if not isinstance(name, str):
+                        raise RuntimeError('Expected a string name, got '
+                                           f'{name}')
+                    if not isinstance(value, numbers.Number):
+                        raise RuntimeError('Expected a numeric position, got '
+                                           f'{value}')
 
     def begin(self, *, events=None, l1t_events=None, l3t_events=None,
               duration=None, controls=None, monitors=None):
@@ -108,6 +118,10 @@ class Control:
             self._done_flag.clear()
             if self._record:
                 Control._run_number += 1
+            if self._begin_delay:
+                delay = self._begin_delay
+                self._begin_delay = 0
+                time.sleep(delay)
             thr = threading.Thread(target=self._begin_thread, args=(dur,))
             thr.start()
 
